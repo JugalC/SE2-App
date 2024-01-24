@@ -11,5 +11,5 @@ Members:
 | Ralph Rouhaana | | |
 | Adrian Jendo | 20819106 | AdrianJendo |
 | Nathan Francis | 20835433 | Francna |
-| Hrishit Shah | | |
+| Hrishit Shah | 20822668 | rishi-shah12 |
 | Cameron Kinsella | | |
