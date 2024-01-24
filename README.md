@@ -9,7 +9,7 @@ Members:
 |---------------- | --------------- | --------------- |
 | Jugal Chitkara | 20827785 | JugalC |
 | Ralph Rouhaana | | |
-| Adrian Jendo | | |
+| Adrian Jendo | 20819106 | AdrianJendo |
 | Nathan Francis | 20835433 | Francna |
 | Hrishit Shah | | |
 | Cameron Kinsella | | |
