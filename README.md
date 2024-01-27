@@ -12,4 +12,4 @@ Members:
 | Adrian Jendo | 20819106 | AdrianJendo |
 | Nathan Francis | 20835433 | Francna |
 | Hrishit Shah | 20822668 | rishi-shah12 |
-| Cameron Kinsella | | |
+| Cameron Kinsella | 20820478 | cameronkinsella |
