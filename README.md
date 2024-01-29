@@ -1,6 +1,6 @@
 # SE2-App
 
-Project Name:
+Project Name: TuneIn
 
 ### Group 25
 
