@@ -1,0 +1,4 @@
+secret:
+  ignored-paths:
+    - "**/.env.enc"
+    - ".env.enc"
