@@ -1,0 +1,37 @@
+{
+  "name": "tunein-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node --env-file .env dist/index.js",
+    "encrypt": "senv encrypt .env -o .env.enc",
+    "decrypt": "senv decrypt .env.enc -o .env",
+    "dev": "npm run decrypt && tsx watch --env-file .env src/index.ts",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "db-push": "drizzle-kit push:sqlite"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@libsql/client": "^0.4.3",
+    "drizzle-orm": "^0.29.3",
+    "drizzle-zod": "^0.5.1",
+    "fastify": "^4.26.0",
+    "fastify-type-provider-zod": "^1.1.9",
+    "npm": "^10.4.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "drizzle-kit": "^0.20.14",
+    "prettier": "^3.2.5",
+    "senv": "^1.0.2",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  },
+  "type": "module"
+}
