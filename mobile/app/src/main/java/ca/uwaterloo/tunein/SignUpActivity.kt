@@ -34,88 +34,94 @@ fun SignUpScreen(goBack: () -> Unit) {
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = Color(0xFF003847)
+                modifier = Modifier.fillMaxSize(),
+                color = Color(0xFF003847)
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Spacer(modifier = Modifier.height(32.dp))
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                        modifier = Modifier
+                                .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Button(
-                        onClick = {
-                            goBack()
-                        },
-                        modifier = Modifier.width(90.dp),
-                        colors = ButtonDefaults.outlinedButtonColors()
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
                     ) {
+                        Button(
+                                onClick = {
+                                    goBack()
+                                },
+                                modifier = Modifier.width(90.dp),
+                                colors = ButtonDefaults.outlinedButtonColors()
+                        ) {
+                            Image(
+                                    painter = painterResource(id = R.drawable.back_arrow),
+                                    contentDescription = "Back",
+                                    modifier = Modifier.size(40.dp)
+                            )
+                        }
                         Image(
-                            painter = painterResource(id = R.drawable.back_arrow),
-                            contentDescription = "Back",
-                            modifier = Modifier.size(40.dp)
+                                painter = painterResource(id = R.drawable.tunein_logo),
+                                contentDescription = "App Logo",
+                                modifier = Modifier.size(69.dp)
                         )
+                        Spacer(modifier = Modifier.width(90.dp)) // use this to center the logo
                     }
-                    Image(
-                        painter = painterResource(id = R.drawable.tunein_logo),
-                        contentDescription = "App Logo",
-                        modifier = Modifier.size(69.dp)
+                    Spacer(modifier = Modifier.height(64.dp))
+                    Text(
+                            text = "Welcome!",
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color.White),
+                            color = Color.White
                     )
-                    Spacer(modifier = Modifier.width(90.dp)) // use this to center the logo
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                            value = "",
+                            onValueChange = {},
+                            label = { Text(text = "First Name", color = Color.White, fontWeight = FontWeight.Light) },
+                            modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                            value = "",
+                            onValueChange = {},
+                            label = { Text(text = "Last Name", color = Color.White, fontWeight = FontWeight.Light) },
+                            modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                            value = "",
+                            onValueChange = {},
+                            label = { Text(text = "Email", color = Color.White, fontWeight = FontWeight.Light) },
+                            modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                            value = "",
+                            onValueChange = {},
+                            label = { Text(text = "Password", color = Color.White, fontWeight = FontWeight.Light) },
+                            modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                            value = "",
+                            onValueChange = {},
+                            label = { Text(text = "Confirm Password", color = Color.White, fontWeight = FontWeight.Light) },
+                            modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
-                Spacer(modifier = Modifier.height(64.dp))
-                Text(
-                    text = "Welcome!",
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color.White),
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text(text = "First Name", color = Color.White, fontWeight = FontWeight.Light) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text(text = "Last Name", color = Color.White, fontWeight = FontWeight.Light) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text(text = "Email", color = Color.White, fontWeight = FontWeight.Light) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text(text = "Password", color = Color.White, fontWeight = FontWeight.Light) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text(text = "Confirm Password", color = Color.White, fontWeight = FontWeight.Light) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Button(
-                    onClick = { /* TODO */ },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2BC990))
+                        onClick = { /* TODO */ },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2BC990))
                 ) {
                     Text("Sign Up")
                 }
