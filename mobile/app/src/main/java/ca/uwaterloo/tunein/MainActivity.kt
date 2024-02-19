@@ -29,14 +29,18 @@ class MainActivity : ComponentActivity() {
             val intent = Intent(this@MainActivity, SignUpActivity::class.java)
             startActivity(intent)
         }
+        fun handleLogIn() {
+            val intent = Intent(this@MainActivity, LogInActivity::class.java)
+            startActivity(intent)
+        }
         setContent {
-            MainScreen { handleSignUp() }
+            MainScreen ({ handleSignUp() }, { handleLogIn() })
         }
     }
 }
 
 @Composable
-fun MainScreen(handleSignUp: () -> Unit) {
+fun MainScreen(handleSignUp: () -> Unit, handleLogIn: () -> Unit) {
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -53,7 +57,9 @@ fun MainScreen(handleSignUp: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(192.dp))
                 Button(
-                    onClick = {/*TODO*/ },
+                    onClick = {
+                        handleLogIn()
+                    },
                     colors= ButtonDefaults.buttonColors(containerColor = Color(0xFF00FC64), contentColor = Color.Black),
                     modifier = Modifier.width(192.dp)
                 ) {
@@ -77,5 +83,5 @@ fun MainScreen(handleSignUp: () -> Unit) {
 @Preview
 @Composable
 fun MainScreenPreview() {
-    MainScreen({})
+    MainScreen({},{})
 }
