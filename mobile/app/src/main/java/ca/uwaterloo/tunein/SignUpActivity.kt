@@ -20,14 +20,17 @@ import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 class SignUpActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        fun goBack() {
+            super.finish()
+        }
         setContent {
-            SignUpScreen()
+            SignUpScreen { goBack() }
         }
     }
 }
 
 @Composable
-fun SignUpScreen() {
+fun SignUpScreen(goBack: () -> Unit) {
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -40,13 +43,16 @@ fun SignUpScreen() {
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = Modifier.height(32.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Button(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            goBack()
+                        },
                         modifier = Modifier.width(90.dp),
                         colors = ButtonDefaults.outlinedButtonColors()
                     ) {
@@ -63,7 +69,7 @@ fun SignUpScreen() {
                     )
                     Spacer(modifier = Modifier.width(90.dp)) // use this to center the logo
                 }
-                Spacer(modifier = Modifier.height(96.dp))
+                Spacer(modifier = Modifier.height(64.dp))
                 Text(
                     text = "Welcome!",
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color.White),
@@ -121,5 +127,5 @@ fun SignUpScreen() {
 @Preview
 @Composable
 fun SignUpScreenPreview() {
-    SignUpScreen()
+    SignUpScreen({})
 }
