@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import java.io.File
+import android.content.Intent
+
 
 
 class MainActivity : ComponentActivity() {
@@ -61,7 +63,10 @@ class MainActivity : ComponentActivity() {
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
-                            onClick = {/*TODO*/ },
+                            onClick = {
+                                val intent = Intent(this@MainActivity, SignUpActivity::class.java)
+                                startActivity(intent)
+                            },
                             colors= ButtonDefaults.buttonColors(containerColor = Color(0xFF00FC64), contentColor = Color.Black),
                             modifier = Modifier.width(192.dp)
                         ) {
