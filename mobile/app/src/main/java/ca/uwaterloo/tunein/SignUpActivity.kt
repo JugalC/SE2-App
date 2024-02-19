@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -12,14 +11,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
-import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import androidx.compose.foundation.border
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import ca.uwaterloo.tunein.ui.theme.TuneInTheme
+
 
 class SignUpActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,13 +40,30 @@ fun SignUpScreen() {
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(64.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.tunein_logo),
-                    contentDescription = "App Logo",
-                    modifier = Modifier.size(69.dp)
-                )
-                Spacer(modifier = Modifier.height(32.dp))
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier.width(90.dp),
+                        colors = ButtonDefaults.outlinedButtonColors()
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.back_arrow),
+                            contentDescription = "Back",
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                    Image(
+                        painter = painterResource(id = R.drawable.tunein_logo),
+                        contentDescription = "App Logo",
+                        modifier = Modifier.size(69.dp)
+                    )
+                    Spacer(modifier = Modifier.width(90.dp)) // use this to center the logo
+                }
+                Spacer(modifier = Modifier.height(96.dp))
                 Text(
                     text = "Welcome!",
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color.White),

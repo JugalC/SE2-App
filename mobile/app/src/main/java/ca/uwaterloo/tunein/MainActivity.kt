@@ -31,7 +31,6 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             MainScreen { handleSignUp() }
-
         }
     }
 }
