@@ -43,14 +43,10 @@ class MainActivity : ComponentActivity() {
                             .height(64.dp)
                             .fillMaxWidth())
                         Image(
-                            painter = painterResource(id = R.drawable.logo_fill),
-                            contentDescription = "Content"
+                            painter = painterResource(id = R.drawable.logo_full_transparent),
+                            contentDescription = "Content",
+                            modifier = Modifier.size(256.dp)
                         )
-//                        Box(
-//                            modifier = Modifier
-//                                .size(250.dp)
-//                                .background(color = Color.Blue, shape = RoundedCornerShape(8.dp))
-//                        )
                         Spacer(modifier = Modifier.height(192.dp))
                         Button(
                             onClick = {/*TODO*/ },
