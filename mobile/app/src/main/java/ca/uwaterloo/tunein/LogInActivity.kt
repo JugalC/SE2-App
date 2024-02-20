@@ -107,6 +107,12 @@ fun LogInScreen(
                             color = Color.White
                     )
                     Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Please Log into your existing account",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                             value = email,
                             onValueChange = {setEmail(it)},
@@ -121,13 +127,14 @@ fun LogInScreen(
                             label = { Text(text = "Password", fontWeight = FontWeight.Light) },
                             modifier = Modifier.fillMaxWidth()
                     )
-                }
-                Button(
-                        onClick = { /* TODO */ },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2BC990))
-                ) {
-                    Text("Log In")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                            onClick = { /* TODO */ },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2BC990))
+                    ) {
+                        Text("Log In")
+                    }
                 }
             }
         }
