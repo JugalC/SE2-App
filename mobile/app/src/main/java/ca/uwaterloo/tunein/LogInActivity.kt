@@ -7,14 +7,19 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
+import ca.uwaterloo.tunein.ui.viewmodel.LoginViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
 class LogInActivity : ComponentActivity() {
@@ -24,13 +29,33 @@ class LogInActivity : ComponentActivity() {
             super.finish()
         }
         setContent {
-            LogInScreen { goBack() }
+            LogInStateComposable() { goBack() }
         }
     }
 }
 
 @Composable
-fun LogInScreen(goBack: () -> Unit) {
+fun LogInStateComposable(viewModel: LoginViewModel = viewModel(), goBack: () -> Unit) {
+    val loginState by viewModel.uiState.collectAsState()
+
+    LogInScreen(
+        email = loginState.email,
+        password = loginState.password,
+        setEmail = { viewModel.setEmail(it) },
+        setPassword = { viewModel.setPassword(it) }
+    ) {
+        goBack()
+    }
+}
+
+@Composable
+fun LogInScreen(
+    email: String,
+    password: String,
+    setEmail: (newEmail: String) -> Unit,
+    setPassword: (newPassword: String) -> Unit,
+    goBack: () -> Unit
+) {
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -39,8 +64,8 @@ fun LogInScreen(goBack: () -> Unit) {
         ) {
             Column(
                     modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
+                        .fillMaxSize()
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceBetween
             ) {
@@ -78,21 +103,22 @@ fun LogInScreen(goBack: () -> Unit) {
                     Spacer(modifier = Modifier.height(64.dp))
                     Text(
                             text = "Welcome Back!",
-                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color.White),
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                             color = Color.White
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
-                            value = "",
-                            onValueChange = {},
-                            label = { Text(text = "Email", color = Color.White, fontWeight = FontWeight.Light) },
+                            value = email,
+                            onValueChange = {setEmail(it)},
+                            label = { Text(text = "Email", fontWeight = FontWeight.Light) },
                             modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                            value = "",
-                            onValueChange = {},
-                            label = { Text(text = "Password", color = Color.White, fontWeight = FontWeight.Light) },
+                            value = password,
+                            visualTransformation = PasswordVisualTransformation(),
+                            onValueChange = {setPassword(it)},
+                            label = { Text(text = "Password", fontWeight = FontWeight.Light) },
                             modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -111,5 +137,5 @@ fun LogInScreen(goBack: () -> Unit) {
 @Preview
 @Composable
 fun LogInScreenPreview() {
-    LogInScreen({})
+    LogInScreen("test", "password", {}, {}) {}
 }

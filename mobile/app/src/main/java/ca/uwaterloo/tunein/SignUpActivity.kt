@@ -133,5 +133,5 @@ fun SignUpScreen(goBack: () -> Unit) {
 @Preview
 @Composable
 fun SignUpScreenPreview() {
-    SignUpScreen({})
+    SignUpScreen {}
 }
