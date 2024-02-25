@@ -17,20 +17,20 @@ import androidx.compose.ui.unit.dp
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 
 
-class SignUpActivity : ComponentActivity() {
+class SignupActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         fun goBack() {
             super.finish()
         }
         setContent {
-            SignUpScreen { goBack() }
+            SignupScreen { goBack() }
         }
     }
 }
 
 @Composable
-fun SignUpScreen(goBack: () -> Unit) {
+fun SignupScreen(goBack: () -> Unit) {
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -99,7 +99,7 @@ fun SignUpScreen(goBack: () -> Unit) {
                     OutlinedTextField(
                             value = "",
                             onValueChange = {},
-                            label = { Text(text = "Email", color = Color.White, fontWeight = FontWeight.Light) },
+                            label = { Text(text = "Username", color = Color.White, fontWeight = FontWeight.Light) },
                             modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -132,6 +132,6 @@ fun SignUpScreen(goBack: () -> Unit) {
 
 @Preview
 @Composable
-fun SignUpScreenPreview() {
-    SignUpScreen {}
+fun SignupScreenPreview() {
+    SignupScreen {}
 }

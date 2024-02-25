@@ -8,8 +8,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,11 +22,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.ui.viewmodel.LoginViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.ui.viewmodel.AuthViewModel
 
-class LogInActivity : ComponentActivity() {
+data class LoginState(
+    var username: String = "",
+    var password: String = "",
+)
+
+class LoginActivity : ComponentActivity() {
 
     private lateinit var authViewModel: AuthViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,24 +51,24 @@ class LogInActivity : ComponentActivity() {
             }
 
             // change page
-            val intent = Intent(this@LogInActivity, PostsActivity::class.java)
+            val intent = Intent(this@LoginActivity, PostsActivity::class.java)
             startActivity(intent)
         }
         setContent {
-            LogInStateComposable(handleLogin = {handleLogin()}) { goBack() }
+            LoginStateComposable(handleLogin = {handleLogin()}) { goBack() }
         }
     }
 }
 
 @Composable
-fun LogInStateComposable(viewModel: LoginViewModel = viewModel(), handleLogin: () -> Unit, goBack: () -> Unit) {
-    val loginState by viewModel.uiState.collectAsState()
+fun LoginStateComposable(handleLogin: () -> Unit, goBack: () -> Unit) {
+    var loginState by remember { mutableStateOf(LoginState()) }
 
-    LogInScreen(
-        email = loginState.email,
+    LoginScreen(
+        username = loginState.username,
         password = loginState.password,
-        setEmail = { viewModel.setEmail(it) },
-        setPassword = { viewModel.setPassword(it) },
+        setUsername = { loginState = loginState.copy(username = it) },
+        setPassword = { loginState = loginState.copy(password = it) },
         handleLogin = { handleLogin() }
     ) {
         goBack()
@@ -71,15 +76,15 @@ fun LogInStateComposable(viewModel: LoginViewModel = viewModel(), handleLogin: (
 }
 
 @Composable
-fun LogInScreen(
-    email: String,
+fun LoginScreen(
+    username: String,
     password: String,
-    setEmail: (newEmail: String) -> Unit,
+    setUsername: (newUsername: String) -> Unit,
     setPassword: (newPassword: String) -> Unit,
     handleLogin: () -> Unit,
     goBack: () -> Unit
 ) {
-    var loginEnabled = email.length > 0 && password.length > 0
+    var loginEnabled = username.length > 0 && password.length > 0
 
     TuneInTheme {
         // A surface container using the 'background' color from the theme
@@ -139,9 +144,9 @@ fun LogInScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                            value = email,
-                            onValueChange = {setEmail(it)},
-                            label = { Text(text = "Email", fontWeight = FontWeight.Light) },
+                            value = username,
+                            onValueChange = {setUsername(it)},
+                            label = { Text(text = "Username", fontWeight = FontWeight.Light) },
                             modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -169,6 +174,6 @@ fun LogInScreen(
 
 @Preview
 @Composable
-fun LogInScreenPreview() {
-    LogInScreen("test", "password", {}, {}, {}) {}
+fun LoginScreenPreview() {
+    LoginScreen("test", "password", {}, {}, {}) {}
 }
