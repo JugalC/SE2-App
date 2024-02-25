@@ -1,5 +1,6 @@
 package ca.uwaterloo.tunein
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,16 +17,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
+import ca.uwaterloo.tunein.ui.viewmodel.AuthViewModel
 
 class PostsActivity : ComponentActivity() {
+
+    private lateinit var authViewModel: AuthViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        fun handleLogout() {
-
+        authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
+        authViewModel.isLoggedIn.observe(this) { isLoggedIn ->
+            if (!isLoggedIn) {
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
         }
-        
+
+        fun handleLogout() {
+            authViewModel.setLoggedIn(false)
+        }
+
         setContent {
             TuneInTheme {
                 // A surface container using the 'background' color from the theme
@@ -67,7 +81,6 @@ fun PostsContent(handleLogout: () -> Unit) {
                 ) {
                     Text(
                         text = "Log Out"
-
                     )
                 }
             }
