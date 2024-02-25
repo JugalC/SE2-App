@@ -1,5 +1,6 @@
 package ca.uwaterloo.tunein
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,21 +29,33 @@ class LogInActivity : ComponentActivity() {
         fun goBack() {
             super.finish()
         }
+        fun handleLogin() {
+            // TODO: verify credentials against backend
+
+            // TODO persist logged in state
+
+            // TODO: change page
+            val intent = Intent(this@LogInActivity, PostsActivity::class.java)
+            startActivity(intent)
+        }
         setContent {
-            LogInStateComposable() { goBack() }
+            LogInStateComposable(handleLogin = {handleLogin()}) { goBack() }
         }
     }
 }
 
 @Composable
-fun LogInStateComposable(viewModel: LoginViewModel = viewModel(), goBack: () -> Unit) {
+fun LogInStateComposable(viewModel: LoginViewModel = viewModel(), handleLogin: () -> Unit, goBack: () -> Unit) {
     val loginState by viewModel.uiState.collectAsState()
+
+
 
     LogInScreen(
         email = loginState.email,
         password = loginState.password,
         setEmail = { viewModel.setEmail(it) },
-        setPassword = { viewModel.setPassword(it) }
+        setPassword = { viewModel.setPassword(it) },
+        handleLogin = { handleLogin() }
     ) {
         goBack()
     }
@@ -54,6 +67,7 @@ fun LogInScreen(
     password: String,
     setEmail: (newEmail: String) -> Unit,
     setPassword: (newPassword: String) -> Unit,
+    handleLogin: () -> Unit,
     goBack: () -> Unit
 ) {
     TuneInTheme {
@@ -129,7 +143,7 @@ fun LogInScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
-                            onClick = { /* TODO */ },
+                            onClick = { handleLogin() },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2BC990))
                     ) {
@@ -144,5 +158,5 @@ fun LogInScreen(
 @Preview
 @Composable
 fun LogInScreenPreview() {
-    LogInScreen("test", "password", {}, {}) {}
+    LogInScreen("test", "password", {}, {}, {}) {}
 }

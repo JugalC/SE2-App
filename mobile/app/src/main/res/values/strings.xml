@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TuneIn</string>
+    <string name="title_activity_posts">PostsActivity</string>
 </resources>
