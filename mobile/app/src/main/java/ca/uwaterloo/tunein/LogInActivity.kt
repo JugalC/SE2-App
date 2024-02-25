@@ -18,23 +18,34 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.ui.viewmodel.LoginViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-
+import ca.uwaterloo.tunein.ui.viewmodel.AuthViewModel
 
 class LogInActivity : ComponentActivity() {
+
+    private lateinit var authViewModel: AuthViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
+
         fun goBack() {
             super.finish()
         }
+
         fun handleLogin() {
             // TODO: verify credentials against backend
+            val loginSuccessful = true
 
-            // TODO persist logged in state
+            // persist logged in state
+            if (loginSuccessful) {
+                authViewModel.setLoggedIn(true)
+            }
 
-            // TODO: change page
+            // change page
             val intent = Intent(this@LogInActivity, PostsActivity::class.java)
             startActivity(intent)
         }
@@ -47,8 +58,6 @@ class LogInActivity : ComponentActivity() {
 @Composable
 fun LogInStateComposable(viewModel: LoginViewModel = viewModel(), handleLogin: () -> Unit, goBack: () -> Unit) {
     val loginState by viewModel.uiState.collectAsState()
-
-
 
     LogInScreen(
         email = loginState.email,
@@ -70,6 +79,8 @@ fun LogInScreen(
     handleLogin: () -> Unit,
     goBack: () -> Unit
 ) {
+    var loginEnabled = email.length > 0 && password.length > 0
+
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -143,9 +154,10 @@ fun LogInScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
-                            onClick = { handleLogin() },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2BC990))
+                        onClick = { handleLogin() },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2BC990)),
+                        enabled = loginEnabled
                     ) {
                         Text("Log In")
                     }

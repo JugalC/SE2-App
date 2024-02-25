@@ -9,7 +9,6 @@ import androidx.compose.ui.graphics.Color
 
 private val ColorScheme = darkColorScheme(
     primary = Color.White,
-    secondary = Color(0xFF003847),
 )
 
 @Composable
