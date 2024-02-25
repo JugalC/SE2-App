@@ -54,37 +54,20 @@ class LoginActivity : ComponentActivity() {
             val intent = Intent(this@LoginActivity, PostsActivity::class.java)
             startActivity(intent)
         }
+
         setContent {
-            LoginStateComposable(handleLogin = {handleLogin()}) { goBack() }
+            LoginScreen(handleLogin = {handleLogin()}) { goBack() }
         }
     }
 }
 
 @Composable
-fun LoginStateComposable(handleLogin: () -> Unit, goBack: () -> Unit) {
-    var loginState by remember { mutableStateOf(LoginState()) }
-
-    LoginScreen(
-        username = loginState.username,
-        password = loginState.password,
-        setUsername = { loginState = loginState.copy(username = it) },
-        setPassword = { loginState = loginState.copy(password = it) },
-        handleLogin = { handleLogin() }
-    ) {
-        goBack()
-    }
-}
-
-@Composable
 fun LoginScreen(
-    username: String,
-    password: String,
-    setUsername: (newUsername: String) -> Unit,
-    setPassword: (newPassword: String) -> Unit,
     handleLogin: () -> Unit,
     goBack: () -> Unit
 ) {
-    var loginEnabled = username.length > 0 && password.length > 0
+    var loginState by remember { mutableStateOf(LoginState()) }
+    val loginEnabled = loginState.username.isNotEmpty() && loginState.password.isNotEmpty()
 
     TuneInTheme {
         // A surface container using the 'background' color from the theme
@@ -144,16 +127,16 @@ fun LoginScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                            value = username,
-                            onValueChange = {setUsername(it)},
+                            value = loginState.username,
+                            onValueChange = { loginState = loginState.copy(username = it)},
                             label = { Text(text = "Username", fontWeight = FontWeight.Light) },
                             modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                            value = password,
+                            value = loginState.password,
+                            onValueChange = { loginState = loginState.copy(password = it)},
                             visualTransformation = PasswordVisualTransformation(),
-                            onValueChange = {setPassword(it)},
                             label = { Text(text = "Password", fontWeight = FontWeight.Light) },
                             modifier = Modifier.fillMaxWidth()
                     )
@@ -175,5 +158,5 @@ fun LoginScreen(
 @Preview
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen("test", "password", {}, {}, {}) {}
+    LoginScreen({}) {}
 }
