@@ -1,14 +1,18 @@
 package ca.uwaterloo.tunein
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,45 +21,79 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.ui.viewmodel.LoginViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import ca.uwaterloo.tunein.ui.viewmodel.AuthViewModel
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONObject
 
+data class LoginState(
+    var username: String = "",
+    var password: String = "",
+)
 
-class LogInActivity : ComponentActivity() {
+class LoginActivity : ComponentActivity() {
+
+    private lateinit var authViewModel: AuthViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
+
         fun goBack() {
             super.finish()
         }
+
+        fun handleLogin(loginState: LoginState) {
+            val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
+
+            val queue = Volley.newRequestQueue(this)
+            val url = "${BuildConfig.BASE_URL}/login/${loginState.username}"
+
+            val req = JSONObject()
+            req.put("password", loginState.password)
+
+            val loginReq = JsonObjectRequest(
+                Request.Method.POST, url, req,
+                { _ ->
+                    // persist logged in state
+                    authViewModel.setLoggedIn(true)
+                    // change page
+                    val intent = Intent(this@LoginActivity, PostsActivity::class.java)
+                    startActivity(intent)
+                },
+                { error ->
+                    val statusCode: Int = error.networkResponse.statusCode
+                    if (statusCode == 404) {
+                        // Username does not exist or password does not match
+                        alert.setMessage("Incorrect username or password")
+                        alert.create().show()
+                    } else {
+                        Log.e("Login", error.toString())
+                        alert.setMessage("An unexpected error has occurred")
+                        alert.create().show()
+                    }
+                }
+            )
+            queue.add(loginReq)
+        }
+
         setContent {
-            LogInStateComposable() { goBack() }
+            LoginScreen(handleLogin = ::handleLogin) { goBack() }
         }
     }
 }
 
 @Composable
-fun LogInStateComposable(viewModel: LoginViewModel = viewModel(), goBack: () -> Unit) {
-    val loginState by viewModel.uiState.collectAsState()
-
-    LogInScreen(
-        email = loginState.email,
-        password = loginState.password,
-        setEmail = { viewModel.setEmail(it) },
-        setPassword = { viewModel.setPassword(it) }
-    ) {
-        goBack()
-    }
-}
-
-@Composable
-fun LogInScreen(
-    email: String,
-    password: String,
-    setEmail: (newEmail: String) -> Unit,
-    setPassword: (newPassword: String) -> Unit,
+fun LoginScreen(
+    handleLogin: (LoginState) -> Unit,
     goBack: () -> Unit
 ) {
+    var loginState by remember { mutableStateOf(LoginState()) }
+    val loginEnabled = loginState.username.isNotEmpty() && loginState.password.isNotEmpty()
+
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -114,24 +152,25 @@ fun LogInScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                            value = email,
-                            onValueChange = {setEmail(it)},
-                            label = { Text(text = "Email", fontWeight = FontWeight.Light) },
+                            value = loginState.username,
+                            onValueChange = { loginState = loginState.copy(username = it)},
+                            label = { Text(text = "Username", fontWeight = FontWeight.Light) },
                             modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                            value = password,
+                            value = loginState.password,
+                            onValueChange = { loginState = loginState.copy(password = it)},
                             visualTransformation = PasswordVisualTransformation(),
-                            onValueChange = {setPassword(it)},
                             label = { Text(text = "Password", fontWeight = FontWeight.Light) },
                             modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
-                            onClick = { /* TODO */ },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2BC990))
+                        onClick = { handleLogin(loginState) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2BC990)),
+                        enabled = loginEnabled
                     ) {
                         Text("Log In")
                     }
@@ -143,6 +182,6 @@ fun LogInScreen(
 
 @Preview
 @Composable
-fun LogInScreenPreview() {
-    LogInScreen("test", "password", {}, {}) {}
+fun LoginScreenPreview() {
+    LoginScreen({}) {}
 }

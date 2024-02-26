@@ -20,27 +20,42 @@ import androidx.compose.ui.unit.*
 import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModelProvider
+import ca.uwaterloo.tunein.ui.viewmodel.AuthViewModel
 
 
 class MainActivity : ComponentActivity() {
+    private lateinit var authViewModel: AuthViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        fun handleSignUp() {
-            val intent = Intent(this@MainActivity, SignUpActivity::class.java)
+
+        authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
+        authViewModel.isLoggedIn.observe(this) { isLoggedIn ->
+            if (isLoggedIn) {
+                val intent = Intent(this, PostsActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+        }
+
+        fun handleSignup() {
+            val intent = Intent(this@MainActivity, SignupActivity::class.java)
             startActivity(intent)
         }
-        fun handleLogIn() {
-            val intent = Intent(this@MainActivity, LogInActivity::class.java)
+
+        fun handleLogin() {
+            val intent = Intent(this@MainActivity, LoginActivity::class.java)
             startActivity(intent)
         }
+
         setContent {
-            MainScreen ({ handleSignUp() }, { handleLogIn() })
+            MainScreen ({ handleSignup() }, { handleLogin() })
         }
     }
 }
 
 @Composable
-fun MainScreen(handleSignUp: () -> Unit, handleLogIn: () -> Unit) {
+fun MainScreen(handleSignup: () -> Unit, handleLogin: () -> Unit) {
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -58,7 +73,7 @@ fun MainScreen(handleSignUp: () -> Unit, handleLogIn: () -> Unit) {
                 Spacer(modifier = Modifier.height(192.dp))
                 Button(
                     onClick = {
-                        handleLogIn()
+                        handleLogin()
                     },
                     colors= ButtonDefaults.buttonColors(containerColor = Color(0xFF00FC64), contentColor = Color.Black),
                     modifier = Modifier.width(192.dp)
@@ -68,7 +83,7 @@ fun MainScreen(handleSignUp: () -> Unit, handleLogIn: () -> Unit) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
-                        handleSignUp()
+                        handleSignup()
                     },
                     colors= ButtonDefaults.buttonColors(containerColor = Color(0xFF00FC64), contentColor = Color.Black),
                     modifier = Modifier.width(192.dp)
