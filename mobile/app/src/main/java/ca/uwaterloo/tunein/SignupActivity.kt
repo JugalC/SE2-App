@@ -2,6 +2,7 @@ package ca.uwaterloo.tunein
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -23,6 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.ui.viewmodel.AuthViewModel
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONObject
 
 data class SignupState(
     var username: String = "",
@@ -45,29 +50,71 @@ class SignupActivity : ComponentActivity() {
             super.finish()
         }
 
-        fun handleSignup() {
-            // TODO: verify credentials against backend
-            val signupSuccessful = true
-
-            // persist logged in state
-            if (signupSuccessful) {
-                authViewModel.setLoggedIn(true)
+        fun handleSignup(signupState: SignupState) {
+            val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
+            if (signupState.password != signupState.confirmPassword){
+                alert.setMessage("Passwords do not match")
+                alert.create().show()
+                return
+            } else if (signupState.password.length < 6) {
+                alert.setMessage("Password must be at least 6 characters long")
+                alert.create().show()
+                return
             }
 
-            // change page
-            val intent = Intent(this@SignupActivity, PostsActivity::class.java)
-            startActivity(intent)
+            val queue = Volley.newRequestQueue(this)
+            val url = "${BuildConfig.BASE_URL}/user"
+
+            val req = JSONObject()
+            req.put("firstName", signupState.firstName)
+            req.put("lastName", signupState.lastName)
+            req.put("username", signupState.username)
+            req.put("password", signupState.password)
+
+            val createUserReq = JsonObjectRequest(Request.Method.POST, url, req,
+                { _ ->
+                    // persist logged in state
+                    authViewModel.setLoggedIn(true)
+                    // change page
+                    val intent = Intent(this@SignupActivity, PostsActivity::class.java)
+                    startActivity(intent)
+                },
+                { error ->
+                    Log.e("CreateUser", error.toString())
+                    alert.setMessage("An unexpected error has occurred")
+                    alert.create().show()
+                }
+            )
+
+            val userExistsReq = JsonObjectRequest(Request.Method.GET, "${url}/${signupState.username}", null,
+                { _ ->
+                    alert.setMessage("Username already taken")
+                    alert.create().show()
+                },
+                { error ->
+                    val statusCode: Int = error.networkResponse.statusCode
+                    if (statusCode == 404) {
+                        // User does not exist, create new user
+                        queue.add(createUserReq)
+                    } else {
+                        Log.e("CreateUser", error.toString())
+                        alert.setMessage("An unexpected error has occurred")
+                        alert.create().show()
+                    }
+                }
+            )
+            queue.add(userExistsReq)
         }
 
         setContent {
-            SignupScreen(handleSignup = {handleSignup()}) { goBack() }
+            SignupScreen(handleSignup = ::handleSignup) { goBack() }
         }
     }
 }
 
 @Composable
 fun SignupScreen(
-    handleSignup: () -> Unit,
+    handleSignup: (SignupState) -> Unit,
     goBack: () -> Unit
 ) {
     var signupState by remember { mutableStateOf(SignupState()) }
@@ -85,8 +132,8 @@ fun SignupScreen(
         ) {
             Column(
                     modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
+                        .fillMaxSize()
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceBetween
             ) {
@@ -167,7 +214,7 @@ fun SignupScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 Button(
-                        onClick = { handleSignup() },
+                        onClick = { handleSignup(signupState) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2BC990)),
                         enabled = signupEnabled

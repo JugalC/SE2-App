@@ -21,7 +21,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            isDebuggable = true
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080\"")
+        }
         release {
+            buildConfigField("String", "BASE_URL", "TODO")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -38,6 +44,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -68,4 +75,5 @@ dependencies {
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    implementation("com.android.volley:volley:1.2.1")
 }
