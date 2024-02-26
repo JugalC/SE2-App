@@ -28,7 +28,7 @@ export const users: Plugin = (server, _, done) => {
           salt,
         });
 
-        return res.code(200).send();
+        return res.code(200).send({});
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
