@@ -2,6 +2,7 @@ package ca.uwaterloo.tunein
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -23,6 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.ui.viewmodel.AuthViewModel
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONObject
 
 data class LoginState(
     var username: String = "",
@@ -41,29 +46,49 @@ class LoginActivity : ComponentActivity() {
             super.finish()
         }
 
-        fun handleLogin() {
-            // TODO: verify credentials against backend
-            val loginSuccessful = true
+        fun handleLogin(loginState: LoginState) {
+            val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
 
-            // persist logged in state
-            if (loginSuccessful) {
-                authViewModel.setLoggedIn(true)
-            }
+            val queue = Volley.newRequestQueue(this)
+            val url = "${BuildConfig.BASE_URL}/login/${loginState.username}"
 
-            // change page
-            val intent = Intent(this@LoginActivity, PostsActivity::class.java)
-            startActivity(intent)
+            val req = JSONObject()
+            req.put("password", loginState.password)
+
+            val loginReq = JsonObjectRequest(
+                Request.Method.POST, url, req,
+                { _ ->
+                    // persist logged in state
+                    authViewModel.setLoggedIn(true)
+                    // change page
+                    val intent = Intent(this@LoginActivity, PostsActivity::class.java)
+                    startActivity(intent)
+                },
+                { error ->
+                    val statusCode: Int = error.networkResponse.statusCode
+                    if (statusCode == 404) {
+                        // Username does not exist or password does not match
+                        alert.setMessage("Incorrect username or password")
+                        alert.create().show()
+                    } else {
+                        Log.e("Login", error.toString())
+                        alert.setMessage("An unexpected error has occurred")
+                        alert.create().show()
+                    }
+                }
+            )
+            queue.add(loginReq)
         }
 
         setContent {
-            LoginScreen(handleLogin = {handleLogin()}) { goBack() }
+            LoginScreen(handleLogin = ::handleLogin) { goBack() }
         }
     }
 }
 
 @Composable
 fun LoginScreen(
-    handleLogin: () -> Unit,
+    handleLogin: (LoginState) -> Unit,
     goBack: () -> Unit
 ) {
     var loginState by remember { mutableStateOf(LoginState()) }
@@ -142,7 +167,7 @@ fun LoginScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
-                        onClick = { handleLogin() },
+                        onClick = { handleLogin(loginState) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2BC990)),
                         enabled = loginEnabled
