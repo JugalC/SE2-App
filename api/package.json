@@ -11,7 +11,8 @@
     "dev": "npm run decrypt && tsx watch --env-file .env src/index.ts",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "db-push": "drizzle-kit push:sqlite"
+    "db-push": "drizzle-kit push:sqlite",
+    "db-studio": "drizzle-kit studio"
   },
   "author": "",
   "license": "ISC",
