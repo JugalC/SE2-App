@@ -1,3 +1,4 @@
+# Mobile
 *.iml
 .gradle
 /local.properties
@@ -13,3 +14,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# API
+node_modules
+dist
+.env
+.env.pass
+dump*
