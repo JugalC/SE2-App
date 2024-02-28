@@ -18,21 +18,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import android.content.Intent
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
-import ca.uwaterloo.tunein.ui.viewmodel.AuthViewModel
-
+import ca.uwaterloo.tunein.auth.AuthManager
 
 class MainActivity : ComponentActivity() {
-    private lateinit var authViewModel: AuthViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
-        authViewModel.isLoggedIn.observe(this) { isLoggedIn ->
-            if (isLoggedIn) {
-                val intent = Intent(this, PostsActivity::class.java)
+        if (AuthManager.isLoggedIn(this)) {
+            if (AuthManager.isSpotifyAuthed(this)) {
+                val intent = Intent(this@MainActivity, PostsActivity::class.java)
+                startActivity(intent)
+                finish()
+            } else {
+                val intent = Intent(this@MainActivity, SpotifyConnectActivity::class.java)
                 startActivity(intent)
                 finish()
             }

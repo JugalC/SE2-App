@@ -22,8 +22,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
+import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.ui.viewmodel.AuthViewModel
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -36,11 +36,9 @@ data class LoginState(
 
 class LoginActivity : ComponentActivity() {
 
-    private lateinit var authViewModel: AuthViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
 
         fun goBack() {
             super.finish()
@@ -57,12 +55,21 @@ class LoginActivity : ComponentActivity() {
 
             val loginReq = JsonObjectRequest(
                 Request.Method.POST, url, req,
-                { _ ->
+                { res ->
                     // persist logged in state
-                    authViewModel.setLoggedIn(true)
+                    AuthManager.setLoggedIn(this,true)
+                    AuthManager.setUsername(this,loginState.username)
                     // change page
-                    val intent = Intent(this@LoginActivity, PostsActivity::class.java)
-                    startActivity(intent)
+
+                    // check if spotifyAccessToken is null, if so, redirect to SpotifyLoginActivity
+                    if (res.isNull("spotifyAccessToken")) {
+                        val intent = Intent(this@LoginActivity, SpotifyConnectActivity::class.java)
+                        startActivity(intent)
+                    }else {
+                        AuthManager.setSpotifyAuthed(this,true)
+                        val intent = Intent(this@LoginActivity, PostsActivity::class.java)
+                        startActivity(intent)
+                    }
                 },
                 { error ->
                     val statusCode: Int = error.networkResponse.statusCode

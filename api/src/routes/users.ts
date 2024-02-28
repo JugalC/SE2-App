@@ -105,6 +105,36 @@ export const users: Plugin = (server, _, done) => {
   );
 
   server.get(
+    "/user/spotifyauth/:identifier",
+    {
+      schema: {
+        params: z.object({
+          identifier: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { identifier } = req.params;
+
+        const user = await db.query.userTable.findFirst({
+          where: or(eq(userTable.username, identifier), eq(userTable.id, identifier)),
+        });
+
+        if (!user) {
+          return res.code(404).send({ error: "User not found with given parameters." });
+        }
+
+        return res.code(200).send({ authenticated: user.spotifyAccessToken !== null });
+        //return res.code(200).send({ ...user, passwordHash: undefined, salt: undefined });
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.get(
     "/users",
     {
       schema: {
