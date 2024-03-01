@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -14,6 +16,11 @@
         android:theme="@style/Theme.TuneIn"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".SpotifyConnectActivity"
+            android:exported="false"
+            android:label="@string/title_activity_spotify_connect"
+            android:theme="@style/Theme.TuneIn" />
         <activity
             android:name=".PostsActivity"
             android:exported="false"
@@ -30,8 +37,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SignupActivity"></activity>
-        <activity android:name=".LoginActivity"></activity>
+        <activity android:name=".SignupActivity" />
+        <activity android:name=".LoginActivity" />
     </application>
 
 </manifest>

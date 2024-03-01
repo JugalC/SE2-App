@@ -17,39 +17,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
+import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.ui.viewmodel.AuthViewModel
 
 class PostsActivity : ComponentActivity() {
 
-    private lateinit var authViewModel: AuthViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
-        authViewModel.isLoggedIn.observe(this) { isLoggedIn ->
-            if (!isLoggedIn) {
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
-                finish()
-            }
-        }
-
         fun handleLogout() {
-            authViewModel.setLoggedIn(false)
+            AuthManager.setLoggedIn(this,false)
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
         }
 
         setContent {
-            TuneInTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    PostsContent{ handleLogout() }
-                }
-            }
+            PostsContent { handleLogout() }
         }
     }
 }
@@ -60,7 +43,7 @@ fun PostsContent(handleLogout: () -> Unit) {
         // A surface container using the 'background' color from the theme
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = Color(0xFF003847)
+            color = MaterialTheme.colorScheme.background
         ) {
             Column(
                 modifier = Modifier

@@ -21,13 +21,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.ui.viewmodel.AuthViewModel
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONObject
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import ca.uwaterloo.tunein.auth.AuthManager
 
 data class SignupState(
     var username: String = "",
@@ -37,14 +38,11 @@ data class SignupState(
     var lastName: String = "",
 )
 
-
 class SignupActivity : ComponentActivity() {
 
-    private lateinit var authViewModel: AuthViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
 
         fun goBack() {
             super.finish()
@@ -74,9 +72,10 @@ class SignupActivity : ComponentActivity() {
             val createUserReq = JsonObjectRequest(Request.Method.POST, url, req,
                 { _ ->
                     // persist logged in state
-                    authViewModel.setLoggedIn(true)
+                    AuthManager.setLoggedIn(this,true)
+                    AuthManager.setUsername(this, signupState.username)
                     // change page
-                    val intent = Intent(this@SignupActivity, PostsActivity::class.java)
+                    val intent = Intent(this@SignupActivity, SpotifyConnectActivity::class.java)
                     startActivity(intent)
                 },
                 { error ->
@@ -130,9 +129,11 @@ fun SignupScreen(
                 modifier = Modifier.fillMaxSize(),
                 color = Color(0xFF003847)
         ) {
+            var scrollState = rememberScrollState()
             Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .verticalScroll(scrollState)
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceBetween
