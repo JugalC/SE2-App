@@ -18,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.tunein.components.Icon
@@ -44,7 +43,6 @@ fun ProfileContent(goBack: () -> Unit) {
     TuneInTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = Color(0xFF003847)
         ) {
             Column(
                 modifier = Modifier
