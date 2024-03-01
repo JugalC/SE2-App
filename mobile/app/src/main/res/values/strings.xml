@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">TuneIn</string>
     <string name="title_activity_posts">PostsActivity</string>
+    <string name="title_activity_friends">FriendsActivity</string>
+    <string name="title_activity_profile">ProfileActivity</string>
     <string name="title_activity_spotify_connect">SpotifyConnectActivity</string>
     <string name="title_activity_spotify_web_view">SpotifyWebViewActivity</string>
 </resources>
