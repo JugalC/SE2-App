@@ -53,6 +53,11 @@ fun TuneInTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = {
+            ProvideCustomContentColor(
+                color = Color.White,
+                content = content,
+            )
+        }
     )
 }
