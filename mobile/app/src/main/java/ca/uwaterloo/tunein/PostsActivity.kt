@@ -52,12 +52,14 @@ class PostsActivity : ComponentActivity() {
         }
 
         setContent {
-            PostsContent(handleClickFriends= { handleClickFriends() }, handleClickSettings= { handleClickSettings() }) { handleLogout() }
+            PostsContent(
+                handleClickFriends= { handleClickFriends() },
+                handleClickSettings= { handleClickSettings() },
+                handleLogout = { handleLogout() },
+            )
         }
     }
 }
-
-
 
 
 
