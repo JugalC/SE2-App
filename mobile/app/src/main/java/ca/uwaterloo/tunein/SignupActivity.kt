@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
+import ca.uwaterloo.tunein.data.User
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -84,10 +85,36 @@ class SignupActivity : ComponentActivity() {
                 { _ ->
                     // persist logged in state
                     AuthManager.setLoggedIn(this,true)
-                    AuthManager.setUsername(this, signupState.username)
-                    // change page
-                    val intent = Intent(this@SignupActivity, SpotifyConnectActivity::class.java)
-                    startActivity(intent)
+                    val userDataUrl = "${BuildConfig.BASE_URL}/user/${signupState.username}"
+
+                    val userDataReq = JsonObjectRequest(
+                        Request.Method.GET, userDataUrl, req,
+                        { userRes ->
+                            val user = User(
+                                username=userRes.getString("username"),
+                                firstName = userRes.getString("firstName"),
+                                lastName=userRes.getString("lastName")
+                            )
+                            AuthManager.setUser(this, user)
+                            // change page
+                            val intent = Intent(this@SignupActivity, SpotifyConnectActivity::class.java)
+                            startActivity(intent)
+                        },
+                        { error ->
+                            val statusCode: Int = error.networkResponse.statusCode
+                            if (statusCode == 404) {
+                                // Username does not exist or password does not match
+                                alert.setMessage("User data cannot be retrieved")
+                                alert.create().show()
+                            } else {
+                                Log.e("Profile", error.toString())
+                                alert.setMessage("An unexpected error has occurred")
+                                alert.create().show()
+                            }
+                        }
+                    )
+
+                    queue.add(userDataReq)
                 },
                 { error ->
                     Log.e("CreateUser", error.toString())
