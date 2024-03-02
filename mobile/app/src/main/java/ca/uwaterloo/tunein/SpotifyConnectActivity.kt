@@ -19,14 +19,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -119,7 +117,6 @@ fun SpotifyConnectScreen( initiateSpotifyConnect: () -> Unit, handleLogout: () -
         // A surface container using the 'background' color from the theme
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = Color(0xFF003847)
         ) {
             Column(
             modifier = Modifier
@@ -144,7 +141,6 @@ fun SpotifyConnectScreen( initiateSpotifyConnect: () -> Unit, handleLogout: () -
                 Text(
                     text = "Click the button below to connect to Spotify",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White
                 )
                 Spacer(modifier = Modifier.height(64.dp))
                 Button(
@@ -154,14 +150,12 @@ fun SpotifyConnectScreen( initiateSpotifyConnect: () -> Unit, handleLogout: () -
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(60.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00FF64))
                 ) {
                     Text(text = "Connect to Spotify")
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Button(
                     onClick = { handleLogout() },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00FC64))
                 ) {
                     Text(
                         text = "Log Out"

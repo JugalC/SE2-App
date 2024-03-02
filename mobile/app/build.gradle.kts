@@ -83,6 +83,5 @@ dependencies {
     implementation("com.android.volley:volley:1.2.1")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("com.spotify.android:auth:1.2.5")
-
-
+    implementation("androidx.compose.material:material:1.6.2")
 }
