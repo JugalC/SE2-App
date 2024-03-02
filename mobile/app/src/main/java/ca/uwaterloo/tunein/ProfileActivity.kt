@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.IconButton
@@ -35,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -75,12 +77,21 @@ fun ProfileContent(user: User, goBack: () -> Unit) {
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { goBack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go Back")
+                    Column() {
+                        IconButton(onClick = { goBack() }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Go Back"
+                            )
+                        }
                     }
+                    Column(modifier = Modifier
+                        .fillMaxWidth(0.8f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                        ){Text("Profile", textAlign= TextAlign.Center)}
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
@@ -140,6 +151,7 @@ fun ProfileContent(user: User, goBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.weight(1f))
                 ProfileOption(icon = Icons.Default.Settings, text = "Account Settings")
+                ProfileOption(icon = Icons.Default.Lock, text = "Log Out")
                 ProfileOption(icon = Icons.Default.Delete, text = "Delete Account")
                 Spacer(modifier = Modifier.height(10.dp))
                 Text("TuneIn Member Since January 1, 2024", fontSize=10.sp, color=Color.LightGray)
@@ -179,7 +191,7 @@ fun ProfilePicture() {
         modifier = Modifier
             .size(156.dp)
             .clip(RoundedCornerShape(16.dp))
-            .aspectRatio(1f/1f)
+            .aspectRatio(1f / 1f)
 
 
     )
@@ -203,7 +215,7 @@ fun PreviousPosts() {
                     modifier = Modifier
                         .size(96.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .aspectRatio(1f/1f)
+                        .aspectRatio(1f / 1f)
 
 
                 )
@@ -242,7 +254,7 @@ fun PreviousPosts() {
                     modifier = Modifier
                         .size(96.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .aspectRatio(1f/1f)
+                        .aspectRatio(1f / 1f)
 
 
                 )
@@ -281,7 +293,7 @@ fun PreviousPosts() {
                     modifier = Modifier
                         .size(96.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .aspectRatio(1f/1f)
+                        .aspectRatio(1f / 1f)
 
 
                 )
