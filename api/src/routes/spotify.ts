@@ -2,7 +2,6 @@ import querystring from "querystring";
 import { db } from "../db/db";
 import { userTable } from "../db/schema";
 import { eq, or } from "drizzle-orm";
-import { randomUUID } from "crypto";
 import z from "zod";
 import { Plugin } from "../types";
 
@@ -42,23 +41,6 @@ const x = `<html lang="en">
 </html>`;
 
 export const spotify: Plugin = (server, _, done) => {
-  // let state = randomUUID();
-
-  // server.get("/spotify/login", (_, res) => {
-  //   const scope = "user-read-recently-played";
-
-  //   res.redirect(
-  //     "https://accounts.spotify.com/authorize?" +
-  //       querystring.stringify({
-  //         response_type: "code",
-  //         client_id: SPOTIFY_CLIENT_ID,
-  //         scope: scope,
-  //         redirect_uri: "http://10.0.2.2:8080/spotify/callback",
-  //         state: state,
-  //       }),
-  //   );
-  // });
-
   server.get(
     "/spotify/login/:identifier",
     {
@@ -102,8 +84,6 @@ export const spotify: Plugin = (server, _, done) => {
       try {
         const { code, state: identifier } = req.query;
 
-        // console.log(identifier);
-
         // if (spotifyState !== state) {
         //   return "State mismatch.";
         // }
@@ -128,15 +108,6 @@ export const spotify: Plugin = (server, _, done) => {
 
         const data = await resp.json();
 
-        // update user with access token and refresh token
-        // await db.query.userTable.update({
-        //   where: or(eq(userTable.username, identifier), eq(userTable.id, identifier)),
-        //   data: {
-        //     spotifyAccessToken: data.access_token,
-        //     spotifyRefreshToken: data.refresh_token,
-        //   },
-        // });
-
         await db
           .update(userTable)
           .set({
@@ -144,8 +115,6 @@ export const spotify: Plugin = (server, _, done) => {
             spotifyRefreshToken: data.refresh_token,
           })
           .where(or(eq(userTable.username, identifier), eq(userTable.id, identifier)));
-
-        // console.log(data);
 
         return res.code(200).header("Content-Type", "text/html").send(x);
       } catch (e) {

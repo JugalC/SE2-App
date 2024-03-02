@@ -42,11 +42,12 @@ class SpotifyConnectActivity : ComponentActivity() {
     private val intentLauncher =
         this.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
-            Log.i("SpotifyConnectActivity", "onActivityResult")
-            Log.i("SpotifyConnectActivity", "${result.resultCode}")
+            Log.d("SpotifyConnectActivity", "onActivityResult")
 
             // check if user is authed
+
             Log.i("SpotifyConnectActivity", AuthManager.getUser(this).toString())
+
 
             val queue = Volley.newRequestQueue(this)
             val url = "${BuildConfig.BASE_URL}/user/spotifyauth/${AuthManager.getUser(this).username}"
@@ -57,7 +58,6 @@ class SpotifyConnectActivity : ComponentActivity() {
                 Request.Method.GET, url, req,
                 { res ->
                     // persist logged in state
-                    Log.i("SpotifyConnectActivity", res.toString())
                     // check if is now set to authenticated,
                     // if so, send to Posts
                     if (res.getBoolean("authenticated")) {
@@ -87,9 +87,9 @@ class SpotifyConnectActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         fun initiateSpotifyConnect() {
-            Log.i("SpotifyConnectActivity", "initiateSpotifyConnect")
-            Log.i("SpotifyConnectActivity", "${AuthManager.isLoggedIn(this)}")
-            Log.i("SpotifyConnectActivity", "${AuthManager.isSpotifyAuthed(this)}")
+            Log.d("SpotifyConnectActivity", "initiateSpotifyConnect")
+            Log.d("SpotifyConnectActivity", "${AuthManager.isLoggedIn(this)}")
+            Log.d("SpotifyConnectActivity", "${AuthManager.isSpotifyAuthed(this)}")
 
             val webpage: Uri =
                 Uri.parse("http://10.0.2.2:8080/spotify/login/${AuthManager.getUser(this).username}")
@@ -98,7 +98,7 @@ class SpotifyConnectActivity : ComponentActivity() {
             customTabsIntent.intent.setData(webpage)
             intentLauncher.launch(customTabsIntent.intent)
 
-            Log.i("SpotifyConnectActivity", "launched url")
+            Log.d("SpotifyConnectActivity", "launched url")
         }
 
         fun handleLogout() {
