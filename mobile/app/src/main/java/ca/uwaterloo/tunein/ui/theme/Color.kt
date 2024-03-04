@@ -10,4 +10,5 @@ object Color {
     val LightGray = Color(0xFFB3B3B3)
     val TextWhite = Color(0xFFFFFFFF)
     val TextBlack = Color(0xFF000000)
+    val Transparent = Color.Transparent
 }
