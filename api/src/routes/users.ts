@@ -4,8 +4,9 @@ import { randomUUID, timingSafeEqual } from "crypto";
 import { generateSalt, hash } from "../lib/hashing";
 import { z } from "zod";
 import { eq, or } from "drizzle-orm";
-import { Plugin, paginationSchema } from "../types";
+import { Plugin, paginationSchema, searchSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
+import { generateSearchFilters } from "../lib/generateSearchFilters";
 
 export const users: Plugin = (server, _, done) => {
   server.post(
@@ -138,14 +139,28 @@ export const users: Plugin = (server, _, done) => {
     "/users",
     {
       schema: {
-        querystring: getUserSchema.and(paginationSchema),
+        querystring: getUserSchema.and(paginationSchema).and(searchSchema),
       },
     },
     async (req, res) => {
+      console.log("HELLO WORLD")
       try {
-        const { firstName, lastName, page, limit } = req.query;
+        const { firstName, lastName, page, limit, search } = req.query;
 
-        const where = generateLikeFilters([
+        const where = search != "" ? generateSearchFilters([
+          {
+            col: userTable.firstName,
+            val: search,
+          },
+          {
+            col: userTable.lastName,
+            val: search,
+          },
+          {
+            col: userTable.username,
+            val: search,
+          }
+        ]) : generateLikeFilters([
           {
             col: userTable.firstName,
             val: firstName,

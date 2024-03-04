@@ -8,3 +8,7 @@ export const paginationSchema = z.object({
   page: z.number().min(0).optional().default(0),
   limit: z.number().max(100).optional().default(100),
 });
+
+export const searchSchema = z.object({
+  search: z.string().optional().default(""),
+});
