@@ -16,3 +16,4 @@
 | 2024/02/26 |       |       | 2       |         |        | 3      | Add pages for profile & settings, update global app styling        |
 | 2024/02/26 |       |       | 2       |         |        | 2      | Work on profile page                                               |
 | 2024/03/02 |       |       |         | 3       |        |        | Profile page design and implementation                             |
+| 2024/03/03 |       |       |         | 2       |        |        | Prototype Demo Presentation and Settings Page                      |
