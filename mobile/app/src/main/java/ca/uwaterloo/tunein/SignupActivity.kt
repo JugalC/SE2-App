@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -35,8 +37,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.tunein.auth.AuthManager
-import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.data.User
+import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -85,36 +87,15 @@ class SignupActivity : ComponentActivity() {
                 { _ ->
                     // persist logged in state
                     AuthManager.setLoggedIn(this,true)
-                    val userDataUrl = "${BuildConfig.BASE_URL}/user/${signupState.username}"
-
-                    val userDataReq = JsonObjectRequest(
-                        Request.Method.GET, userDataUrl, req,
-                        { userRes ->
-                            val user = User(
-                                username=userRes.getString("username"),
-                                firstName = userRes.getString("firstName"),
-                                lastName=userRes.getString("lastName")
-                            )
-                            AuthManager.setUser(this, user)
-                            // change page
-                            val intent = Intent(this@SignupActivity, SpotifyConnectActivity::class.java)
-                            startActivity(intent)
-                        },
-                        { error ->
-                            val statusCode: Int = error.networkResponse.statusCode
-                            if (statusCode == 404) {
-                                // Username does not exist or password does not match
-                                alert.setMessage("User data cannot be retrieved")
-                                alert.create().show()
-                            } else {
-                                Log.e("Profile", error.toString())
-                                alert.setMessage("An unexpected error has occurred")
-                                alert.create().show()
-                            }
-                        }
+                    val user = User(
+                        username=signupState.username,
+                        firstName = signupState.firstName,
+                        lastName=signupState.lastName
                     )
-
-                    queue.add(userDataReq)
+                    AuthManager.setUser(this, user)
+                    // change page
+                    val intent = Intent(this@SignupActivity, SpotifyConnectActivity::class.java)
+                    startActivity(intent)
                 },
                 { error ->
                     Log.e("CreateUser", error.toString())
@@ -161,6 +142,7 @@ fun SignupScreen(
             signupState.firstName.isNotEmpty() &&
             signupState.lastName.isNotEmpty()
 
+    val scrollState = rememberScrollState()
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -169,7 +151,8 @@ fun SignupScreen(
             Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceBetween
             ) {
