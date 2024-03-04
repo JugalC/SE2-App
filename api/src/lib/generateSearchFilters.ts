@@ -1,4 +1,4 @@
-import { SQL, like, or } from "drizzle-orm";
+import { SQL, ilike, or } from "drizzle-orm";
 import { SQLiteColumn } from "drizzle-orm/sqlite-core";
 
 export const generateSearchFilters = (filters: { col: SQLiteColumn; val?: string | null }[]) => {
@@ -6,7 +6,7 @@ export const generateSearchFilters = (filters: { col: SQLiteColumn; val?: string
 
   for (const { col, val } of filters) {
     if (val) {
-      where.push(like(col, `${val}%`));
+      where.push(ilike(col, `${val}%`));
     }
   }
 
