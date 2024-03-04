@@ -143,7 +143,6 @@ export const users: Plugin = (server, _, done) => {
       },
     },
     async (req, res) => {
-      console.log("HELLO WORLD")
       try {
         const { firstName, lastName, page, limit, search } = req.query;
 

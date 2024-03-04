@@ -18,11 +18,11 @@ export const zodPreprocessBoolean = () =>
     return processed.success ? processed.data : value;
   }, z.boolean());
 
-export const zodPreprocessNumber = () =>
+export const zodPreprocessNumber = (min: number = 0, max: number = Number.MAX_SAFE_INTEGER) =>
   z.preprocess(value => {
     const processed = z.string().transform(Number).safeParse(value) || 0;
     return processed.success ? processed.data : value;
-  }, z.number());
+  }, z.number().min(min).max(max));
 
 export const zodLowercaseString = () =>
   z.preprocess(value => {

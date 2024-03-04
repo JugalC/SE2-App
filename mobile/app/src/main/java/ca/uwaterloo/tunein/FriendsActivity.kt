@@ -130,7 +130,7 @@ fun FriendsContent(
                         .fillMaxWidth()
                         .verticalScroll(scrollState),
                 ) {
-                    if (searchUserState.users.isNotEmpty()) {
+                    if (searchUserState.searchQuery.text.isNotEmpty()) {
                         SearchFriends(
                             searchUserState
                         )
