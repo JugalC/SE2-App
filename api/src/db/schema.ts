@@ -106,3 +106,6 @@ export const friendshipRequestTable = sqliteTable(
     unq: unique().on(userIdRequesting, userIdReceiving),
   }),
 );
+
+export const insertFriendshipRequestSchema = createSelectSchema(friendshipRequestTable)
+  .omit({ id: true, createdAt: true, rejectedAt: true });

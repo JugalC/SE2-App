@@ -163,6 +163,11 @@ fun SearchFriends(
 
 @Composable
 fun SearchResultsRow(user: User) {
+
+    fun handleAddFriend(user: User) {
+
+    }
+
     Spacer(modifier = Modifier.height(16.dp))
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -188,12 +193,14 @@ fun SearchResultsRow(user: User) {
                 Text("@${user.username}", fontSize=12.sp, color = Color.LightGray)
             }
         }
-        Icon(
-            imageVector = Icons.Default.AddCircle,
-            contentDescription = null,
-            modifier = Modifier.size(18.dp),
-            tint = androidx.compose.ui.graphics.Color.Green
-        )
+        IconButton(onClick = { handleAddFriend(user) }) {
+            Icon(
+                imageVector = Icons.Default.AddCircle,
+                contentDescription = "Add friend",
+                modifier = Modifier.size(18.dp),
+                tint = androidx.compose.ui.graphics.Color.Green
+            )
+        }
     }
 }
 
