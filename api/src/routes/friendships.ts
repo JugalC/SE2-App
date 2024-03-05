@@ -75,22 +75,7 @@ export const friendships: Plugin = (server, _, done) => {
     },
   );
 
-	// accept / deny
-  server.put(
-    "/friendship/:requestId",
-    {
-      schema: {
-      },
-    },
-    async (req, res) => {
-      try {
-        
-      } catch (e) {
-        console.error(e);
-        return res.code(500).send({ error: "Internal server error." });
-      }
-    },
-  );
+	// TODO: implement log for accept / deny
 
   done();
 };
