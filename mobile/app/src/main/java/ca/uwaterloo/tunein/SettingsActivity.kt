@@ -23,16 +23,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,11 +49,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.TextStyle
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
+
+private val showDialogUsername = mutableStateOf(false)
+private val showDialogPassword = mutableStateOf(false)
 
 class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,14 +73,48 @@ class SettingsActivity : ComponentActivity() {
             startActivity(intent)
         }
 
+        fun onConfirmationUsername() {
+//            val intent = Intent(this, PostsActivity::class.java)
+            showDialogUsername.value = false
+//            startActivity(intent)
+        }
+
+        fun onDismissRequestUsername() {
+            showDialogUsername.value = false
+        }
+
+        fun onConfirmationPassword() {
+//            val intent = Intent(this, PostsActivity::class.java)
+            showDialogPassword.value = false
+//            startActivity(intent)
+        }
+
+        fun onDismissRequestPassword() {
+            showDialogPassword.value = false
+        }
+
+
+
         setContent {
-            SettingsContent { goBack() }
+            SettingsContent(
+                goBack={goBack()},
+                onConfirmationUsername={onConfirmationUsername()},
+                onDismissRequestUsername={onDismissRequestUsername()},
+                onConfirmationPassword={onConfirmationPassword()},
+                onDismissRequestPassword={onDismissRequestPassword()}
+            )
         }
     }
 }
 
 @Composable
-fun SettingsContent(goBack: () -> Unit) {
+fun SettingsContent(
+    goBack: () -> Unit,
+    onConfirmationUsername: () -> Unit,
+    onDismissRequestUsername: () -> Unit,
+    onConfirmationPassword: () -> Unit,
+    onDismissRequestPassword: () -> Unit
+) {
     TuneInTheme {
         Surface(
             modifier = Modifier.fillMaxSize()
@@ -108,40 +155,193 @@ fun SettingsContent(goBack: () -> Unit) {
                         verticalArrangement = Arrangement.Center
 
                     ){
-                        NormalButtons("Change Username", Color.DarkGreen)
+                        Button(
+                            onClick = {  showDialogUsername.value = true},
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = Color.DarkGreen),
+                            modifier = Modifier.clip(RoundedCornerShape(10.dp))
+                        ) {
+                            Text("Change Username", fontSize = 16.sp)
+                        }
                         Spacer(modifier = Modifier.height(32.dp))
-                        NormalButtons("Change Email", Color.DarkGreen)
+                        Button(
+                            onClick = { showDialogPassword.value = true},
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = Color.DarkGreen),
+                            modifier = Modifier.clip(RoundedCornerShape(10.dp))
+                        ) {
+                            Text("Change Password", fontSize = 16.sp)
+                        }
                         Spacer(modifier = Modifier.height(32.dp))
-                        NormalButtons("Change Password", Color.DarkGreen)
+                        Button(
+                            onClick = { },
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = Color.DarkGreen),
+                            modifier = Modifier.clip(RoundedCornerShape(10.dp))
+                        ) {
+                            Text("Change Photo", fontSize = 16.sp)
+                        }
                         Spacer(modifier = Modifier.height(32.dp))
-                        NormalButtons("Change Photo", Color.DarkGreen)
-                            Spacer(modifier = Modifier.height(32.dp))
-                        NormalButtons("Reauthorize Spotify", Color.DarkGreen)
+                        Button(
+                            onClick = { },
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = Color.DarkGreen),
+                            modifier = Modifier.clip(RoundedCornerShape(10.dp))
+                        ) {
+                            Text("Reauthorize Spotify", fontSize = 16.sp)
+                        }
                     }
                 }
             }
 
         }
     }
-}
-
-@Composable
-fun NormalButtons(buttonText: String, buttonColor: androidx.compose.ui.graphics.Color) {
-    Button(
-        onClick = { },
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = buttonColor),
-        modifier = Modifier.clip(RoundedCornerShape(10.dp))
-    ) {
-        Text(buttonText, fontSize = 16.sp)
+    if(showDialogUsername.value) {
+        DialogChangeUsername(onDismissRequestUsername, onConfirmationUsername)
+    }
+    if(showDialogPassword.value) {
+        DialogChangePassword(onDismissRequestPassword, onConfirmationPassword)
     }
 }
 
+@Composable
+fun DialogChangeUsername(
+    onDismissRequestUsername: () -> Unit,
+    onConfirmationUsername: () -> Unit
+) {
+
+    Dialog(onDismissRequest = { onDismissRequestUsername() }) {
+        // Draw a rectangle shape with rounded corners inside the dialog
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(176.dp)
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.DarkGray,
+            ),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    label = {
+                        Text(
+                            text = "New Username",
+                            style = TextStyle(
+                                color = Color.LightGray
+                            )
+                        )
+                    },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.LightGreen,
+                        unfocusedBorderColor = Color.LightGray,
+                        focusedLabelColor = Color.LightGreen,
+                        unfocusedLabelColor = Color.LightGray,
+                        disabledBorderColor = Color.LightGray
+                        ),
+                    textStyle = TextStyle.Default.copy(color = Color.LightGray),
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    TextButton(
+                        onClick = { onDismissRequestUsername() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Dismiss", color=Color.LightGreen)
+                    }
+                    TextButton(
+                        onClick = { onConfirmationUsername() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Confirm", color=Color.LightGreen)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DialogChangePassword(
+    onDismissRequestPassword: () -> Unit,
+    onConfirmationPassword: () -> Unit
+) {
+
+    Dialog(onDismissRequest = { onDismissRequestPassword() }) {
+        // Draw a rectangle shape with rounded corners inside the dialog
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(176.dp)
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.DarkGray,
+            ),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    label = {
+                        Text(
+                            text = "New Password",
+                            style = TextStyle(
+                                color = Color.LightGray
+                            )
+                        )
+                    },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.LightGreen,
+                        unfocusedBorderColor = Color.LightGray,
+                        focusedLabelColor = Color.LightGreen,
+                        unfocusedLabelColor = Color.LightGray,
+                        disabledBorderColor = Color.LightGray
+                    ),
+                    textStyle = TextStyle.Default.copy(color = Color.LightGray),
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    TextButton(
+                        onClick = { onDismissRequestPassword() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Dismiss", color=Color.LightGreen)
+                    }
+                    TextButton(
+                        onClick = { onConfirmationPassword() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Confirm", color=Color.LightGreen)
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Preview
 @Composable
 fun SettingsView() {
-    SettingsContent {}
+    SettingsContent ({}, {}, {}, {}){}
 }
 
 
