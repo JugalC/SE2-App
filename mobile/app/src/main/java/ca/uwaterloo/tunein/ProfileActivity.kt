@@ -57,14 +57,30 @@ class ProfileActivity : ComponentActivity() {
             startActivity(intent)
         }
 
+        fun handleClickAccountSettings() {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+        }
+
+        fun handleLogout() {
+            AuthManager.setLoggedIn(this,false)
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
         setContent {
-            ProfileContent(user) { goBack() }
+            ProfileContent(
+                user,
+                goBack={goBack()},
+                handleClickAccountSettings={handleClickAccountSettings()},
+                handleLogout = { handleLogout() }
+            )
         }
     }
 }
 
 @Composable
-fun ProfileContent(user: User, goBack: () -> Unit) {
+fun ProfileContent(user: User, goBack: () -> Unit, handleClickAccountSettings: () -> Unit, handleLogout: () -> Unit) {
     TuneInTheme {
         Surface(
             modifier = Modifier.fillMaxSize()
@@ -149,8 +165,45 @@ fun ProfileContent(user: User, goBack: () -> Unit) {
                 PreviousPosts()
 
                 Spacer(modifier = Modifier.weight(1f))
-                ProfileOption(icon = Icons.Default.Settings, text = "Account Settings")
-                ProfileOption(icon = Icons.Default.Lock, text = "Log Out")
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { handleClickAccountSettings() }
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                        Text(text = "Account Settings")
+                }
+
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { handleLogout() }
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(text = "Log Out")
+                }
+
+
+
+
                 ProfileOption(icon = Icons.Default.Delete, text = "Delete Account")
                 Spacer(modifier = Modifier.height(10.dp))
                 Text("TuneIn Member Since January 1, 2024", fontSize=10.sp, color=Color.LightGray)
@@ -168,7 +221,7 @@ fun ProfileOption(icon: ImageVector, text: String) {
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Handle Click */ }
+            .clickable {  }
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Icon(
@@ -314,5 +367,5 @@ fun PreviousPosts() {
 @Composable
 fun PreviewProfileContent() {
     val user = User("JohnDoe123", "John", "Doe")
-    ProfileContent(user) { }
+    ProfileContent(user, {}, {}) { }
 }
