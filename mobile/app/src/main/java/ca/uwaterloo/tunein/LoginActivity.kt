@@ -75,8 +75,9 @@ class LoginActivity : ComponentActivity() {
                     AuthManager.setLoggedIn(this,true)
 
                     val user = User(
+                        id=loginRes.getString("id"),
                         username=loginRes.getString("username"),
-                        firstName = loginRes.getString("firstName"),
+                        firstName=loginRes.getString("firstName"),
                         lastName=loginRes.getString("lastName")
                     )
                     AuthManager.setUser(this, user)

@@ -1,16 +1,14 @@
 import { db } from "../db/db";
-import { friendshipRequestTable, getUserSchema, insertFriendshipRequestSchema, insertUserSchema, userTable } from "../db/schema";
-import { randomUUID, timingSafeEqual } from "crypto";
-import { generateSalt, hash } from "../lib/hashing";
+import { friendshipRequestTable, insertFriendshipRequestSchema } from "../db/schema";
+import { randomUUID } from "crypto";
 import { z } from "zod";
-import { eq, or } from "drizzle-orm";
-import { Plugin, paginationSchema, searchSchema } from "../types";
-import { generateLikeFilters } from "../lib/generateLikeFilters";
+import { and, eq, or } from "drizzle-orm";
+import { Plugin } from "../types";
 
 export const friendships: Plugin = (server, _, done) => {
 	// create pending friend request
   server.post(
-    "/friendship",
+    "/friendships",
     {
       schema: {
         body: insertFriendshipRequestSchema,
@@ -18,6 +16,17 @@ export const friendships: Plugin = (server, _, done) => {
     },
     async (req, res) => {
       try {
+        const friendshipRequest = await db.query.friendshipRequestTable.findFirst({
+					where: and(
+						eq(friendshipRequestTable.userIdRequesting, req.body.userIdRequesting),
+						eq(friendshipRequestTable.userIdReceiving, req.body.userIdReceiving),
+					),
+        });
+
+        if (friendshipRequest) {
+          return res.code(404).send({ error: "Request already exists." });
+        }
+        
 				await db.insert(friendshipRequestTable).values({
           id: randomUUID(),
           ...req.body,
@@ -34,7 +43,7 @@ export const friendships: Plugin = (server, _, done) => {
 
 	// view friend requests
   server.get(
-    "/friendship/:identifier",
+    "/friendships/:identifier",
     {
       schema: {
         params: z.object({

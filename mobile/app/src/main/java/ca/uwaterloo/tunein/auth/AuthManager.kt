@@ -28,15 +28,17 @@ class AuthManager {
         }
         fun getUser(context: Context): User {
             val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            val id = prefs.getString("id", "")!!
             val username = prefs.getString("username", "")!!
             val firstName = prefs.getString("firstName", "")!!
             val lastName = prefs.getString("lastName", "")!!
-            return User(username, firstName, lastName)
+            return User(id, username, firstName, lastName)
         }
         fun setUser(context: Context, user: User) {
             val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
             prefs
                 .edit()
+                .putString("id", user.id)
                 .putString("username", user.username)
                 .putString("firstName", user.firstName)
                 .putString("lastName", user.lastName)
