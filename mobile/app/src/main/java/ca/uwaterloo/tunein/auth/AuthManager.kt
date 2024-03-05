@@ -1,6 +1,7 @@
 package ca.uwaterloo.tunein.auth
 
 import android.content.Context
+import ca.uwaterloo.tunein.data.User
 
 private const val PREF_NAME = "auth_pref"
 private val KEY_IS_LOGGED_IN = "is_logged_in"
@@ -25,13 +26,21 @@ class AuthManager {
             val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
             prefs.edit().putBoolean(KEY_IS_SPOTIFY_AUTH, isSpotifyAuthed).apply()
         }
-        fun getUsername(context: Context): String {
+        fun getUser(context: Context): User {
             val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            return prefs.getString("username", "")!!
+            val username = prefs.getString("username", "")!!
+            val firstName = prefs.getString("firstName", "")!!
+            val lastName = prefs.getString("lastName", "")!!
+            return User(username, firstName, lastName)
         }
-        fun setUsername(context: Context, username: String) {
+        fun setUser(context: Context, user: User) {
             val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            prefs.edit().putString("username", username).apply()
+            prefs
+                .edit()
+                .putString("username", user.username)
+                .putString("firstName", user.firstName)
+                .putString("lastName", user.lastName)
+                .apply()
         }
 
     }

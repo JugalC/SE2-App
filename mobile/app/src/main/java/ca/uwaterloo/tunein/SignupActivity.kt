@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +37,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.tunein.auth.AuthManager
+import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
@@ -84,7 +87,12 @@ class SignupActivity : ComponentActivity() {
                 { _ ->
                     // persist logged in state
                     AuthManager.setLoggedIn(this,true)
-                    AuthManager.setUsername(this, signupState.username)
+                    val user = User(
+                        username=signupState.username,
+                        firstName = signupState.firstName,
+                        lastName=signupState.lastName
+                    )
+                    AuthManager.setUser(this, user)
                     // change page
                     val intent = Intent(this@SignupActivity, SpotifyConnectActivity::class.java)
                     startActivity(intent)
@@ -134,6 +142,7 @@ fun SignupScreen(
             signupState.firstName.isNotEmpty() &&
             signupState.lastName.isNotEmpty()
 
+    val scrollState = rememberScrollState()
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -142,7 +151,8 @@ fun SignupScreen(
             Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceBetween
             ) {

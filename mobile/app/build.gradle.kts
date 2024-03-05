@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -58,6 +59,7 @@ android {
 
 dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
@@ -84,4 +86,10 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("com.spotify.android:auth:1.2.5")
     implementation("androidx.compose.material:material:1.6.2")
+    // for making http calls
+    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.7")
+    // for (de)serialization of JSON
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:x.x.x")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:x.x.x")
 }

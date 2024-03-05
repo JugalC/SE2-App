@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.Card
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
@@ -78,7 +79,11 @@ class PostsActivity : ComponentActivity() {
         }
 
         setContent {
-            PostsContent(handleClickFriends= { handleClickFriends() }, handleClickSettings= { handleClickSettings() }) { handleLogout() }
+            PostsContent(
+                handleClickFriends= { handleClickFriends() },
+                handleClickSettings= { handleClickSettings() },
+                handleLogout = { handleLogout() },
+            )
         }
     }
 }
@@ -149,6 +154,7 @@ fun PostItem(post: Post, handleClickSettings: () -> Unit) {
 }
 
 
+
 @Composable
 fun PostsContent(handleClickFriends: () -> Unit, handleClickSettings: () -> Unit, handleLogout: () -> Unit) {
     TuneInTheme {
@@ -176,7 +182,7 @@ fun PostsContent(handleClickFriends: () -> Unit, handleClickSettings: () -> Unit
                         style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     )
                     IconButton(onClick = { handleClickSettings() }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(Icons.Default.Face, contentDescription = "Settings")
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))

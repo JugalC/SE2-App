@@ -45,10 +45,12 @@ class SpotifyConnectActivity : ComponentActivity() {
             Log.d("SpotifyConnectActivity", "onActivityResult")
 
             // check if user is authed
-            Log.d("SpotifyConnectActivity", AuthManager.getUsername(this))
+
+            Log.i("SpotifyConnectActivity", AuthManager.getUser(this).toString())
+
 
             val queue = Volley.newRequestQueue(this)
-            val url = "${BuildConfig.BASE_URL}/user/spotifyauth/${AuthManager.getUsername(this)}"
+            val url = "${BuildConfig.BASE_URL}/user/spotifyauth/${AuthManager.getUser(this).username}"
 
             val req = JSONObject()
 
@@ -90,7 +92,7 @@ class SpotifyConnectActivity : ComponentActivity() {
             Log.d("SpotifyConnectActivity", "${AuthManager.isSpotifyAuthed(this)}")
 
             val webpage: Uri =
-                Uri.parse("http://10.0.2.2:8080/spotify/login/${AuthManager.getUsername(this)}")
+                Uri.parse("http://10.0.2.2:8080/spotify/login/${AuthManager.getUser(this).username}")
 
             val customTabsIntent = CustomTabsIntent.Builder().build()
             customTabsIntent.intent.setData(webpage)

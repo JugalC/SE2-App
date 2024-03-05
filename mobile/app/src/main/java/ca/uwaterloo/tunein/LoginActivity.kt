@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +37,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.tunein.auth.AuthManager
+import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
@@ -60,24 +63,29 @@ class LoginActivity : ComponentActivity() {
             val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
 
             val queue = Volley.newRequestQueue(this)
-            val url = "${BuildConfig.BASE_URL}/login/${loginState.username}"
+            val loginUrl = "${BuildConfig.BASE_URL}/login/${loginState.username}"
 
             val req = JSONObject()
             req.put("password", loginState.password)
 
             val loginReq = JsonObjectRequest(
-                Request.Method.POST, url, req,
-                { res ->
+                Request.Method.POST, loginUrl, req,
+                { loginRes ->
                     // persist logged in state
                     AuthManager.setLoggedIn(this,true)
-                    AuthManager.setUsername(this,loginState.username)
-                    // change page
 
+                    val user = User(
+                        username=loginRes.getString("username"),
+                        firstName = loginRes.getString("firstName"),
+                        lastName=loginRes.getString("lastName")
+                    )
+                    AuthManager.setUser(this, user)
+                    // change page
                     // check if spotifyAccessToken is null, if so, redirect to SpotifyLoginActivity
-                    if (res.isNull("spotifyAccessToken")) {
+                    if (loginRes.isNull("spotifyAccessToken")) {
                         val intent = Intent(this@LoginActivity, SpotifyConnectActivity::class.java)
                         startActivity(intent)
-                    }else {
+                    } else {
                         AuthManager.setSpotifyAuthed(this,true)
                         val intent = Intent(this@LoginActivity, PostsActivity::class.java)
                         startActivity(intent)
@@ -112,54 +120,56 @@ fun LoginScreen(
 ) {
     var loginState by remember { mutableStateOf(LoginState()) }
     val loginEnabled = loginState.username.isNotEmpty() && loginState.password.isNotEmpty()
+    val scrollState = rememberScrollState()
 
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
-                modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
         ) {
             Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(scrollState),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(
-                        modifier = Modifier
-                                .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(32.dp))
                     Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Button(
-                                onClick = {
-                                    goBack()
-                                },
-                                modifier = Modifier.width(90.dp),
-                                colors = ButtonDefaults.outlinedButtonColors()
+                            onClick = {
+                                goBack()
+                            },
+                            modifier = Modifier.width(90.dp),
+                            colors = ButtonDefaults.outlinedButtonColors()
                         ) {
                             Image(
-                                    painter = painterResource(id = R.drawable.back_arrow),
-                                    contentDescription = "Back",
-                                    modifier = Modifier.size(40.dp)
+                                painter = painterResource(id = R.drawable.back_arrow),
+                                contentDescription = "Back",
+                                modifier = Modifier.size(40.dp)
                             )
                         }
                         Image(
-                                painter = painterResource(id = R.drawable.tunein_logo),
-                                contentDescription = "App Logo",
-                                modifier = Modifier.size(69.dp)
+                            painter = painterResource(id = R.drawable.tunein_logo),
+                            contentDescription = "App Logo",
+                            modifier = Modifier.size(69.dp)
                         )
                         Spacer(modifier = Modifier.width(90.dp)) // use this to center the logo
                     }
                     Spacer(modifier = Modifier.height(64.dp))
                     Text(
-                            text = "Welcome Back!",
-                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                        text = "Welcome Back!",
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
@@ -168,18 +178,18 @@ fun LoginScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                            value = loginState.username,
-                            onValueChange = { loginState = loginState.copy(username = it)},
-                            label = { Text(text = "Username", fontWeight = FontWeight.Light) },
-                            modifier = Modifier.fillMaxWidth()
+                        value = loginState.username,
+                        onValueChange = { loginState = loginState.copy(username = it)},
+                        label = { Text(text = "Username", fontWeight = FontWeight.Light) },
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                            value = loginState.password,
-                            onValueChange = { loginState = loginState.copy(password = it)},
-                            visualTransformation = PasswordVisualTransformation(),
-                            label = { Text(text = "Password", fontWeight = FontWeight.Light) },
-                            modifier = Modifier.fillMaxWidth()
+                        value = loginState.password,
+                        onValueChange = { loginState = loginState.copy(password = it)},
+                        visualTransformation = PasswordVisualTransformation(),
+                        label = { Text(text = "Password", fontWeight = FontWeight.Light) },
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
