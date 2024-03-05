@@ -205,7 +205,6 @@ fun ProfileContent(user: User, goBack: () -> Unit, handleClickAccountSettings: (
 
 
 
-                //ProfileOption(icon = Icons.Default.Lock, text = "Log Out")
                 ProfileOption(icon = Icons.Default.Delete, text = "Delete Account")
                 Spacer(modifier = Modifier.height(10.dp))
                 Text("TuneIn Member Since January 1, 2024", fontSize=10.sp, color=Color.LightGray)
