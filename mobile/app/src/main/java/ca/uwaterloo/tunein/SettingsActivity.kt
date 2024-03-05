@@ -56,12 +56,12 @@ class SettingsActivity : ComponentActivity() {
         val user = AuthManager.getUser(this)
 
         fun goBack() {
-            val intent = Intent(this, PostsActivity::class.java)
+            val intent = Intent(this, ProfileActivity::class.java)
             startActivity(intent)
         }
 
         setContent {
-            SettingsContent() { goBack() }
+            SettingsContent { goBack() }
         }
     }
 }
@@ -141,5 +141,7 @@ fun NormalButtons(buttonText: String, buttonColor: androidx.compose.ui.graphics.
 @Preview
 @Composable
 fun SettingsView() {
-    SettingsContent() { }
+    SettingsContent {}
 }
+
+
