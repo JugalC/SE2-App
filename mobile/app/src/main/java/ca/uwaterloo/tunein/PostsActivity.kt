@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,6 +47,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.draw.clip
+
 
 
 data class Post(val id: Int, val content: String, val author: String, val imageResId: Int, val profilePhotoResId: Int, val username: String)
@@ -137,18 +139,32 @@ fun PostItem(post: Post, handleClickSettings: () -> Unit) {
                 }
             }
         }
-
-        IconButton(
-            onClick = { isLiked = !isLiked },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .size(48.dp)
+        Row(
+            modifier = Modifier.align(Alignment.BottomEnd)
         ) {
-            Icon(
-                imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                contentDescription = "Like",
-                tint = if (isLiked) Color.Red else Color.White
-            )
+
+            IconButton(
+                onClick = { isLiked = !isLiked },
+                modifier = Modifier
+                    .size(48.dp)
+            ) {
+                Icon(
+                    imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = "Like",
+                    tint = if (isLiked) Color.Red else Color.White
+                )
+            }
+            IconButton(
+                onClick = { /* TODO: comment button click action */ },
+                modifier = Modifier.size(48.dp)
+            ) {
+                androidx.compose.material.Icon(
+                    painter = painterResource(id = R.drawable.comment),
+                    contentDescription = "Comment",
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.White
+                )
+            }
         }
     }
 }
