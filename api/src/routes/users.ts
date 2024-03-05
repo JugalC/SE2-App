@@ -6,7 +6,6 @@ import { z } from "zod";
 import { eq, or } from "drizzle-orm";
 import { Plugin, paginationSchema, searchSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
-import { generateSearchFilters } from "../lib/generateSearchFilters";
 
 export const users: Plugin = (server, _, done) => {
   server.post(
@@ -146,7 +145,7 @@ export const users: Plugin = (server, _, done) => {
       try {
         const { firstName, lastName, page, limit, search } = req.query;
 
-        const where = search != "" ? generateSearchFilters([
+        const where = search != "" ? generateLikeFilters([
           {
             col: userTable.firstName,
             val: search,
