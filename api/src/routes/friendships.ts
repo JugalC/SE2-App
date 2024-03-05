@@ -3,10 +3,8 @@ import { Plugin, authSchema, paginationSchema } from "../types";
 import { z } from "zod";
 import { and, eq, ne, or } from "drizzle-orm";
 import { authenticateUser } from "../lib/authenticateUser";
-import { friendshipRequestTable, friendshipTable, getUserSchema, insertFriendshipRequestSchema, insertUserSchema, userTable } from "../db/schema";
-import { randomUUID, timingSafeEqual } from "crypto";
-import { generateSalt, hash } from "../lib/hashing";
-import { generateLikeFilters } from "../lib/generateLikeFilters";
+import { friendshipRequestTable, friendshipTable, userTable } from "../db/schema";
+import { randomUUID } from "crypto";
 
 export const friendships: Plugin = (server, _, done) => {
   server.post(

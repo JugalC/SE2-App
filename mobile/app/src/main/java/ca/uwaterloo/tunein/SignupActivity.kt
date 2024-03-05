@@ -84,13 +84,14 @@ class SignupActivity : ComponentActivity() {
             req.put("password", signupState.password)
 
             val createUserReq = JsonObjectRequest(Request.Method.POST, url, req,
-                { _ ->
+                { signupResp ->
                     // persist logged in state
                     AuthManager.setLoggedIn(this,true)
                     val user = User(
-                        username=signupState.username,
-                        firstName = signupState.firstName,
-                        lastName=signupState.lastName
+                        id=signupResp.getString("id"),
+                        username=signupResp.getString("username"),
+                        firstName=signupResp.getString("firstName"),
+                        lastName=signupResp.getString("lastName")
                     )
                     AuthManager.setUser(this, user)
                     // change page

@@ -2,6 +2,8 @@ package ca.uwaterloo.tunein
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -43,12 +45,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.SearchResultsViewModel
 import ca.uwaterloo.tunein.viewmodel.SearchUsers
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
 
 // Dummy data for pending friend requests
 val pendingFriendRequests = listOf(
@@ -74,23 +87,74 @@ val pendingFriendRequests = listOf(
     ),
 )
 
+suspend fun handleAddFriend(user: User): Boolean = withContext(Dispatchers.IO) {
+    val searchUrl = "${BuildConfig.BASE_URL}/friendship"
+    val request = Request(
+        url = searchUrl.toHttpUrl()
+    )
+    val response = OkHttpClient().newCall(request).execute()
+
+    val json = response.body?.string()
+    val j = Json{ ignoreUnknownKeys = true }
+    j.decodeFromString<List<User>>(json!!)
+    return@withContext true
+}
+
 class FriendsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val curUser = AuthManager.getUser(this)
 
         fun goBack() {
             val intent = Intent(this, PostsActivity::class.java)
             startActivity(intent)
         }
 
+        fun handleAddFriend(user: User) {
+            val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
+
+            val queue = Volley.newRequestQueue(this)
+            val reqUrl = "${BuildConfig.BASE_URL}/friendships"
+
+            val req = JSONObject()
+            req.put("userIdRequesting", AuthManager.getUser(this).id)
+            req.put("userIdReceiving", user.id)
+
+            val loginReq = JsonObjectRequest(
+                com.android.volley.Request.Method.POST, reqUrl, req,
+                { _ ->
+                    // show success toast
+                    Toast.makeText(this, "Friend request sent!", Toast.LENGTH_SHORT).show()
+                },
+                { error ->
+                    val statusCode: Int = error.networkResponse.statusCode
+                    if (statusCode == 404) {
+                        // Friend request already exists
+                        alert.setMessage("You have already sent this person a friend request")
+                        alert.create().show()
+                    } else {
+                        Log.e("FriendRequest", error.toString())
+                        alert.setMessage("An unexpected error has occurred")
+                        alert.create().show()
+                    }
+                }
+            )
+            queue.add(loginReq)
+        }
+
         setContent {
-            FriendsContent { goBack() }
+            FriendsContent(
+                user = curUser,
+                { handleAddFriend(it) },
+            ) { goBack() }
         }
     }
 }
 
 @Composable
 fun FriendsContent(
+    user: User,
+    handleAddFriend: (user: User) -> Unit,
     viewModel: SearchResultsViewModel = viewModel(),
     goBack: () -> Unit
 ) {
@@ -123,6 +187,7 @@ fun FriendsContent(
                     Spacer(modifier = Modifier.width(40.0.dp))
                 }
                 SearchBar(
+                    user,
                     searchUserState,
                     viewModel,
                 )
@@ -134,6 +199,7 @@ fun FriendsContent(
                 ) {
                     if (searchUserState.searchQuery.text.isNotEmpty()) {
                         SearchFriends(
+                            handleAddFriend,
                             searchUserState
                         )
                     } else  {
@@ -152,22 +218,22 @@ fun FriendsContent(
 
 @Composable
 fun SearchFriends(
+    handleAddFriend: (user: User) -> Unit,
     searchUserState: SearchUsers,
 ) {
     for (user in searchUserState.users) {
         SearchResultsRow(
+            handleAddFriend,
             user
         )
     }
 }
 
 @Composable
-fun SearchResultsRow(user: User) {
-
-    fun handleAddFriend(user: User) {
-
-    }
-
+fun SearchResultsRow(
+    handleAddFriend: (user: User) -> Unit,
+    user: User
+) {
     Spacer(modifier = Modifier.height(16.dp))
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -268,13 +334,14 @@ fun PendingFriendRow(user: User) {
 
 @Composable
 fun SearchBar(
+    user: User,
     searchUserState: SearchUsers,
     viewModel: SearchResultsViewModel
 ) {
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
         value = searchUserState.searchQuery,
-        onValueChange = { viewModel.updateSearchUsers(it) },
+        onValueChange = { viewModel.updateSearchUsers(user,  it) },
         label = { Text(text = "Add or search friends", fontWeight = FontWeight.Light) },
     )
 }
@@ -282,5 +349,6 @@ fun SearchBar(
 @Preview
 @Composable
 fun PreviewFriendsContent() {
-    FriendsContent {}
+    val user = User("1", "jd123", "John", "Doe")
+    FriendsContent(user, {}) {}
 }
