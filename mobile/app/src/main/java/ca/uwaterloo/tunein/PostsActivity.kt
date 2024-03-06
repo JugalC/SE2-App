@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.lazy.LazyColumn
@@ -48,11 +49,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.draw.clip
 
 
+
 data class Post(val id: Int, val content: String, val author: String, val imageResId: Int, val profilePhotoResId: Int, val username: String)
 val samplePosts = listOf(
     Post(1, "Passport Bros (with J.Cole)", "Bas, J. Cole", R.drawable.jcole_passport, R.drawable.stock_profile, "JohnDoe123"),
     Post(2, "Blinding Lights", "The Weeknd", R.drawable.the_weeknd_blinding,R.drawable.stock_profile, "JaneDoe321" ),
-    Post(3, "Marvins Room", "Drake", R.drawable.drake_marvins,R.drawable.stock_profile, "JohnSmith123")
+    Post(3, "Marvins Room", "Drake", R.drawable.drake_marvins,R.drawable.stock_profile, "JohnSmith123"),
+    Post(4, "Passport Bros (with J.Cole)", "Bas, J. Cole", R.drawable.jcole_passport, R.drawable.stock_profile, "TestUser123")
 )
 
 
@@ -137,18 +140,32 @@ fun PostItem(post: Post, handleClickSettings: () -> Unit) {
                 }
             }
         }
-
-        IconButton(
-            onClick = { isLiked = !isLiked },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .size(48.dp)
+        Row(
+            modifier = Modifier.align(Alignment.BottomEnd)
         ) {
-            Icon(
-                imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                contentDescription = "Like",
-                tint = if (isLiked) Color.Red else Color.White
-            )
+
+            IconButton(
+                onClick = { isLiked = !isLiked },
+                modifier = Modifier
+                    .size(48.dp)
+            ) {
+                Icon(
+                    imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = "Like",
+                    tint = if (isLiked) Color.Red else Color.White
+                )
+            }
+            IconButton(
+                onClick = { /* TODO: comment button click action */ },
+                modifier = Modifier.size(48.dp)
+            ) {
+                androidx.compose.material.Icon(
+                    painter = painterResource(id = R.drawable.comment),
+                    contentDescription = "Comment",
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.White
+                )
+            }
         }
     }
 }
@@ -188,7 +205,6 @@ fun PostsContent(handleClickFriends: () -> Unit, handleClickSettings: () -> Unit
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     items(samplePosts) { post ->
-                        Spacer(modifier = Modifier.height(25.dp))
                         PostItem(post) {
                             handleClickSettings()
                         }
