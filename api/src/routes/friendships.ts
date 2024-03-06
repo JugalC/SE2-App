@@ -1,73 +1,33 @@
 import { db } from "../db/db";
-import { friendshipRequestTable, insertFriendshipRequestSchema } from "../db/schema";
-import { randomUUID } from "crypto";
+import { friendshipRequestTable, friendshipTable } from "../db/schema";
+import { Plugin, authSchema, paginationSchema } from "../types";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import { and, eq, or } from "drizzle-orm";
-import { Plugin } from "../types";
 
 export const friendships: Plugin = (server, _, done) => {
-	// create pending friend request
   server.post(
-    "/friendships",
+    "/friendship-request/:userIdReceiving",
     {
       schema: {
-        body: insertFriendshipRequestSchema,
-      },
-    },
-    async (req, res) => {
-      try {
-        const friendshipRequest = await db.query.friendshipRequestTable.findFirst({
-					where: and(
-						eq(friendshipRequestTable.userIdRequesting, req.body.userIdRequesting),
-						eq(friendshipRequestTable.userIdReceiving, req.body.userIdReceiving),
-					),
-        });
-
-        if (friendshipRequest) {
-          return res.code(404).send({ error: "Request already exists." });
-        }
-        
-				await db.insert(friendshipRequestTable).values({
-          id: randomUUID(),
-          ...req.body,
-					rejectedAt: null,
-        });
-
-        return res.code(200).send({});
-      } catch (e) {
-        console.error(e);
-        return res.code(500).send({ error: "Internal server error." });
-      }
-    },
-  );
-
-	// view friend requests
-  server.get(
-    "/friendships/:identifier",
-    {
-      schema: {
+        headers: authSchema,
         params: z.object({
-          identifier: z.string(),
+          userIdReceiving: z.string(),
         }),
       },
     },
     async (req, res) => {
       try {
-				const { identifier } = req.params;
+        const {
+          authorization: { user },
+        } = req.headers;
+        const { userIdReceiving } = req.params;
 
-				const friendshipRequest = await db.query.friendshipRequestTable.findFirst({
-					where: or(
-						eq(friendshipRequestTable.id, identifier),
-						eq(friendshipRequestTable.userIdRequesting, identifier), // want to keep this in so that a user can see their outgoing requests
-						eq(friendshipRequestTable.userIdReceiving, identifier),
-					),
-        });
+        await db
+          .insert(friendshipRequestTable)
+          .values({ id: randomUUID(), userIdRequesting: user.id, userIdReceiving });
 
-        if (!friendshipRequest) {
-          return res.code(404).send({ error: "Request not found with given parameters." });
-        }
-
-        return res.code(200).send({ ...friendshipRequest });
+        return res.code(200).send();
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -75,7 +35,132 @@ export const friendships: Plugin = (server, _, done) => {
     },
   );
 
-	// TODO: implement log for accept / deny
+  server.put(
+    "/friendship-request/:id",
+    {
+      schema: {
+        headers: authSchema,
+        params: z.object({
+          id: z.string(),
+        }),
+        body: z.object({
+          action: z.enum(["accept", "reject"]),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const {
+          authorization: { user },
+        } = req.headers;
+        const { id } = req.params;
+        const { action } = req.body;
+
+        const friendshipRequest = (
+          await db
+            .select()
+            .from(friendshipRequestTable)
+            .where(
+              and(
+                eq(friendshipTable.id, id),
+                or(
+                  eq(friendshipRequestTable.userIdRequesting, user.id),
+                  eq(friendshipRequestTable.userIdReceiving, user.id),
+                ),
+              ),
+            )
+        )[0];
+
+        if (!friendshipRequest) {
+          return res.code(404).send();
+        }
+
+        if (action === "accept") {
+          await db.insert(friendshipTable).values({
+            id: randomUUID(),
+            userId1: friendshipRequest.userIdReceiving,
+            userId2: friendshipRequest.userIdRequesting,
+          });
+
+          await db.delete(friendshipRequestTable).where(eq(friendshipRequestTable.id, id));
+        } else {
+          await db
+            .update(friendshipRequestTable)
+            .set({ rejectedAt: new Date() })
+            .where(eq(friendshipRequestTable.id, id));
+        }
+
+        return res.code(200).send();
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.delete(
+    "/friendship/:id",
+    {
+      schema: {
+        headers: authSchema,
+        params: z.object({
+          id: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const {
+          authorization: { user },
+        } = req.headers;
+        const { id } = req.params;
+
+        await db
+          .delete(friendshipTable)
+          .where(
+            and(
+              eq(friendshipTable.id, id),
+              or(eq(friendshipTable.userId1, user.id), eq(friendshipTable.userId2, user.id)),
+            ),
+          );
+
+        return res.code(200).send();
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.get(
+    "/friendships",
+    {
+      schema: {
+        headers: authSchema,
+        querystring: paginationSchema,
+      },
+    },
+    async (req, res) => {
+      try {
+        const {
+          authorization: { user },
+        } = req.headers;
+        const { page, limit } = req.query;
+
+        const friendships = await db
+          .select()
+          .from(friendshipTable)
+          .limit(limit)
+          .offset(page * limit)
+          .where(or(eq(friendshipTable.userId1, user.id), eq(friendshipTable.userId2, user.id)));
+
+        return res.code(200).send(friendships);
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
 
   done();
 };
