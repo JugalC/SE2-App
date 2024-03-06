@@ -2,6 +2,9 @@ import fastify from "fastify";
 import { serializerCompiler, validatorCompiler, ZodTypeProvider } from "fastify-type-provider-zod";
 import { users } from "./routes/users";
 import { spotify } from "./routes/spotify";
+import { db } from "./db/db";
+import { userTable } from "./db/schema";
+import { randomUUID } from "crypto";
 
 const server = fastify().withTypeProvider<ZodTypeProvider>();
 
