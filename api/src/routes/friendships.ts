@@ -1,6 +1,6 @@
 import { db } from "../db/db";
 import { friendshipRequestTable, friendshipTable, userTable } from "../db/schema";
-import { Plugin, authSchema, paginationSchema } from "../types";
+import { Plugin, paginationSchema } from "../types";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { and, eq, ne, or } from "drizzle-orm";
@@ -107,40 +107,6 @@ export const friendships: Plugin = (server, _, done) => {
         }
 
         return res.code(200).send({});
-      } catch (e) {
-        console.error(e);
-        return res.code(500).send({ error: "Internal server error." });
-      }
-    },
-  );
-
-  server.delete(
-    "/friendship/:id",
-    {
-      schema: {
-        headers: authSchema,
-        params: z.object({
-          id: z.string(),
-        }),
-      },
-    },
-    async (req, res) => {
-      try {
-        const {
-          authorization: { user },
-        } = req.headers;
-        const { id } = req.params;
-
-        await db
-          .delete(friendshipTable)
-          .where(
-            and(
-              eq(friendshipTable.id, id),
-              or(eq(friendshipTable.userId1, user.id), eq(friendshipTable.userId2, user.id)),
-            ),
-          );
-
-        return res.code(200).send();
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });

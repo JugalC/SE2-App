@@ -1,7 +1,7 @@
 import { FastifyPluginCallback, FastifyPluginOptions, RawServerDefault, FastifyBaseLogger } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { zodPreprocessAuthToken, zodPreprocessNumber } from "./lib/zodHelpers";
+import { zodPreprocessNumber } from "./lib/zodHelpers";
 
 export type Plugin = FastifyPluginCallback<FastifyPluginOptions, RawServerDefault, ZodTypeProvider, FastifyBaseLogger>;
 
@@ -12,8 +12,4 @@ export const paginationSchema = z.object({
 
 export const searchSchema = z.object({
   search: z.string().optional().default(""),
-});
-
-export const authSchema = z.object({
-  authorization: zodPreprocessAuthToken(),
 });
