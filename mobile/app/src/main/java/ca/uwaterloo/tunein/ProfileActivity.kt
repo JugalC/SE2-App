@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -333,45 +334,45 @@ fun PreviousPosts() {
             .background(color = Color.MediumGray)
     )
     Spacer(modifier = Modifier.height(8.dp))
-    Column(modifier = Modifier
-        .fillMaxWidth()){
-        Text(text = "Yesterday", fontSize = 12.sp, color = Color.LightGray)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row() {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.3f)
-            ){
-                Image(
-                    painter = painterResource(id = R.drawable.trilog),
-                    contentDescription = "weeknd art",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(96.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .aspectRatio(1f / 1f)
-
-
-                )
-            }
-            Column(
-                modifier = Modifier
-
-            ){
-                Text("Wicked Games")
-                Text("The Weeknd", fontSize=12.sp, color = Color.LightGray)
-            }
-
-        }
-    }
-    Spacer(modifier = Modifier.height(8.dp))
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(color = Color.MediumGray)
-    )
-    Spacer(modifier = Modifier.height(8.dp))
+//    Column(modifier = Modifier
+//        .fillMaxWidth()){
+//        Text(text = "Yesterday", fontSize = 12.sp, color = Color.LightGray)
+//        Spacer(modifier = Modifier.height(8.dp))
+//        Row() {
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth(0.3f)
+//            ){
+//                Image(
+//                    painter = painterResource(id = R.drawable.trilog),
+//                    contentDescription = "weeknd art",
+//                    contentScale = ContentScale.Crop,
+//                    modifier = Modifier
+//                        .size(96.dp)
+//                        .clip(RoundedCornerShape(16.dp))
+//                        .aspectRatio(1f / 1f)
+//
+//
+//                )
+//            }
+//            Column(
+//                modifier = Modifier
+//
+//            ){
+//                Text("Wicked Games")
+//                Text("The Weeknd", fontSize=12.sp, color = Color.LightGray)
+//            }
+//
+//        }
+//    }
+//    Spacer(modifier = Modifier.height(8.dp))
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(1.dp)
+//            .background(color = Color.MediumGray)
+//    )
+//    Spacer(modifier = Modifier.height(8.dp))
     Column(modifier = Modifier
         .fillMaxWidth()){
         Text(text = "2 Days Ago", fontSize = 12.sp, color = Color.LightGray)
@@ -405,6 +406,9 @@ fun PreviousPosts() {
     }
 
 }
+
+
+
 
 @Composable
 fun DialogWithImage(

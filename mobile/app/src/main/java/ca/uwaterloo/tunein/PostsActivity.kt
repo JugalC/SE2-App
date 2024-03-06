@@ -54,7 +54,8 @@ data class Post(val id: Int, val content: String, val author: String, val imageR
 val samplePosts = listOf(
     Post(1, "Passport Bros (with J.Cole)", "Bas, J. Cole", R.drawable.jcole_passport, R.drawable.stock_profile, "JohnDoe123"),
     Post(2, "Blinding Lights", "The Weeknd", R.drawable.the_weeknd_blinding,R.drawable.stock_profile, "JaneDoe321" ),
-    Post(3, "Marvins Room", "Drake", R.drawable.drake_marvins,R.drawable.stock_profile, "JohnSmith123")
+    Post(3, "Marvins Room", "Drake", R.drawable.drake_marvins,R.drawable.stock_profile, "JohnSmith123"),
+    Post(4, "Passport Bros (with J.Cole)", "Bas, J. Cole", R.drawable.jcole_passport, R.drawable.stock_profile, "TestUser123")
 )
 
 
@@ -204,7 +205,6 @@ fun PostsContent(handleClickFriends: () -> Unit, handleClickSettings: () -> Unit
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     items(samplePosts) { post ->
-                        Spacer(modifier = Modifier.height(25.dp))
                         PostItem(post) {
                             handleClickSettings()
                         }
