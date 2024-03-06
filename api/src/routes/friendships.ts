@@ -3,7 +3,7 @@ import { friendshipRequestTable, friendshipTable, userTable } from "../db/schema
 import { Plugin, authSchema, paginationSchema } from "../types";
 import { z } from "zod";
 import { randomUUID } from "crypto";
-import { and, eq, or } from "drizzle-orm";
+import { and, eq, ne, or } from "drizzle-orm";
 
 export const friendships: Plugin = (server, _, done) => {
   server.post(
@@ -50,12 +50,14 @@ export const friendships: Plugin = (server, _, done) => {
   );
 
   server.put(
-    "/friendship-request/:id",
+    "/friendship-request/:requestingUserId/:receivingUserId",
     {
       schema: {
-        headers: authSchema,
+        // headers: authSchema,
         params: z.object({
-          id: z.string(),
+          // id: z.string(),
+          requestingUserId: z.string(),
+          receivingUserId: z.string(),
         }),
         body: z.object({
           action: z.enum(["accept", "reject"]),
@@ -64,10 +66,10 @@ export const friendships: Plugin = (server, _, done) => {
     },
     async (req, res) => {
       try {
-        const {
-          authorization: { user },
-        } = req.headers;
-        const { id } = req.params;
+        // const {
+        //   authorization: { user },
+        // } = req.headers;
+        const { requestingUserId, receivingUserId } = req.params;
         const { action } = req.body;
 
         const friendshipRequest = (
@@ -76,17 +78,17 @@ export const friendships: Plugin = (server, _, done) => {
             .from(friendshipRequestTable)
             .where(
               and(
-                eq(friendshipTable.id, id),
-                or(
-                  eq(friendshipRequestTable.userIdRequesting, user.id),
-                  eq(friendshipRequestTable.userIdReceiving, user.id),
-                ),
+                // eq(friendshipRequestTable.id, id),
+                eq(friendshipRequestTable.userIdRequesting, requestingUserId),
+                eq(friendshipRequestTable.userIdReceiving, receivingUserId),
+                // or(
+                // ),
               ),
             )
         )[0];
 
         if (!friendshipRequest) {
-          return res.code(404).send();
+          return res.code(404).send({});
         }
 
         if (action === "accept") {
@@ -96,15 +98,15 @@ export const friendships: Plugin = (server, _, done) => {
             userId2: friendshipRequest.userIdRequesting,
           });
 
-          await db.delete(friendshipRequestTable).where(eq(friendshipRequestTable.id, id));
+          await db.delete(friendshipRequestTable).where(eq(friendshipRequestTable.id, friendshipRequest.id));
         } else {
           await db
             .update(friendshipRequestTable)
             .set({ rejectedAt: new Date() })
-            .where(eq(friendshipRequestTable.id, id));
+            .where(eq(friendshipRequestTable.id, friendshipRequest.id));
         }
 
-        return res.code(200).send();
+        return res.code(200).send({});
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -147,26 +149,36 @@ export const friendships: Plugin = (server, _, done) => {
   );
 
   server.get(
-    "/friendships",
+    "/friendships/:uId",
     {
       schema: {
-        headers: authSchema,
+        // headers: authSchema,
         querystring: paginationSchema,
+        params: z.object({
+          uId: z.string(),
+        })
       },
     },
     async (req, res) => {
       try {
-        const {
-          authorization: { user },
-        } = req.headers;
+        // const {
+        //   authorization: { user },
+        // } = req.headers;
+        const { uId } = req.params;
         const { page, limit } = req.query;
 
         const friendships = await db
-          .select()
+          .select({
+            id: userTable.id,
+            firstName: userTable.firstName,
+            lastName: userTable.lastName,
+            username: userTable.username,
+          })
           .from(friendshipTable)
           .limit(limit)
           .offset(page * limit)
-          .where(or(eq(friendshipTable.userId1, user.id), eq(friendshipTable.userId2, user.id)));
+          .where(or(eq(friendshipTable.userId1, uId), eq(friendshipTable.userId2, uId)))
+          .innerJoin(userTable, and(ne(userTable.id, uId), or(eq(friendshipTable.userId1, userTable.id), eq(friendshipTable.userId2, userTable.id))));
 
         return res.code(200).send(friendships);
       } catch (e) {

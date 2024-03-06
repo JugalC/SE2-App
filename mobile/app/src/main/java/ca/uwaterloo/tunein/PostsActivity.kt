@@ -52,7 +52,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.viewmodel.PendingFriendRequestsViewModel
+import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
 import kotlin.concurrent.thread
 
 data class Post(val id: Int, val content: String, val author: String, val imageResId: Int, val profilePhotoResId: Int, val username: String)
@@ -157,7 +157,7 @@ fun PostItem(post: Post, handleClickSettings: () -> Unit) {
 fun PostsContent(
     handleClickFriends: () -> Unit,
     handleClickSettings: () -> Unit,
-    viewModel: PendingFriendRequestsViewModel = viewModel()
+    viewModel: FriendsViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val user = AuthManager.getUser(context)
