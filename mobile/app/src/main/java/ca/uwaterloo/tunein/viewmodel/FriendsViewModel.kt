@@ -16,14 +16,17 @@ import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 
+
 @Serializable
 data class PendingInvites(
     val users: List<User> = emptyList()
 )
 
-class PendingFriendRequestsViewModel : ViewModel() {
+class FriendsViewModel : ViewModel() {
     private val _pendingInvites = MutableStateFlow(PendingInvites())
     val pendingInvites: StateFlow<PendingInvites> = _pendingInvites.asStateFlow()
+    private val _friends = MutableStateFlow(PendingInvites())
+    val friends: StateFlow<PendingInvites> = _friends.asStateFlow()
 
     fun removePendingInvite(user: User) {
         val updatedUsers = _pendingInvites.value.users.toMutableList() // Make a mutable copy
@@ -39,6 +42,27 @@ class PendingFriendRequestsViewModel : ViewModel() {
             )
         }
     }
+
+    fun getCurrentFriends(user: User) {
+        viewModelScope.launch {
+            val users = getFriends(user)
+            _friends.value = _friends.value.copy(
+                users = users,
+            )
+        }
+    }
+
+}
+
+suspend fun getFriends(user: User): List<User> = withContext(Dispatchers.IO) {
+    val searchUrl = "${BuildConfig.BASE_URL}/friendships/${user.id}"
+    val request = okhttp3.Request(
+        url = searchUrl.toHttpUrl(),
+    )
+    val response = OkHttpClient().newCall(request).execute()
+    val json = response.body.string()
+    val j = Json{ ignoreUnknownKeys = true }
+    j.decodeFromString<List<User>>(json)
 }
 
 suspend fun getPendingFriendRequests(user: User): List<User> = withContext(Dispatchers.IO) {
