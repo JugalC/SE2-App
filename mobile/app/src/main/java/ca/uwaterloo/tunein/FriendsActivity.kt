@@ -3,7 +3,6 @@ package ca.uwaterloo.tunein
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -33,6 +32,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +50,7 @@ import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
+import ca.uwaterloo.tunein.viewmodel.PendingFriendRequestsViewModel
 import ca.uwaterloo.tunein.viewmodel.SearchResultsViewModel
 import ca.uwaterloo.tunein.viewmodel.SearchUsers
 import com.android.volley.toolbox.JsonObjectRequest
@@ -62,6 +63,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import kotlin.concurrent.thread
 
 // Dummy data for pending friend requests
 val pendingFriendRequests = listOf(
@@ -114,17 +116,16 @@ class FriendsActivity : ComponentActivity() {
             val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
 
             val queue = Volley.newRequestQueue(this)
-            val reqUrl = "${BuildConfig.BASE_URL}/friendships"
+            val reqUrl = "${BuildConfig.BASE_URL}/friendship-request/${user.id}/${curUser.id}"
 
             val req = JSONObject()
-            req.put("userIdRequesting", AuthManager.getUser(this).id)
-            req.put("userIdReceiving", user.id)
-
-            val loginReq = JsonObjectRequest(
+            val addFriendReq = JsonObjectRequest(
                 com.android.volley.Request.Method.POST, reqUrl, req,
                 { _ ->
                     // show success toast
-                    Toast.makeText(this, "Friend request sent!", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(this, "Friend request sent!", Toast.LENGTH_SHORT).show()
+                    alert.setMessage("Friend request sent successfully").setTitle("Success")
+                    alert.create().show()
                 },
                 { error ->
                     val statusCode: Int = error.networkResponse.statusCode
@@ -139,7 +140,7 @@ class FriendsActivity : ComponentActivity() {
                     }
                 }
             )
-            queue.add(loginReq)
+            queue.add(addFriendReq)
         }
 
         setContent {
@@ -155,11 +156,19 @@ class FriendsActivity : ComponentActivity() {
 fun FriendsContent(
     user: User,
     handleAddFriend: (user: User) -> Unit,
-    viewModel: SearchResultsViewModel = viewModel(),
+    searchResultsViewModel: SearchResultsViewModel = viewModel(),
+    pendingInvitesViewModel: PendingFriendRequestsViewModel = viewModel(),
     goBack: () -> Unit
 ) {
     val scrollState = rememberScrollState()
-    val searchUserState by viewModel.searchUsers.collectAsStateWithLifecycle()
+    val searchUserState by searchResultsViewModel.searchUsers.collectAsStateWithLifecycle()
+    val pendingInvites by pendingInvitesViewModel.pendingInvites.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        thread {
+            pendingInvitesViewModel.getPendingInvites(user = user)
+        }
+    }
 
     TuneInTheme {
         Surface(
@@ -189,7 +198,7 @@ fun FriendsContent(
                 SearchBar(
                     user,
                     searchUserState,
-                    viewModel,
+                    searchResultsViewModel,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Column(
@@ -203,16 +212,33 @@ fun FriendsContent(
                             searchUserState
                         )
                     } else  {
-                        if (pendingFriendRequests.isNotEmpty()) {
-                            PendingFriendRequests(pendingFriendRequests)
+                        if (pendingInvites.users.isNotEmpty()) {
+                            PendingFriendRequests(pendingInvites.users)
                             Spacer(modifier = Modifier.height(16.dp))
                         }
+
+//                        MyFriends()
+
                         // TODO: implement recommended friends (friends of friends)
                         // RecommendedFriends(recommendedFriends)
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun MyFriends() {
+    Column {
+        Text(
+            text = "My friends ${0}:",
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+//        if myfriends.isEmpty() else
+//        friends.forEach { user ->
+//            FriendRow(user)
+//        }
     }
 }
 
