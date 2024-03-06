@@ -23,14 +23,20 @@ export const users: Plugin = (server, _, done) => {
         const passwordHash = (await hash(password, salt)).toString("hex");
         const body = { ...req.body, password: undefined };
 
-        const user = await db.insert(userTable).values({
-          id: randomUUID(),
+        const id = randomUUID();
+
+        await db.insert(userTable).values({
+          id,
           ...body,
           passwordHash,
           salt,
         });
 
+<<<<<<< HEAD
         return res.code(200).send({...user, passwordHash: undefined, salt: undefined, token: encrypt(`${body.username}:${password}`) });
+=======
+        return res.code(200).send({ id, ...body });
+>>>>>>> d3d9f7b (Fix broken signin)
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });

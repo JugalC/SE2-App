@@ -33,10 +33,6 @@ export const getUserSchema = createSelectSchema(userTable)
   })
   .partial();
 
-export const userSchema = createSelectSchema(userTable);
-
-export type User = z.infer<typeof userSchema>;
-
 export const postTable = sqliteTable("post", {
   id: text("id").notNull().primaryKey(),
   spotifyTrackId: text("spotify_track_id").notNull(),
@@ -106,6 +102,3 @@ export const friendshipRequestTable = sqliteTable(
     unq: unique().on(userIdRequesting, userIdReceiving),
   }),
 );
-
-// export const insertFriendshipRequestSchema = createSelectSchema(friendshipRequestTable)
-//   .omit({ id: true, createdAt: true, rejectedAt: true });

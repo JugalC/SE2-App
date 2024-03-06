@@ -11,7 +11,7 @@ server.setSerializerCompiler(serializerCompiler);
 
 server.register(users);
 server.register(spotify);
-server.register(friendships);
+server.register(friendships)
 
 server.get("/ping", async () => {
   return "pong\n";
