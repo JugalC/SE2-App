@@ -28,9 +28,9 @@ suspend fun fetchSearchUsers(searchQuery: String): List<User> = withContext(Disp
     )
     val response = OkHttpClient().newCall(request).execute()
 
-    val json = response.body?.string()
+    val json = response.body.string()
     val j = Json{ ignoreUnknownKeys = true }
-    j.decodeFromString<List<User>>(json!!)
+    j.decodeFromString<List<User>>(json)
 }
 
 class SearchResultsViewModel : ViewModel() {

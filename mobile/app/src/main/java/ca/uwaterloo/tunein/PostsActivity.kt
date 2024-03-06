@@ -1,52 +1,59 @@
 package ca.uwaterloo.tunein
 
-import androidx.compose.ui.graphics.Color
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.res.painterResource
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.layout.ContentScale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.runtime.*
-import androidx.compose.ui.draw.clip
-
+import ca.uwaterloo.tunein.viewmodel.PendingFriendRequestsViewModel
+import kotlin.concurrent.thread
 
 data class Post(val id: Int, val content: String, val author: String, val imageResId: Int, val profilePhotoResId: Int, val username: String)
 val samplePosts = listOf(
@@ -55,18 +62,10 @@ val samplePosts = listOf(
     Post(3, "Marvins Room", "Drake", R.drawable.drake_marvins,R.drawable.stock_profile, "JohnSmith123")
 )
 
-
-
 class PostsActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        fun handleLogout() {
-            AuthManager.setLoggedIn(this,false)
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-        }
 
         fun handleClickFriends() {
             val intent = Intent(this, FriendsActivity::class.java)
@@ -82,7 +81,6 @@ class PostsActivity : ComponentActivity() {
             PostsContent(
                 handleClickFriends= { handleClickFriends() },
                 handleClickSettings= { handleClickSettings() },
-                handleLogout = { handleLogout() },
             )
         }
     }
@@ -156,7 +154,21 @@ fun PostItem(post: Post, handleClickSettings: () -> Unit) {
 
 
 @Composable
-fun PostsContent(handleClickFriends: () -> Unit, handleClickSettings: () -> Unit, handleLogout: () -> Unit) {
+fun PostsContent(
+    handleClickFriends: () -> Unit,
+    handleClickSettings: () -> Unit,
+    viewModel: PendingFriendRequestsViewModel = viewModel()
+) {
+    val context = LocalContext.current
+    val user = AuthManager.getUser(context)
+    val pendingInvites by viewModel.pendingInvites.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        thread {
+            viewModel.getPendingInvites(user = user)
+        }
+    }
+
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -174,8 +186,14 @@ fun PostsContent(handleClickFriends: () -> Unit, handleClickSettings: () -> Unit
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { handleClickFriends() }) {
-                        Icon(Icons.Default.Person, contentDescription = "Friends")
+                    if (pendingInvites.users.isNotEmpty()) {
+                        IconButton(onClick = { handleClickFriends() }) {
+                            Icon(Icons.Outlined.Person, contentDescription = "Friends")
+                        }
+                    } else {
+                        IconButton(onClick = { handleClickFriends() }) {
+                            Icon(Icons.Default.Person, contentDescription = "Friends")
+                        }
                     }
                     Text(
                         text = "TuneIn.",
@@ -203,5 +221,5 @@ fun PostsContent(handleClickFriends: () -> Unit, handleClickSettings: () -> Unit
 @Preview
 @Composable
 fun PostsPreview() {
-    PostsContent({}, {}) {}
+    PostsContent({}, {})
 }

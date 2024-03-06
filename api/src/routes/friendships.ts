@@ -1,5 +1,5 @@
 import { db } from "../db/db";
-import { friendshipRequestTable, friendshipTable } from "../db/schema";
+import { friendshipRequestTable, friendshipTable, userTable } from "../db/schema";
 import { Plugin, authSchema, paginationSchema } from "../types";
 import { z } from "zod";
 import { randomUUID } from "crypto";
@@ -7,27 +7,41 @@ import { and, eq, or } from "drizzle-orm";
 
 export const friendships: Plugin = (server, _, done) => {
   server.post(
-    "/friendship-request/:userIdReceiving",
+    "/friendship-request/:userIdReceiving/:userIdRequesting",
     {
       schema: {
-        headers: authSchema,
+        // headers: authSchema,
         params: z.object({
           userIdReceiving: z.string(),
+          userIdRequesting: z.string(),
         }),
       },
     },
     async (req, res) => {
       try {
-        const {
-          authorization: { user },
-        } = req.headers;
-        const { userIdReceiving } = req.params;
+        // const {
+        //   authorization: { user },
+        // } = req.headers;
+        const { userIdReceiving, userIdRequesting } = req.params;
+
+        console.log(userIdReceiving, "A", userIdRequesting, "B");
+
+        const friendshipRequest = await db.query.friendshipRequestTable.findFirst({
+					where: and(
+						eq(friendshipRequestTable.userIdRequesting, userIdRequesting),
+						eq(friendshipRequestTable.userIdReceiving, userIdReceiving),
+					),
+        });
+
+        if (friendshipRequest) {
+          return res.code(404).send({ error: "Request already exists." });
+        }
 
         await db
           .insert(friendshipRequestTable)
-          .values({ id: randomUUID(), userIdRequesting: user.id, userIdReceiving });
+          .values({ id: randomUUID(), userIdRequesting, userIdReceiving });
 
-        return res.code(200).send();
+        return res.code(200).send({});
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -154,6 +168,48 @@ export const friendships: Plugin = (server, _, done) => {
           .offset(page * limit)
           .where(or(eq(friendshipTable.userId1, user.id), eq(friendshipTable.userId2, user.id)));
 
+        return res.code(200).send(friendships);
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+
+  server.get(
+    "/friendship-requests/:userId",
+    {
+      schema: {
+        // headers: authSchema,
+        querystring: paginationSchema,
+        params: z.object({
+          userId: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        // const {
+        //   authorization: { user },
+        // } = req.headers;
+        const { page, limit } = req.query;
+        const {userId} = req.params;
+
+        const friendships = await db
+          .select({
+            id: userTable.id,
+            firstName: userTable.firstName,
+            lastName: userTable.lastName,
+            username: userTable.username,
+          })
+          .from(friendshipRequestTable)
+          .limit(limit)
+          .offset(page * limit)
+          .where(eq(friendshipRequestTable.userIdReceiving, userId))
+          .innerJoin(userTable, eq(friendshipRequestTable.userIdRequesting, userTable.id));
+
+        console.log(friendships);
         return res.code(200).send(friendships);
       } catch (e) {
         console.error(e);

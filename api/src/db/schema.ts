@@ -106,5 +106,5 @@ export const friendshipRequestTable = sqliteTable(
   }),
 );
 
-export const insertFriendshipRequestSchema = createSelectSchema(friendshipRequestTable)
-  .omit({ id: true, createdAt: true, rejectedAt: true });
+// export const insertFriendshipRequestSchema = createSelectSchema(friendshipRequestTable)
+//   .omit({ id: true, createdAt: true, rejectedAt: true });
