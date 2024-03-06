@@ -1,6 +1,4 @@
 import { z } from "zod";
-import { authenticateUser } from "./authenticateUser";
-import { userSchema } from "../db/schema";
 
 /** ------------------------------------------------ */
 /** ----------------- Preprocessers ----------------- */
