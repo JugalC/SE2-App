@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { authenticateUser } from "./authenticateUser";
-import { getUserSchema, insertUserSchema, userSchema } from "../db/schema";
+import { userSchema } from "../db/schema";
 
 /** ------------------------------------------------ */
 /** ----------------- Preprocessers ----------------- */
@@ -49,18 +49,14 @@ export const zodPreprocessAuthToken = () =>
     (value) => {
       const processed = z
         .string()
-        .transform(async (val) => {
+        .transform((val) => {
           const [username, password] = Buffer.from(val.split(" ")[1], "base64").toString().split(":");
-          const user = await authenticateUser({ username, password });
 
-          if (!user) {
-            throw new Error("Invalid username or password");
-          }
-
-          return { user };
+          return { username, password };
         })
         .safeParse(value);
+
       return processed.success ? processed.data : value;
     },
-    z.object({ user: userSchema }),
+    z.object({ username: z.string(), password: z.string() }),
   );

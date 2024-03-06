@@ -4,6 +4,7 @@ import { Plugin, authSchema, paginationSchema } from "../types";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { and, eq, or } from "drizzle-orm";
+import { authenticateUser } from "../lib/authenticateUser";
 
 export const friendships: Plugin = (server, _, done) => {
   server.post(
@@ -18,10 +19,14 @@ export const friendships: Plugin = (server, _, done) => {
     },
     async (req, res) => {
       try {
-        const {
-          authorization: { user },
-        } = req.headers;
+        const { authorization } = req.headers;
         const { userIdReceiving } = req.params;
+
+        const user = await authenticateUser(authorization);
+
+        if (!user) {
+          return res.code(401).send();
+        }
 
         await db
           .insert(friendshipRequestTable)
@@ -50,11 +55,15 @@ export const friendships: Plugin = (server, _, done) => {
     },
     async (req, res) => {
       try {
-        const {
-          authorization: { user },
-        } = req.headers;
+        const { authorization } = req.headers;
         const { id } = req.params;
         const { action } = req.body;
+
+        const user = await authenticateUser(authorization);
+
+        if (!user) {
+          return res.code(401).send();
+        }
 
         const friendshipRequest = (
           await db
@@ -62,7 +71,7 @@ export const friendships: Plugin = (server, _, done) => {
             .from(friendshipRequestTable)
             .where(
               and(
-                eq(friendshipTable.id, id),
+                eq(friendshipRequestTable.id, id),
                 or(
                   eq(friendshipRequestTable.userIdRequesting, user.id),
                   eq(friendshipRequestTable.userIdReceiving, user.id),
@@ -110,10 +119,14 @@ export const friendships: Plugin = (server, _, done) => {
     },
     async (req, res) => {
       try {
-        const {
-          authorization: { user },
-        } = req.headers;
+        const { authorization } = req.headers;
         const { id } = req.params;
+
+        const user = await authenticateUser(authorization);
+
+        if (!user) {
+          return res.code(401).send();
+        }
 
         await db
           .delete(friendshipTable)
@@ -142,10 +155,14 @@ export const friendships: Plugin = (server, _, done) => {
     },
     async (req, res) => {
       try {
-        const {
-          authorization: { user },
-        } = req.headers;
+        const { authorization } = req.headers;
         const { page, limit } = req.query;
+
+        const user = await authenticateUser(authorization);
+
+        if (!user) {
+          return res.code(401).send();
+        }
 
         const friendships = await db
           .select()
