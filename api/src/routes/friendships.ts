@@ -24,8 +24,6 @@ export const friendships: Plugin = (server, _, done) => {
         // } = req.headers;
         const { userIdReceiving, userIdRequesting } = req.params;
 
-        console.log(userIdReceiving, "A", userIdRequesting, "B");
-
         const friendshipRequest = await db.query.friendshipRequestTable.findFirst({
 					where: and(
 						eq(friendshipRequestTable.userIdRequesting, userIdRequesting),
@@ -187,7 +185,6 @@ export const friendships: Plugin = (server, _, done) => {
           .where(eq(friendshipRequestTable.userIdReceiving, userId))
           .innerJoin(userTable, eq(friendshipRequestTable.userIdRequesting, userTable.id));
 
-        console.log(friendships);
         return res.code(200).send(friendships);
       } catch (e) {
         console.error(e);
