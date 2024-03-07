@@ -20,3 +20,4 @@
 | 2024/03/04 |       |       |         |         |        | 6      | Add friends page                                                   |
 | 2024/03/04 |       |       |         | 2       |        |        | Routing and bug fixing for profile and settings                    |
 | 2024/03/05 |       |       |         | 3       |        |        | Pop-up menus for confirmation and entry in profile and settings    |
+| 2024/03/06 |       |       |         | 4       |        |        | Get most recent song API work and D3 Status Report section         |
