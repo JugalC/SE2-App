@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { decrypt } from "./encryption";
 
 /** ------------------------------------------------ */
 /** ----------------- Preprocessers ----------------- */
@@ -48,7 +49,7 @@ export const zodPreprocessAuthToken = () =>
       const processed = z
         .string()
         .transform((val) => {
-          const [username, password] = Buffer.from(val.split(" ")[1], "base64").toString().split(":");
+          const [username, password] = decrypt(val.split(" ")[1]).split(":");
 
           return { username, password };
         })
