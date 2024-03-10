@@ -11,6 +11,7 @@ export const userTable = sqliteTable("user", {
   username: text("username").notNull(),
   spotifyAccessToken: text("last_spotify_access_token"),
   spotifyRefreshToken: text("spotify_refresh_token"),
+  androidRegistrationToken: text("android_registration_token").notNull(),
   passwordHash: text("password_hash").notNull(),
   salt: text("salt").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
@@ -31,6 +32,10 @@ export const getUserSchema = createSelectSchema(userTable)
     createdAt: true,
   })
   .partial();
+
+export const userSchema = createSelectSchema(userTable);
+
+export type User = z.infer<typeof userSchema>;
 
 export const postTable = sqliteTable("post", {
   id: text("id").notNull().primaryKey(),

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { eq, or } from "drizzle-orm";
 import { Plugin, paginationSchema, searchSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
+import { encrypt } from "../lib/encryption";
 
 export const users: Plugin = (server, _, done) => {
   server.post(
@@ -18,7 +19,8 @@ export const users: Plugin = (server, _, done) => {
     async (req, res) => {
       try {
         const salt = await generateSalt();
-        const passwordHash = (await hash(req.body.password, salt)).toString("hex");
+        const password = req.body.password;
+        const passwordHash = (await hash(password, salt)).toString("hex");
         const body = { ...req.body, password: undefined };
 
         await db.insert(userTable).values({
@@ -28,7 +30,7 @@ export const users: Plugin = (server, _, done) => {
           salt,
         });
 
-        return res.code(200).send({});
+        return res.code(200).send({ token: encrypt(`${body.username}:${password}`) });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -67,7 +69,9 @@ export const users: Plugin = (server, _, done) => {
           return res.code(404).send({ error: "User not found with given parameters." });
         }
 
-        return res.code(200).send({ ...user, passwordHash: undefined, salt: undefined });
+        return res
+          .code(200)
+          .send({ ...user, token: encrypt(`${username}:${password}`), passwordHash: undefined, salt: undefined });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -145,29 +149,32 @@ export const users: Plugin = (server, _, done) => {
       try {
         const { firstName, lastName, page, limit, search } = req.query;
 
-        const where = search != "" ? generateLikeFilters([
-          {
-            col: userTable.firstName,
-            val: search,
-          },
-          {
-            col: userTable.lastName,
-            val: search,
-          },
-          {
-            col: userTable.username,
-            val: search,
-          }
-        ]) : generateLikeFilters([
-          {
-            col: userTable.firstName,
-            val: firstName,
-          },
-          {
-            col: userTable.lastName,
-            val: lastName,
-          },
-        ]);
+        const where =
+          search != ""
+            ? generateLikeFilters([
+                {
+                  col: userTable.firstName,
+                  val: search,
+                },
+                {
+                  col: userTable.lastName,
+                  val: search,
+                },
+                {
+                  col: userTable.username,
+                  val: search,
+                },
+              ])
+            : generateLikeFilters([
+                {
+                  col: userTable.firstName,
+                  val: firstName,
+                },
+                {
+                  col: userTable.lastName,
+                  val: lastName,
+                },
+              ]);
 
         const users = await db
           .select()
