@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 import { z } from "zod";
 import { decrypt } from "./encryption";
-=======
-import { z } from 'zod';
->>>>>>> d3d9f7b (Fix broken signin)
 
 /** ------------------------------------------------ */
 /** ----------------- Preprocessers ----------------- */
@@ -46,7 +42,6 @@ export const zodPreprocessDate = () =>
       .safeParse(value);
     return processed.success ? processed.data : value;
   }, z.date());
-<<<<<<< HEAD
 
 export const zodPreprocessAuthToken = () =>
   z.preprocess(
@@ -64,5 +59,3 @@ export const zodPreprocessAuthToken = () =>
     },
     z.object({ username: z.string(), password: z.string() }),
   );
-=======
->>>>>>> d3d9f7b (Fix broken signin)
