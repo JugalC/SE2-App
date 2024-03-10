@@ -15,7 +15,7 @@ export const friendships: Plugin = (server, _, done) => {
         params: z.object({
           userIdReceiving: z.string(),
         }),
-      }
+      },
     },
     async (req, res) => {
       try {
@@ -193,7 +193,7 @@ export const friendships: Plugin = (server, _, done) => {
       }
     },
   );
-  
+
   server.get(
     "/friendships",
     {
