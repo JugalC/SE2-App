@@ -102,7 +102,7 @@ class SpotifyConnectActivity : ComponentActivity() {
         }
 
         fun handleLogout() {
-            AuthManager.setLoggedIn(this,false)
+            AuthManager.setAuthToken(this, null)
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }

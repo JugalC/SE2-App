@@ -72,8 +72,7 @@ class LoginActivity : ComponentActivity() {
                 Request.Method.POST, loginUrl, req,
                 { loginRes ->
                     // persist logged in state
-                    AuthManager.setLoggedIn(this,true)
-
+                    AuthManager.setAuthToken(this, loginRes.getString("token"))
                     val user = User(
                         id=loginRes.getString("id"),
                         username=loginRes.getString("username"),

@@ -4,19 +4,21 @@ import android.content.Context
 import ca.uwaterloo.tunein.data.User
 
 private const val PREF_NAME = "auth_pref"
-private val KEY_IS_LOGGED_IN = "is_logged_in"
+private val KEY_AUTH_TOKEN = "auth_token"
 private val KEY_IS_SPOTIFY_AUTH = "is_spotify_auth"
 
 class AuthManager {
     companion object {
         fun isLoggedIn(context: Context): Boolean {
-            val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            return prefs.getBoolean(KEY_IS_LOGGED_IN, false)
-
+            return !getAuthToken(context).isNullOrBlank()
         }
-        fun setLoggedIn(context: Context, isLoggedIn: Boolean) {
+        fun getAuthToken(context: Context): String? {
             val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            prefs.edit().putBoolean(KEY_IS_LOGGED_IN, isLoggedIn).apply()
+            return prefs.getString(KEY_AUTH_TOKEN, null)
+        }
+        fun setAuthToken(context: Context, token: String?) {
+            val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            prefs.edit().putString(KEY_AUTH_TOKEN, token).apply()
         }
         fun isSpotifyAuthed(context: Context): Boolean {
             val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

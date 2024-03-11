@@ -86,7 +86,7 @@ class SignupActivity : ComponentActivity() {
             val createUserReq = JsonObjectRequest(Request.Method.POST, url, req,
                 { signupResp ->
                     // persist logged in state
-                    AuthManager.setLoggedIn(this,true)
+                    AuthManager.setAuthToken(this, signupResp.getString("token"))
                     val user = User(
                         id=signupResp.getString("id"),
                         username=signupResp.getString("username"),
