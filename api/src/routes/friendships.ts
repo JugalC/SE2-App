@@ -30,10 +30,10 @@ export const friendships: Plugin = (server, _, done) => {
 
         // check if friendship request already exists
         const friendshipRequest = await db.query.friendshipRequestTable.findFirst({
-					where: and(
-						eq(friendshipRequestTable.userIdRequesting, user.id),
-						eq(friendshipRequestTable.userIdReceiving, userIdReceiving),
-					),
+          where: and(
+            eq(friendshipRequestTable.userIdRequesting, user.id),
+            eq(friendshipRequestTable.userIdReceiving, userIdReceiving),
+          ),
         });
 
         if (friendshipRequest) {
@@ -42,8 +42,8 @@ export const friendships: Plugin = (server, _, done) => {
 
         await db
           .insert(friendshipRequestTable)
-          .values({ id: randomUUID(), userIdRequesting: user.id, userIdReceiving, rejectedAt: null, });
-  
+          .values({ id: randomUUID(), userIdRequesting: user.id, userIdReceiving, rejectedAt: null });
+
         return res.code(200).send({});
       } catch (e) {
         console.error(e);
@@ -77,16 +77,28 @@ export const friendships: Plugin = (server, _, done) => {
           return res.code(401).send();
         }
 
+        // `id` param may be friendship_request id or the requesting/receiving `uId`.
+        // There must be a friendship_request in which the user requesting has a relation to the `id` param.
         const friendshipRequest = (
           await db
             .select()
             .from(friendshipRequestTable)
             .where(
-              and(
-                eq(friendshipRequestTable.id, id),
-                or(
-                  eq(friendshipRequestTable.userIdRequesting, user.id),
+              or(
+                and(
+                  eq(friendshipRequestTable.id, id),
+                  or(
+                    eq(friendshipRequestTable.userIdRequesting, user.id),
+                    eq(friendshipRequestTable.userIdReceiving, user.id),
+                  ),
+                ),
+                and(
+                  eq(friendshipRequestTable.userIdRequesting, id),
                   eq(friendshipRequestTable.userIdReceiving, user.id),
+                ),
+                and(
+                  eq(friendshipRequestTable.userIdRequesting, user.id),
+                  eq(friendshipRequestTable.userIdReceiving, id),
                 ),
               ),
             )
@@ -111,7 +123,7 @@ export const friendships: Plugin = (server, _, done) => {
             .where(eq(friendshipRequestTable.id, friendshipRequest.id));
         }
 
-        return res.code(200).send();
+        return res.code(200).send({});
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -147,7 +159,6 @@ export const friendships: Plugin = (server, _, done) => {
           .where(eq(friendshipRequestTable.userIdReceiving, user.id))
           .innerJoin(userTable, eq(friendshipRequestTable.userIdRequesting, userTable.id));
 
-				
         return res.code(200).send(friendshipRequests);
       } catch (e) {
         console.error(e);
@@ -224,7 +235,13 @@ export const friendships: Plugin = (server, _, done) => {
           .limit(limit)
           .offset(page * limit)
           .where(or(eq(friendshipTable.userId1, user.id), eq(friendshipTable.userId2, user.id)))
-          .innerJoin(userTable, and(ne(userTable.id, user.id), or(eq(friendshipTable.userId1, userTable.id), eq(friendshipTable.userId2, userTable.id))));
+          .innerJoin(
+            userTable,
+            and(
+              ne(userTable.id, user.id),
+              or(eq(friendshipTable.userId1, userTable.id), eq(friendshipTable.userId2, userTable.id)),
+            ),
+          );
 
         return res.code(200).send(friendships);
       } catch (e) {
