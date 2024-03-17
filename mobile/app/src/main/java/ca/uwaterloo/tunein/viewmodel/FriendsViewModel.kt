@@ -1,7 +1,6 @@
 package ca.uwaterloo.tunein.viewmodel
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uwaterloo.tunein.BuildConfig
@@ -15,7 +14,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 
@@ -56,6 +54,14 @@ class FriendsViewModel : ViewModel() {
         }
     }
 
+    fun removeFriend(user: User) {
+        viewModelScope.launch {
+            val updatedUsers = _friends.value.users.toMutableList() // Make a mutable copy
+            updatedUsers.remove(user) // Remove the user from the list
+            _friends.value =
+                _friends.value.copy(users = updatedUsers) // Update the StateFlow
+        }
+    }
 }
 
 suspend fun getFriends(context: Context): List<User> = withContext(Dispatchers.IO) {
