@@ -176,12 +176,11 @@ fun PostsContent(
     viewModel: FriendsViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val user = AuthManager.getUser(context)
     val pendingInvites by viewModel.pendingInvites.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         thread {
-            viewModel.getPendingInvites(user = user)
+            viewModel.getPendingInvites(context)
         }
     }
 

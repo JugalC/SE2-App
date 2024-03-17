@@ -1,9 +1,13 @@
 package ca.uwaterloo.tunein.viewmodel
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uwaterloo.tunein.BuildConfig
+import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.data.User
+import ca.uwaterloo.tunein.data.UserDeserializer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +17,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 
 
@@ -31,21 +34,22 @@ class FriendsViewModel : ViewModel() {
     fun removePendingInvite(user: User) {
         val updatedUsers = _pendingInvites.value.users.toMutableList() // Make a mutable copy
         updatedUsers.remove(user) // Remove the user from the list
-        _pendingInvites.value = _pendingInvites.value.copy(users = updatedUsers) // Update the StateFlow
+        _pendingInvites.value =
+            _pendingInvites.value.copy(users = updatedUsers) // Update the StateFlow
     }
 
-    fun getPendingInvites(user: User) {
+    fun getPendingInvites(context: Context) {
         viewModelScope.launch {
-            val users = getPendingFriendRequests(user)
+            val users = getPendingFriendRequests(context)
             _pendingInvites.value = _pendingInvites.value.copy(
                 users = users,
             )
         }
     }
 
-    fun getCurrentFriends(user: User) {
+    fun getCurrentFriends(context: Context) {
         viewModelScope.launch {
-            val users = getFriends(user)
+            val users = getFriends(context)
             _friends.value = _friends.value.copy(
                 users = users,
             )
@@ -54,25 +58,35 @@ class FriendsViewModel : ViewModel() {
 
 }
 
-suspend fun getFriends(user: User): List<User> = withContext(Dispatchers.IO) {
-    val searchUrl = "${BuildConfig.BASE_URL}/friendships/${user.id}"
-    val request = okhttp3.Request(
-        url = searchUrl.toHttpUrl(),
-    )
-    val response = OkHttpClient().newCall(request).execute()
+suspend fun getFriends(context: Context): List<User> = withContext(Dispatchers.IO) {
+    val searchUrl = "${BuildConfig.BASE_URL}/friendships"
+    val client = OkHttpClient()
+    val request: okhttp3.Request = okhttp3.Request.Builder()
+        .url(searchUrl)
+        .get()
+        .addHeader("cache-control", "no-cache")
+        .addHeader("Authorization", "Bearer ${AuthManager.getAuthToken(context).toString()}")
+        .build()
+
+    val response = client.newCall(request).execute()
     val json = response.body.string()
-    val j = Json{ ignoreUnknownKeys = true }
-    j.decodeFromString<List<User>>(json)
+    val j = Json { ignoreUnknownKeys = true }
+    j.decodeFromString(UserDeserializer(), json)
 }
 
-suspend fun getPendingFriendRequests(user: User): List<User> = withContext(Dispatchers.IO) {
-    val searchUrl = "${BuildConfig.BASE_URL}/friendship-requests/${user.id}"
-    val request = okhttp3.Request(
-        url = searchUrl.toHttpUrl()
-    )
-    val response = OkHttpClient().newCall(request).execute()
+suspend fun getPendingFriendRequests(context: Context): List<User> = withContext(Dispatchers.IO) {
+    val searchUrl = "${BuildConfig.BASE_URL}/friendship-requests"
+    val client = OkHttpClient()
+    val request: okhttp3.Request = okhttp3.Request.Builder()
+        .url(searchUrl)
+        .get()
+        .addHeader("cache-control", "no-cache")
+        .addHeader("Authorization", "Bearer ${AuthManager.getAuthToken(context).toString()}")
+        .build()
+
+    val response = client.newCall(request).execute()
 
     val json = response.body.string()
-    val j = Json{ ignoreUnknownKeys = true }
-    j.decodeFromString<List<User>>(json)
+    val j = Json { ignoreUnknownKeys = true }
+    j.decodeFromString(UserDeserializer(), json)
 }
