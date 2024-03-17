@@ -59,30 +59,6 @@ import com.android.volley.toolbox.Volley
 import org.json.JSONObject
 import kotlin.concurrent.thread
 
-// Dummy data for pending friend requests
-val pendingFriendRequests = listOf(
-    User(
-        firstName = "DJ",
-        lastName = "Khalid",
-        username = "djkhalid"
-    ),
-    User(
-        firstName = "The",
-        lastName = "Weeknd",
-        username = "theweeknd"
-    ),
-    User(
-        firstName = "drake",
-        lastName = "drake",
-        username = "drake"
-    ),
-    User(
-        firstName = "john",
-        lastName = "doe",
-        username = "johndoe123"
-    ),
-)
-
 class FriendsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,8 +121,7 @@ class FriendsActivity : ComponentActivity() {
             val req = JSONObject()
             val addFriendReq = object : JsonObjectRequest(Method.POST, reqUrl, req,
                 { _ ->
-                    // show success toast
-                    // Toast.makeText(this, "Friend request sent!", Toast.LENGTH_SHORT).show()
+                    // show success message
                     alert.setMessage("Friend request sent successfully").setTitle("Success")
                     alert.create().show()
                 },
@@ -175,9 +150,43 @@ class FriendsActivity : ComponentActivity() {
             queue.add(addFriendReq)
         }
 
+        fun handleRemoveFriend(user: User) {
+            val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
+
+            val queue = Volley.newRequestQueue(this)
+            val reqUrl = "${BuildConfig.BASE_URL}/friendship/${user.id}"
+
+            val req = JSONObject()
+            val addFriendReq = object : JsonObjectRequest(Method.POST, reqUrl, req,
+                { _ ->
+                    // show success message
+                    friendsViewModel.removeFriend(user)
+                    alert.setMessage("Friend successfully removed").setTitle("Success")
+                    alert.create().show()
+                },
+                { error ->
+                    val statusCode: Int = error.networkResponse.statusCode
+                    Log.e("RemoveFriend", "DELETE Status ${statusCode}: $error")
+                    alert.setMessage("An unexpected error has occurred")
+                    alert.create().show()
+                }
+            ) {
+                @Throws(AuthFailureError::class)
+                override fun getHeaders(): Map<String, String> {
+                    val headers = HashMap<String, String>()
+                    headers["Authorization"] =
+                        "Bearer ${AuthManager.getAuthToken(context).toString()}"
+                    return headers
+                }
+            }
+
+            queue.add(addFriendReq)
+        }
+
         setContent {
             FriendsContent(
                 user = AuthManager.getUser(this),
+                { handleRemoveFriend(it) },
                 { handleAddFriend(it) },
                 { handleAcceptInvite(it) },
                 friendsViewModel,
@@ -189,24 +198,25 @@ class FriendsActivity : ComponentActivity() {
 @Composable
 fun FriendsContent(
     user: User,
+    handleRemoveFriend: (user: User) -> Unit,
     handleAddFriend: (user: User) -> Unit,
     handleAcceptInvite: (user: User) -> Unit,
-    pendingInvitesViewModel: FriendsViewModel = viewModel(),
+    friendsViewModel: FriendsViewModel = viewModel(),
     searchResultsViewModel: SearchResultsViewModel = viewModel(),
     goBack: () -> Unit
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     val searchUserState by searchResultsViewModel.searchUsers.collectAsStateWithLifecycle()
-    val pendingInvites by pendingInvitesViewModel.pendingInvites.collectAsStateWithLifecycle()
-    val currentFriends by pendingInvitesViewModel.friends.collectAsStateWithLifecycle()
+    val pendingInvites by friendsViewModel.pendingInvites.collectAsStateWithLifecycle()
+    val currentFriends by friendsViewModel.friends.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         thread {
-            pendingInvitesViewModel.getPendingInvites(context)
+            friendsViewModel.getPendingInvites(context)
         }
         thread {
-            pendingInvitesViewModel.getCurrentFriends(context)
+            friendsViewModel.getCurrentFriends(context)
         }
     }
 
@@ -256,7 +266,7 @@ fun FriendsContent(
                             Spacer(modifier = Modifier.height(16.dp))
                         }
 
-                        MyFriends(currentFriends.users)
+                        MyFriends(currentFriends.users, handleRemoveFriend)
 
                         // TODO: implement recommended friends (friends of friends)
                         // RecommendedFriends(recommendedFriends)
@@ -268,15 +278,14 @@ fun FriendsContent(
 }
 
 @Composable
-fun MyFriends(friends: List<User>) {
+fun MyFriends(friends: List<User>, handleRemoveFriend: (user: User) -> Unit) {
     Column {
         Text(
             text = "My friends (${friends.size}):",
         )
         Spacer(modifier = Modifier.height(8.dp))
-//        if myfriends.isEmpty() else
         friends.forEach { user ->
-            FriendRow(user)
+            FriendRow(user, handleRemoveFriend)
         }
     }
 }
@@ -349,7 +358,7 @@ fun PendingFriendRequests(requests: List<User>, handleAcceptInvite: (user: User)
 }
 
 @Composable
-fun FriendRow(user: User) {
+fun FriendRow(user: User, handleRemoveFriend: (user: User) -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -379,11 +388,16 @@ fun FriendRow(user: User) {
                 }
             }
             Row {
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = null,
+                IconButton(
+                    onClick = { handleRemoveFriend(user) },
                     modifier = Modifier.size(18.dp),
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
             }
         }
     }
@@ -460,5 +474,5 @@ fun SearchBar(
 @Composable
 fun PreviewFriendsContent() {
     val user = User("1", "jd123", "John", "Doe")
-    FriendsContent(user, {}, {}) {}
+    FriendsContent(user, {}, {}, {}) {}
 }

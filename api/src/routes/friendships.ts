@@ -53,12 +53,12 @@ export const friendships: Plugin = (server, _, done) => {
   );
 
   server.put(
-    "/friendship-request/:id",
+    "/friendship-request/:uId",
     {
       schema: {
         headers: authSchema,
         params: z.object({
-          id: z.string(),
+          uId: z.string(),
         }),
         body: z.object({
           action: z.enum(["accept", "reject"]),
@@ -68,7 +68,7 @@ export const friendships: Plugin = (server, _, done) => {
     async (req, res) => {
       try {
         const { authorization } = req.headers;
-        const { id } = req.params;
+        const { uId } = req.params;
         const { action } = req.body;
 
         const user = await authenticateUser(authorization);
@@ -77,7 +77,6 @@ export const friendships: Plugin = (server, _, done) => {
           return res.code(401).send();
         }
 
-        // `id` param may be friendship_request id or the requesting/receiving `uId`.
         // There must be a friendship_request in which the user requesting has a relation to the `id` param.
         const friendshipRequest = (
           await db
@@ -86,19 +85,12 @@ export const friendships: Plugin = (server, _, done) => {
             .where(
               or(
                 and(
-                  eq(friendshipRequestTable.id, id),
-                  or(
-                    eq(friendshipRequestTable.userIdRequesting, user.id),
-                    eq(friendshipRequestTable.userIdReceiving, user.id),
-                  ),
-                ),
-                and(
-                  eq(friendshipRequestTable.userIdRequesting, id),
+                  eq(friendshipRequestTable.userIdRequesting, uId),
                   eq(friendshipRequestTable.userIdReceiving, user.id),
                 ),
                 and(
                   eq(friendshipRequestTable.userIdRequesting, user.id),
-                  eq(friendshipRequestTable.userIdReceiving, id),
+                  eq(friendshipRequestTable.userIdReceiving, uId),
                 ),
               ),
             )
@@ -167,20 +159,20 @@ export const friendships: Plugin = (server, _, done) => {
     },
   );
 
-  server.delete(
-    "/friendship/:id",
+  server.post(
+    "/friendship/:uId",
     {
       schema: {
         headers: authSchema,
         params: z.object({
-          id: z.string(),
+          uId: z.string(),
         }),
       },
     },
     async (req, res) => {
       try {
         const { authorization } = req.headers;
-        const { id } = req.params;
+        const { uId } = req.params;
 
         const user = await authenticateUser(authorization);
 
@@ -191,13 +183,19 @@ export const friendships: Plugin = (server, _, done) => {
         await db
           .delete(friendshipTable)
           .where(
-            and(
-              eq(friendshipTable.id, id),
-              or(eq(friendshipTable.userId1, user.id), eq(friendshipTable.userId2, user.id)),
-            ),
+            or(
+              and(
+                eq(friendshipTable.userId1, user.id),
+                eq(friendshipTable.userId2, uId),
+              ),
+              and(
+                eq(friendshipTable.userId1, uId),
+                eq(friendshipTable.userId2, user.id),
+              ),
+            )
           );
 
-        return res.code(200).send();
+        return res.code(200).send({});
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
