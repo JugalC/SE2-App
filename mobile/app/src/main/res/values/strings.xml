@@ -6,4 +6,6 @@
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_spotify_connect">SpotifyConnectActivity</string>
     <string name="title_activity_spotify_web_view">SpotifyWebViewActivity</string>
+    <string name="msg_token_fmt" translatable="false">FCM registration Token: %s</string>
+    <string name="default_notification_channel_id">ca.uwaterloo.tunein.urgent</string>
 </resources>

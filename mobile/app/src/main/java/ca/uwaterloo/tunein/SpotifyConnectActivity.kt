@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.tunein.auth.AuthManager
+import ca.uwaterloo.tunein.messaging.Firebase
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
@@ -103,6 +104,7 @@ class SpotifyConnectActivity : ComponentActivity() {
 
         fun handleLogout() {
             AuthManager.setAuthToken(this, null)
+            Firebase.clearRegistrationToken(this)
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }

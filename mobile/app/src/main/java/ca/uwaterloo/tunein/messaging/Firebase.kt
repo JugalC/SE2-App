@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import ca.uwaterloo.tunein.BuildConfig
 import ca.uwaterloo.tunein.MainActivity
+import ca.uwaterloo.tunein.R
 import ca.uwaterloo.tunein.auth.AuthManager
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
@@ -39,33 +40,11 @@ class Firebase : FirebaseMessagingService() {
      */
     override fun onNewToken(token: String) {
         Log.d(TAG, "Refreshed token: $token")
-        sendRegistrationToServer(token)
+        sendRegistrationToServer( this, token)
     }
 
     private fun handleNow() {
         Log.d(TAG, "Short lived task is done.")
-    }
-
-    private fun sendRegistrationToServer(token: String?) {
-        Log.d(TAG, "sendRegistrationTokenToServer($token)")
-
-        val queue = Volley.newRequestQueue(this)
-        val notificationTokenUrl = "${BuildConfig.BASE_URL}/notificationToken/${AuthManager.getUser(this).id}"
-
-        val req = JSONObject()
-        req.put("androidRegistrationToken", token)
-
-        val notificationReq = JsonObjectRequest(
-            Request.Method.PATCH, notificationTokenUrl, req,
-            { res ->
-                Log.d(TAG, "sendRegistrationTokenToServer Success")
-            },
-            { error ->
-                val statusCode: Int = error.networkResponse.statusCode
-                Log.d(TAG, "sendRegistrationTokenToServer Failed ($statusCode)")
-            }
-        )
-        queue.add(notificationReq)
     }
 
     private fun sendNotification(messageBody: String) {
@@ -79,15 +58,16 @@ class Firebase : FirebaseMessagingService() {
             PendingIntent.FLAG_IMMUTABLE,
         )
 
-        val channelId = "fcm_default_channel"
+        val channelId = getString(R.string.default_notification_channel_id)
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            // TODO set icon ->           .setSmallIcon()
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("FCM Message")
             .setContentText(messageBody)
             .setAutoCancel(true)
             .setSound(defaultSoundUri)
             .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -103,6 +83,33 @@ class Firebase : FirebaseMessagingService() {
     }
 
     companion object {
-        private const val TAG = "TuneInFirebaseMsgService"
+        private const val TAG = "FirebaseMsg"
+
+        fun sendRegistrationToServer(context: Context, token: String) {
+            val uId = AuthManager.getUser(context).id
+            Log.d(TAG, "sendRegistrationTokenToServer($token) for $uId")
+
+            val queue = Volley.newRequestQueue(context)
+            val notificationTokenUrl = "${BuildConfig.BASE_URL}/user/notificationToken/$uId"
+
+            val req = JSONObject()
+            req.put("androidRegistrationToken", token)
+
+            val notificationReq = JsonObjectRequest(
+                Request.Method.PATCH, notificationTokenUrl, req,
+                { res ->
+                    Log.d(TAG, "sendRegistrationTokenToServer Success")
+                },
+                { error ->
+                    val statusCode: Int = error.networkResponse.statusCode
+                    Log.d(TAG, "sendRegistrationTokenToServer Failed ($statusCode)")
+                }
+            )
+            queue.add(notificationReq)
+        }
+
+        fun clearRegistrationToken(context: Context) {
+            sendRegistrationToServer(context,"")
+        }
     }
 }

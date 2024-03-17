@@ -24,7 +24,7 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix = ".debug"
+//            applicationIdSuffix = ".debug"
             isDebuggable = true
             buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080\"")
         }
@@ -95,4 +95,5 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:x.x.x")
     implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-messaging")
 }
