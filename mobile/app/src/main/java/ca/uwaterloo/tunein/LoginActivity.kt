@@ -38,10 +38,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.data.User
+import ca.uwaterloo.tunein.messaging.Firebase
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import org.json.JSONObject
 
 data class LoginState(
@@ -72,14 +75,28 @@ class LoginActivity : ComponentActivity() {
                 Request.Method.POST, loginUrl, req,
                 { loginRes ->
                     // persist logged in state
-                    AuthManager.setLoggedIn(this,true)
-
+                    AuthManager.setAuthToken(this, loginRes.getString("token"))
                     val user = User(
+                        id=loginRes.getString("id"),
                         username=loginRes.getString("username"),
-                        firstName = loginRes.getString("firstName"),
+                        firstName=loginRes.getString("firstName"),
                         lastName=loginRes.getString("lastName")
                     )
                     AuthManager.setUser(this, user)
+
+                    FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+                        if (!task.isSuccessful) {
+                            Log.w("TuneInFirebaseMsgService", "Fetching FCM registration token failed", task.exception)
+                            return@OnCompleteListener
+                        }
+
+                        val token = task.result
+
+                        val msg = getString(R.string.msg_token_fmt, token)
+                        Log.d("FirebaseMsg", msg)
+                        Firebase.sendRegistrationToServer(this,token)
+                    })
+
                     // change page
                     // check if spotifyAccessToken is null, if so, redirect to SpotifyLoginActivity
                     if (loginRes.isNull("spotifyAccessToken")) {

@@ -28,18 +28,18 @@ suspend fun fetchSearchUsers(searchQuery: String): List<User> = withContext(Disp
     )
     val response = OkHttpClient().newCall(request).execute()
 
-    val json = response.body?.string()
+    val json = response.body.string()
     val j = Json{ ignoreUnknownKeys = true }
-    j.decodeFromString<List<User>>(json!!)
+    j.decodeFromString<List<User>>(json)
 }
 
 class SearchResultsViewModel : ViewModel() {
     private val _searchUsers = MutableStateFlow(SearchUsers())
     val searchUsers: StateFlow<SearchUsers> = _searchUsers.asStateFlow()
 
-    fun updateSearchUsers(searchQuery: TextFieldValue) {
+    fun updateSearchUsers(user: User, searchQuery: TextFieldValue) {
         viewModelScope.launch {
-            val users = fetchSearchUsers(searchQuery.text)
+            val users = fetchSearchUsers(searchQuery.text).filter { u -> u.id != user.id }
             _searchUsers.value = _searchUsers.value.copy(
                 users = users,
                 searchQuery = searchQuery

@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -50,6 +49,7 @@ import androidx.compose.ui.window.Dialog
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.data.User
+import ca.uwaterloo.tunein.messaging.Firebase
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 
@@ -72,7 +72,8 @@ class ProfileActivity : ComponentActivity() {
         }
 
         fun handleLogout() {
-            AuthManager.setLoggedIn(this,false)
+            AuthManager.setAuthToken(this, null)
+            Firebase.clearRegistrationToken(this)
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }

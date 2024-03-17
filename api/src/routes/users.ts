@@ -23,14 +23,16 @@ export const users: Plugin = (server, _, done) => {
         const passwordHash = (await hash(password, salt)).toString("hex");
         const body = { ...req.body, password: undefined };
 
+        const id = randomUUID();
+
         await db.insert(userTable).values({
-          id: randomUUID(),
+          id,
           ...body,
           passwordHash,
           salt,
         });
 
-        return res.code(200).send({ token: encrypt(`${body.username}:${password}`) });
+        return res.code(200).send({id, ...body, passwordHash: undefined, salt: undefined, token: encrypt(`${body.username}:${password}`) });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -106,6 +108,44 @@ export const users: Plugin = (server, _, done) => {
         return res.code(500).send({ error: "Internal server error." });
       }
     },
+  );
+
+  server.patch(
+    "/user/notificationToken/:identifier",
+    {
+      schema: {
+        params: z.object({
+          identifier: z.string(),
+        }),
+        body: z.object({
+          androidRegistrationToken: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { identifier } = req.params;
+
+        const user = await db.query.userTable.findFirst({
+          where: or(eq(userTable.username, identifier), eq(userTable.id, identifier)),
+        });
+
+        if (!user) {
+          return res.code(404).send({ error: "User not found with given parameters." });
+        }
+
+        const androidRegistrationToken = req.body.androidRegistrationToken;
+
+        await db.update(userTable).set({
+          androidRegistrationToken: androidRegistrationToken
+        }).where(eq(userTable.id, user.id));
+
+        return res.code(200).send({});
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    }
   );
 
   server.get(

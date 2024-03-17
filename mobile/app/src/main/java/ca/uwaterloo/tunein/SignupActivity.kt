@@ -42,6 +42,8 @@ import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import org.json.JSONObject
 
 data class SignupState(
@@ -74,54 +76,69 @@ class SignupActivity : ComponentActivity() {
                 return
             }
 
-            val queue = Volley.newRequestQueue(this)
-            val url = "${BuildConfig.BASE_URL}/user"
-
-            val req = JSONObject()
-            req.put("firstName", signupState.firstName)
-            req.put("lastName", signupState.lastName)
-            req.put("username", signupState.username)
-            req.put("password", signupState.password)
-
-            val createUserReq = JsonObjectRequest(Request.Method.POST, url, req,
-                { _ ->
-                    // persist logged in state
-                    AuthManager.setLoggedIn(this,true)
-                    val user = User(
-                        username=signupState.username,
-                        firstName = signupState.firstName,
-                        lastName=signupState.lastName
-                    )
-                    AuthManager.setUser(this, user)
-                    // change page
-                    val intent = Intent(this@SignupActivity, SpotifyConnectActivity::class.java)
-                    startActivity(intent)
-                },
-                { error ->
-                    Log.e("CreateUser", error.toString())
-                    alert.setMessage("An unexpected error has occurred")
-                    alert.create().show()
+            FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w("TuneInFirebaseMsgService", "Fetching FCM registration token failed", task.exception)
+                    return@OnCompleteListener
                 }
-            )
 
-            val userExistsReq = JsonObjectRequest(Request.Method.GET, "${url}/${signupState.username}", null,
-                { _ ->
-                    alert.setMessage("Username already taken")
-                    alert.create().show()
-                },
-                { error ->
-                    val statusCode: Int = error.networkResponse.statusCode
-                    if (statusCode == 404) {
-                        // User does not exist, create new user
-                        queue.add(createUserReq)
-                    } else {
+                val token = task.result
+
+                val msg = getString(R.string.msg_token_fmt, token)
+                Log.d("FirebaseMsg", msg)
+
+                val queue = Volley.newRequestQueue(this)
+                val url = "${BuildConfig.BASE_URL}/user"
+
+                val req = JSONObject()
+                req.put("firstName", signupState.firstName)
+                req.put("lastName", signupState.lastName)
+                req.put("username", signupState.username)
+                req.put("password", signupState.password)
+                req.put("androidRegistrationToken", token)
+
+                val createUserReq = JsonObjectRequest(Request.Method.POST, url, req,
+                    { signupResp ->
+                        // persist logged in state
+                        AuthManager.setAuthToken(this, signupResp.getString("token"))
+                        val user = User(
+                            id=signupResp.getString("id"),
+                            username=signupResp.getString("username"),
+                            firstName=signupResp.getString("firstName"),
+                            lastName=signupResp.getString("lastName")
+                        )
+                        AuthManager.setUser(this, user)
+
+                        // change page
+                        val intent = Intent(this@SignupActivity, SpotifyConnectActivity::class.java)
+                        startActivity(intent)
+                    },
+                    { error ->
                         Log.e("CreateUser", error.toString())
                         alert.setMessage("An unexpected error has occurred")
                         alert.create().show()
                     }
-                }
-            )
-            queue.add(userExistsReq)
+                )
+
+                val userExistsReq = JsonObjectRequest(Request.Method.GET, "${url}/${signupState.username}", null,
+                    { _ ->
+                        alert.setMessage("Username already taken")
+                        alert.create().show()
+                    },
+                    { error ->
+                        val statusCode: Int = error.networkResponse.statusCode
+                        if (statusCode == 404) {
+                            // User does not exist, create new user
+                            queue.add(createUserReq)
+                        } else {
+                            Log.e("CreateUser", error.toString())
+                            alert.setMessage("An unexpected error has occurred")
+                            alert.create().show()
+                        }
+                    }
+                )
+                queue.add(userExistsReq)
+            })
         }
 
         setContent {
