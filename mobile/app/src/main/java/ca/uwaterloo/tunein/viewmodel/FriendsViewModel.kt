@@ -74,6 +74,7 @@ suspend fun getFriends(context: Context): List<User> = withContext(Dispatchers.I
         .addHeader("Authorization", "Bearer ${AuthManager.getAuthToken(context).toString()}")
         .build()
 
+
     val response = client.newCall(request).execute()
     val json = response.body.string()
     val j = Json { ignoreUnknownKeys = true }

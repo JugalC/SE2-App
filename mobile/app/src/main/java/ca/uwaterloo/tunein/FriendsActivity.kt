@@ -51,8 +51,10 @@ import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
+import ca.uwaterloo.tunein.viewmodel.SearchResults
 import ca.uwaterloo.tunein.viewmodel.SearchResultsViewModel
 import ca.uwaterloo.tunein.viewmodel.SearchUsers
+import ca.uwaterloo.tunein.viewmodel.searchResultsToUser
 import com.android.volley.AuthFailureError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -71,20 +73,24 @@ class FriendsActivity : ComponentActivity() {
 
         val friendsViewModel = FriendsViewModel()
 
-        fun handleAcceptInvite(user: User) {
+        fun handleAcceptInvite(user: User, accept: Boolean) {
             val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
 
             val queue = Volley.newRequestQueue(this)
             val reqUrl = "${BuildConfig.BASE_URL}/friendship-request/${user.id}"
 
             val req = JSONObject()
-            req.put("action", "accept")
+            req.put("action", if (accept) "accept" else "reject")
             val acceptInviteReq = object : JsonObjectRequest(
                 Method.PUT, reqUrl, req,
                 { _ ->
                     friendsViewModel.getPendingInvites(this)
                     friendsViewModel.getCurrentFriends(this)
-                    alert.setMessage("Friend request accepted!").setTitle("Success")
+                    if (accept) {
+                        alert.setMessage("Friend request accepted!").setTitle("Success")
+                    } else {
+                        alert.setMessage("Friend request rejected!").setTitle("Success")
+                    }
                     alert.create().show()
                 },
                 { error ->
@@ -112,7 +118,7 @@ class FriendsActivity : ComponentActivity() {
             queue.add(acceptInviteReq)
         }
 
-        fun handleAddFriend(user: User) {
+        fun handleAddFriend(user: SearchResults) {
             val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
 
             val queue = Volley.newRequestQueue(this)
@@ -188,7 +194,7 @@ class FriendsActivity : ComponentActivity() {
                 user = AuthManager.getUser(this),
                 { handleRemoveFriend(it) },
                 { handleAddFriend(it) },
-                { handleAcceptInvite(it) },
+                ::handleAcceptInvite,
                 friendsViewModel,
             ) { goBack() }
         }
@@ -199,8 +205,8 @@ class FriendsActivity : ComponentActivity() {
 fun FriendsContent(
     user: User,
     handleRemoveFriend: (user: User) -> Unit,
-    handleAddFriend: (user: User) -> Unit,
-    handleAcceptInvite: (user: User) -> Unit,
+    handleAddFriend: (user: SearchResults) -> Unit,
+    handleAcceptInvite: (user: User, accept: Boolean) -> Unit,
     friendsViewModel: FriendsViewModel = viewModel(),
     searchResultsViewModel: SearchResultsViewModel = viewModel(),
     goBack: () -> Unit
@@ -258,6 +264,8 @@ fun FriendsContent(
                     if (searchUserState.searchQuery.text.isNotEmpty()) {
                         SearchFriends(
                             handleAddFriend,
+                            handleRemoveFriend,
+                            handleAcceptInvite,
                             searchUserState
                         )
                     } else {
@@ -292,21 +300,53 @@ fun MyFriends(friends: List<User>, handleRemoveFriend: (user: User) -> Unit) {
 
 @Composable
 fun SearchFriends(
-    handleAddFriend: (user: User) -> Unit,
+    handleAddFriend: (user: SearchResults) -> Unit,
+    handleRemoveFriend: (user: User) -> Unit,
+    handleAcceptInvite: (user: User, accept: Boolean) -> Unit,
     searchUserState: SearchUsers,
 ) {
-    for (user in searchUserState.users) {
-        SearchResultsRow(
-            handleAddFriend,
-            user
+    if (searchUserState.friends.isNotEmpty()) {
+        Text(
+            text = "My friends (${searchUserState.friends.size}):",
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        for (user in searchUserState.friends) {
+            FriendRow(
+                searchResultsToUser(user),
+                handleRemoveFriend
+            )
+        }
+    }
+    if (searchUserState.users.isNotEmpty()) {
+        Text(
+            text = "Users (${searchUserState.users.size}):",
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        for (user in searchUserState.users) {
+            SearchResultsRow(
+                handleAddFriend,
+                user
+            )
+        }
+    }
+    if (searchUserState.friendRequests.isNotEmpty()) {
+        Text(
+            text = "Friend Requests (${searchUserState.friendRequests.size}):",
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        for (user in searchUserState.friendRequests) {
+            PendingFriendRow(
+                searchResultsToUser(user),
+                handleAcceptInvite,
+            )
+        }
     }
 }
 
 @Composable
 fun SearchResultsRow(
-    handleAddFriend: (user: User) -> Unit,
-    user: User
+    handleAddFriend: (user: SearchResults) -> Unit,
+    user: SearchResults
 ) {
     Spacer(modifier = Modifier.height(16.dp))
     Row(
@@ -345,7 +385,7 @@ fun SearchResultsRow(
 }
 
 @Composable
-fun PendingFriendRequests(requests: List<User>, handleAcceptInvite: (user: User) -> Unit) {
+fun PendingFriendRequests(requests: List<User>, handleAcceptInvite: (user: User, accept: Boolean) -> Unit) {
     Column {
         Text(
             text = "Pending Friend Requests (${requests.size}):",
@@ -404,7 +444,7 @@ fun FriendRow(user: User, handleRemoveFriend: (user: User) -> Unit) {
 }
 
 @Composable
-fun PendingFriendRow(user: User, handleAcceptInvite: (user: User) -> Unit) {
+fun PendingFriendRow(user: User, handleAcceptInvite: (user: User, accept: Boolean) -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -418,7 +458,7 @@ fun PendingFriendRow(user: User, handleAcceptInvite: (user: User) -> Unit) {
                 Column(
                     modifier = Modifier.padding(0.dp, 0.dp, 20.dp, 0.dp)
                 ) {
-                    Image(
+                    Image( // TODO: replace this with user's profile picture
                         painter = painterResource(id = R.drawable.weeknd),
                         contentDescription = "weeknd art",
                         contentScale = ContentScale.Crop,
@@ -434,15 +474,20 @@ fun PendingFriendRow(user: User, handleAcceptInvite: (user: User) -> Unit) {
                 }
             }
             Row {
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = null,
+                IconButton(
+                    onClick = { handleAcceptInvite(user, false) },
                     modifier = Modifier.size(18.dp),
-                    tint = androidx.compose.ui.graphics.Color.Red
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = androidx.compose.ui.graphics.Color.Red
+                    )
+                }
                 Spacer(modifier = Modifier.width(12.dp))
                 IconButton(
-                    onClick = { handleAcceptInvite(user) },
+                    onClick = { handleAcceptInvite(user, true) },
                     modifier = Modifier.size(18.dp),
                 ) {
                     Icon(
@@ -474,5 +519,5 @@ fun SearchBar(
 @Composable
 fun PreviewFriendsContent() {
     val user = User("1", "jd123", "John", "Doe")
-    FriendsContent(user, {}, {}, {}) {}
+    FriendsContent(user, {}, {}, {_, _ -> }) {}
 }
