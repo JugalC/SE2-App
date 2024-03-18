@@ -21,4 +21,5 @@
 | 2024/03/04 |       |       |         | 2       |        |        | Routing and bug fixing for profile and settings                    |
 | 2024/03/05 |       |       |         | 3       |        |        | Pop-up menus for confirmation and entry in profile and settings    |
 | 2024/03/06 |       |       |         | 4       |        |        | Get most recent song API work and D3 Status Report section         |
-| 2024/03/17 |       |       |         |         |        | 6      | Finish add fiends workflow with correct authorization header       |
+| 2024/03/16 |       |       |         |         |        | 5      | Finish add fiends workflow with correct authorization header       |
+| 2024/03/17 |       |       |         |         |        | 6      | Finish actions for searching / removing / adding friends           |
