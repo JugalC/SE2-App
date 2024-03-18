@@ -1,9 +1,7 @@
 package ca.uwaterloo.tunein.auth
 
 import android.content.Context
-import android.util.Log
 import ca.uwaterloo.tunein.data.User
-import ca.uwaterloo.tunein.messaging.Firebase
 
 private const val PREF_NAME = "auth_pref"
 private val KEY_AUTH_TOKEN = "auth_token"

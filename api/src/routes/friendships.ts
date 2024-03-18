@@ -1,10 +1,11 @@
 import { db } from "../db/db";
-import { Plugin, authSchema, paginationSchema } from "../types";
+import { Plugin, authSchema, paginationSchema, searchSchema } from "../types";
 import { z } from "zod";
-import { and, eq, ne, or } from "drizzle-orm";
+import { and, eq, isNull, ne, or } from "drizzle-orm";
 import { authenticateUser } from "../lib/authenticateUser";
-import { friendshipRequestTable, friendshipTable, userTable } from "../db/schema";
+import { friendshipRequestTable, friendshipTable, getUserSchema, userTable } from "../db/schema";
 import { randomUUID } from "crypto";
+import { generateLikeFilters } from "../lib/generateLikeFilters";
 
 export const friendships: Plugin = (server, _, done) => {
   server.post(
@@ -148,10 +149,83 @@ export const friendships: Plugin = (server, _, done) => {
             username: userTable.username,
           })
           .from(friendshipRequestTable)
-          .where(eq(friendshipRequestTable.userIdReceiving, user.id))
+          .where(
+            and(
+              eq(friendshipRequestTable.userIdReceiving, user.id),
+              isNull(friendshipRequestTable.rejectedAt),
+            )
+          )
           .innerJoin(userTable, eq(friendshipRequestTable.userIdRequesting, userTable.id));
 
         return res.code(200).send(friendshipRequests);
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  // search friends
+  server.get(
+    "/friendships/search",
+    {
+      schema: {
+        querystring: searchSchema.and(getUserSchema).and(paginationSchema),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { search, page, limit, id } = req.query;
+
+        const where = generateLikeFilters([
+          {
+            col: userTable.firstName,
+            val: search,
+          },
+          {
+            col: userTable.lastName,
+            val: search,
+          },
+          {
+            col: userTable.username,
+            val: search,
+          },
+        ]);
+
+        // const pendingFriendshipRequests = alias(friendshipRequestTable, "pendingFriendshipRequests");
+        // const outgoingFriendshipRequests = alias(friendshipRequestTable, "outgoingFriendshipRequests");
+        const users = await db
+          .select({
+            id: userTable.id,
+            firstName: userTable.firstName,
+            lastName: userTable.lastName,
+            username: userTable.username,
+            friendshipRequest: friendshipRequestTable.id,
+            friendship: friendshipTable.id,
+          })
+          .from(userTable)
+          .limit(limit)
+          .offset(page * limit)
+          .where(where)
+          .leftJoin(friendshipRequestTable,
+            and(
+              eq(friendshipRequestTable.userIdReceiving, id!),
+              eq(friendshipRequestTable.userIdRequesting, userTable.id)
+            )
+          )
+          // .leftJoin(outgoingFriendshipRequests,
+          //   and(
+          //     eq(outgoingFriendshipRequests.userIdRequesting, id!),
+          //     eq(outgoingFriendshipRequests.userIdReceiving, userTable.id)
+          //   )
+          // )
+          .leftJoin(friendshipTable,
+            and(
+              or(eq(friendshipTable.userId1, id!), eq(friendshipTable.userId2, id!)),
+              or(eq(friendshipTable.userId1, userTable.id), eq(friendshipTable.userId2, userTable.id)))
+          );
+
+        return res.code(200).send(users);
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
