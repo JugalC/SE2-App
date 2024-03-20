@@ -23,3 +23,6 @@
 | 2024/03/06 |       |       |         | 4       |        |        | Get most recent song API work and D3 Status Report section         |
 | 2024/03/16 |       |       |         |         |        | 5      | Finish add fiends workflow with correct authorization header       |
 | 2024/03/17 |       |       |         |         |        | 6      | Finish actions for searching / removing / adding friends           |
+| 2024/03/18 |       |       |         | 3       |        |        | D4 Report Example 3 Work                                           |
+| 2024/03/19 |       |       |         | 2       |        |        | Working on posts API to get most recent activity                   |
+| 2024/03/20 |       |       |         | 3       |        |        | Working on posts endpoint and db table insertion                   |
