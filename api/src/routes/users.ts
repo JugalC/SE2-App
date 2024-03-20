@@ -6,11 +6,8 @@ import { z } from "zod";
 import { eq, or } from "drizzle-orm";
 import { Plugin, paginationSchema, searchSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
-<<<<<<< Updated upstream
 import { encrypt } from "../lib/encryption";
-=======
 import { CONNREFUSED } from "dns";
->>>>>>> Stashed changes
 
 export const users: Plugin = (server, _, done) => {
   server.post(
@@ -247,7 +244,7 @@ export const users: Plugin = (server, _, done) => {
     async (req, res) => {
       try {
         const { identifier } = req.params;
-
+        
         const user = await db.query.userTable.findFirst({
           where: or(eq(userTable.username, identifier), eq(userTable.id, identifier)),
         });
@@ -273,12 +270,12 @@ export const users: Plugin = (server, _, done) => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
-              Authorization: "Basic " + Buffer.from("68edc012e9bf47b7a7769a372b705080" + ":" + "e5ea9469569c443e83a2913bd3ad2bf7").toString("base64"),
+              Authorization: "Basic " + Buffer.from(process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_CLIENT_SECRET).toString("base64"),
             },
             body: new URLSearchParams({
               grant_type: 'refresh_token',
               refresh_token: reset_token,
-              client_id: "68edc012e9bf47b7a7769a372b705080"
+              client_id: process.env.SPOTIFY_CLIENT_ID
             }),
           }
           const refresh_response = await fetch(url, payload);
