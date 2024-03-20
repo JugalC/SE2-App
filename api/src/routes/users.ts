@@ -1,5 +1,5 @@
 import { db } from "../db/db";
-import { getUserSchema, insertUserSchema, userTable } from "../db/schema";
+import { getUserSchema, insertUserSchema, postTable, userTable } from "../db/schema";
 import { randomUUID, timingSafeEqual } from "crypto";
 import { generateSalt, hash } from "../lib/hashing";
 import { z } from "zod";
@@ -244,7 +244,7 @@ export const users: Plugin = (server, _, done) => {
     async (req, res) => {
       try {
         const { identifier } = req.params;
-        
+
         const user = await db.query.userTable.findFirst({
           where: or(eq(userTable.username, identifier), eq(userTable.id, identifier)),
         });
@@ -304,13 +304,45 @@ export const users: Plugin = (server, _, done) => {
             // console.log(response.text())
             const value = await response.json();
 
-            var artist = value["items"][0]["track"]["album"]["artists"][0]["name"]
-            var album_art = value["items"][0]["track"]["album"]["images"][1]["url"]
-            var album_name = value["items"][0]["track"]["album"]["name"]
-            var track_name = value["items"][0]["track"]["name"]
+            const recently_played_song = value["items"][0]
+          
+            let all_artists = []
+            for (const artist_obj of recently_played_song["track"]["album"]["artists"]) { all_artists.push(artist_obj["name"]) }
+            var artists = all_artists.join(',');
+            console.log(artists)
 
-            var resp_obj = {"artist": artist, "album_art": album_art, "album_name": album_name, "track_name": track_name}
+            var imageUrl = value["items"][0]["track"]["album"]["images"][1]["url"]
+            var albumName = value["items"][0]["track"]["album"]["name"]
+            var name = value["items"][0]["track"]["name"]
+
+            const id = randomUUID();
+            var spotifyTrackId = recently_played_song["track"]["id"]
+            var durationMs = recently_played_song["track"]["duration_ms"]
+            var spotifyUrl = recently_played_song["track"]["external_urls"]["spotify"]
+            var userId = identifier
+            var listenedAt = new Date(recently_played_song["played_at"])
+            var createdAt = new Date()
+
+            var resp_obj = {"id": id, "spotify_track_id": spotifyTrackId, "name": name, "album_name": albumName, 
+            "artists": artists, "duration_ms": durationMs, "image_url": imageUrl, "spotify_url": spotifyUrl,
+            "user_id": userId, "listened_at": listenedAt, "created_at": createdAt}
+
             console.log(resp_obj)
+
+            await db.insert(postTable).values({
+              id,
+              spotifyTrackId,
+              name,
+              albumName,
+              artists,
+              durationMs,
+              imageUrl,
+              spotifyUrl,
+              userId,
+              listenedAt,
+              createdAt
+            });
+
             return res.code(200).send(resp_obj);
 
         }
@@ -318,15 +350,51 @@ export const users: Plugin = (server, _, done) => {
 
         else {
           console.log("TOken is goood")
-          // console.log(value["items"][0])
-          var artist = value["items"][0]["track"]["album"]["artists"][0]["name"]
-          var album_art = value["items"][0]["track"]["album"]["images"][1]["url"]
-          var album_name = value["items"][0]["track"]["album"]["name"]
-          var track_name = value["items"][0]["track"]["name"]
+        
+          const recently_played_song = value["items"][0]
+          
+          let all_artists = []
+          for (const artist_obj of recently_played_song["track"]["album"]["artists"]) { all_artists.push(artist_obj["name"]) }
+          var artists = all_artists.join(',');
+          console.log(artists)
 
-          var resp_obj = {"artist": artist, "album_art": album_art, "album_name": album_name, "track_name": track_name}
-          console.log(resp_obj)
-          return res.code(200).send(resp_obj);
+          var imageUrl = value["items"][0]["track"]["album"]["images"][1]["url"]
+          var albumName = value["items"][0]["track"]["album"]["name"]
+          var name = value["items"][0]["track"]["name"]
+
+          const id = randomUUID();
+          var spotifyTrackId = recently_played_song["track"]["id"]
+          var durationMs = recently_played_song["track"]["duration_ms"]
+          var spotifyUrl = recently_played_song["track"]["external_urls"]["spotify"]
+          var userId = identifier
+          var listenedAt = new Date(recently_played_song["played_at"])
+          var createdAt = new Date()
+
+          var resp_obj_2 = {"id": id, "spotify_track_id": spotifyTrackId, "name": name, "album_name": albumName, 
+          "artists": artists, "duration_ms": durationMs, "image_url": imageUrl, "spotify_url": spotifyUrl,
+          "user_id": userId, "listened_at": listenedAt, "created_at": createdAt}
+
+          console.log(resp_obj_2)
+
+          await db.insert(postTable).values({
+            id,
+            spotifyTrackId,
+            name,
+            albumName,
+            artists,
+            durationMs,
+            imageUrl,
+            spotifyUrl,
+            userId,
+            listenedAt,
+            createdAt
+          });
+
+         
+
+          // console.log(resp_obj_2)
+          return res.code(200).send(resp_obj_2);
+          // return res.code(200).send(recently_played_song)
         }
       } catch (e) {
         console.error(e);
