@@ -51,7 +51,7 @@ export const spotify: Plugin = (server, _, done) => {
       },
     },
     (req, res) => {
-      const scope = "user-read-recently-played";
+      const scope = "user-read-recently-played user-read-private user-read-currently-playing user-top-read";
 
       const { identifier } = req.params;
 
