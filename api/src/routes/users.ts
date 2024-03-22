@@ -26,13 +26,15 @@ export const users: Plugin = (server, _, done) => {
 
         const id = randomUUID();
 
+        const profilePicture = ""
         await db.insert(userTable).values({
           id,
           ...body,
           passwordHash,
           salt,
+          profilePicture,
         });
-
+        
         return res.code(200).send({id, ...body, passwordHash: undefined, salt: undefined, token: encrypt(`${body.username}:${password}`) });
       } catch (e) {
         console.error(e);
@@ -225,6 +227,49 @@ export const users: Plugin = (server, _, done) => {
           .where(where);
 
         return res.code(200).send(users);
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.get(
+    "/profile_pic/:identifier",
+    {
+      schema: {
+        params: z.object({
+          identifier: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { identifier } = req.params;
+
+        const user = await db.query.userTable.findFirst({
+          where: or(eq(userTable.username, identifier), eq(userTable.id, identifier)),
+        });
+
+        if (!user) {
+          return res.code(404).send({ error: "User not found with given parameters." });
+        }
+
+        var access_token = user["spotifyAccessToken"] || "None"
+        var starting = "Bearer "
+
+        const response = await fetch('https://api.spotify.com/v1/me', {headers: {'Authorization': starting.concat(access_token)}})
+        // console.log(response.text())
+        const value = await response.json();
+
+        if (value["images"].length > 0){
+          console.log(value["images"][1]["url"])
+        }
+        else {
+          console.log("https://builtprefab.com/wp-content/uploads/2019/01/cropped-blank-profile-picture-973460_960_720-300x300.png")
+        }
+
+        return res.code(200).send({ ...user, passwordHash: undefined, salt: undefined });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
