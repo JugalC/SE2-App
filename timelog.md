@@ -26,3 +26,4 @@
 | 2024/03/18 |       |       |         | 3       |        |        | D4 Report Example 3 Work                                           |
 | 2024/03/19 |       |       |         | 2       |        |        | Working on posts API to get most recent activity                   |
 | 2024/03/20 |       |       |         | 3       |        |        | Working on posts endpoint and db table insertion                   |
+| 2024/03/21 |       |       |         | 4       |        |        | Profile Picture spotify API, backend API and database integration  |
