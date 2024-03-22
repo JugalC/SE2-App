@@ -14,6 +14,7 @@ export const userTable = sqliteTable("user", {
   androidRegistrationToken: text("android_registration_token").notNull(),
   passwordHash: text("password_hash").notNull(),
   salt: text("salt").notNull(),
+  profilePicture: text("profile_picture"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
