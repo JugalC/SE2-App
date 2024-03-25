@@ -251,14 +251,13 @@ export const users: Plugin = (server, _, done) => {
     },
     async (req, res) => {
       try {
-        console.log("Request Made")
         const { identifier } = req.params;
 
         const user = await db.query.userTable.findFirst({
           where: or(eq(userTable.username, identifier), eq(userTable.id, identifier)),
         });
 
-        const posts = await db.select().from(postTable).where(eq(postTable.userId, identifier)).orderBy(desc(postTable.name)).limit(3);
+        const posts = await db.select().from(postTable).where(eq(postTable.userId, identifier)).orderBy((postTable.name)).limit(3);
 
         var previous_posts = [{}]
 
@@ -299,13 +298,21 @@ export const users: Plugin = (server, _, done) => {
         const first_name = user["firstName"]
         const username = user["username"]
         const profile_pic = user["profilePicture"]
-        const created = user["createdAt"]
+        var created = user["createdAt"]
+        
+        if (created == null) {
+          created = new Date()
+        }
+
+
         const spotify_name = user["displayName"]
         
         // const previous_posts = [
         //   {name: "Keep The Family Close", album_name: "Views", artists: "Drake", image_url: "https://i.scdn.co/image/ab67616d00001e029416ed64daf84936d89e671c", caption: "Today"},
         //   {name: "Out of Time", album_name: "The Highlights (Deluxe)", artists: "The Weeknd", image_url: "https://i.scdn.co/image/ab67616d00001e02c87bfeef81a210ddb7f717b5", caption: "Yesterday"},
         // ]
+
+
 
         return res.code(200).send(
           { first_name: first_name, username: username, spotify_name: spotify_name, friends_num: friends_num, profile_pic: profile_pic, created: created, previous_posts: previous_posts}
@@ -342,7 +349,7 @@ export const users: Plugin = (server, _, done) => {
         var starting = "Bearer "
 
         const response = await fetch('https://api.spotify.com/v1/me', {headers: {'Authorization': starting.concat(access_token)}})
-        // console.log(response.text())
+
         const value = await response.json();
 
         if (value["images"].length > 0){

@@ -85,22 +85,6 @@ class ProfileActivity : ComponentActivity() {
 
 
         val user = AuthManager.getUser(this)
-//        val queue = Volley.newRequestQueue(this)
-//
-//        val url = "${BuildConfig.BASE_URL}/profile_info/${user.id}"
-//        println(user.id)
-//        val profileInfoReq = JsonObjectRequest(Request.Method.GET, url, null,
-//            { profileResp ->
-//                println(profileResp.getString("profile_pic"))
-//                profileReturned = Json.decodeFromString<Profile>(profileResp.toString())
-//                println(profileReturned.previous_posts[0].album_name)
-//            },
-//            { error ->
-//                Log.e("ProfileInfo", error.toString())
-//            }
-//        )
-//        queue.add(profileInfoReq)
-
 
         fun goBack() {
             val intent = Intent(this, PostsActivity::class.java)
@@ -164,6 +148,7 @@ fun ProfileContent(user: User,
         profileViewModel.updateReturnedProfile(user.id)
     }
     //This is the end of GPT 3.5 generation
+
 
     TuneInTheme {
         Surface(
@@ -246,7 +231,6 @@ fun ProfileContent(user: User,
                         .background(color = Color.LightGray)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-//                PreviousPosts()
                 returnedProfile.previous_posts.forEach{item -> PreviousPostsGen(item.image_url, item.name, item.artists, item.caption)}
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -315,40 +299,6 @@ fun ProfileContent(user: User,
         DialogWithImage(onDismissRequest, onConfirmation)
     }
 }
-
-@Composable
-fun ProfileOption(icon: ImageVector, text: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { }
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(text = text)
-    }
-}
-
-@Composable
-fun ProfilePicture() {
-    Image(
-        painter = painterResource(id = R.drawable.profile_pic),
-        contentDescription = "weeknd art",
-        contentScale = ContentScale.Crop,
-        modifier = Modifier
-            .size(156.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .aspectRatio(1f / 1f)
-    )
-}
-
 @Composable
 fun ProfilePicURL(url: String) {
     AsyncImage(
@@ -360,85 +310,6 @@ fun ProfilePicURL(url: String) {
             .clip(RoundedCornerShape(16.dp))
             .aspectRatio(1f / 1f)
     )
-}
-
-//@Composable
-//fun PreviousPostsGeneric()
-
-@Composable
-fun PreviousPosts() {
-    Column(modifier = Modifier
-        .fillMaxWidth()){
-        Text(text = "Today", fontSize = 12.sp, color = Color.LightGray)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row() {
-            Column(
-                modifier = Modifier
-                .fillMaxWidth(0.3f)
-            ){
-                Image(
-                    painter = painterResource(id = R.drawable.weeknd),
-                    contentDescription = "weeknd art",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(96.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .aspectRatio(1f / 1f)
-
-
-                )
-            }
-            Column(
-                modifier = Modifier
-
-            ){
-                Text("After Hours")
-                Text("The Weeknd", fontSize=12.sp, color = Color.LightGray)
-            }
-
-        }
-    }
-    Spacer(modifier = Modifier.height(8.dp))
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(color = Color.MediumGray)
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Column(modifier = Modifier
-        .fillMaxWidth()){
-        Text(text = "2 Days Ago", fontSize = 12.sp, color = Color.LightGray)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row() {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.3f)
-            ){
-                Image(
-                    painter = painterResource(id = R.drawable.starboy),
-                    contentDescription = "weeknd art",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(96.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .aspectRatio(1f / 1f)
-
-
-                )
-            }
-            Column(
-                modifier = Modifier
-
-            ){
-                Text("Die For You")
-                Text("The Weeknd", fontSize=12.sp, color = Color.LightGray)
-            }
-
-        }
-    }
-
 }
 
 @Composable
@@ -535,14 +406,3 @@ fun DialogWithImage(
         }
     }
 }
-
-//@Preview
-//@Composable
-//fun PreviewProfileContent() {
-//    val user = User("JohnDoe123", "John", "Doe")
-//    val profile_returned = Profile("rishi-new", "Hrishit", "rishi_spot", 12,
-//        "https://i.scdn.co/image/ab6775700000ee8519e0277b6134bd156bd45111",
-//        listOf(PreviousPost("Keep The Family Close", "Views", "Drake", "https://i.scdn.co/image/ab67616d00001e029416ed64daf84936d89e671c"))
-//    )
-//    ProfileContent(user, profile_returned, {}, {}, {}, {}) { }
-//}
