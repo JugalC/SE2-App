@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -52,8 +53,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
+import ca.uwaterloo.tunein.viewmodel.FeedViewModel
 import kotlin.concurrent.thread
+import androidx.lifecycle.viewmodel.compose.viewModel
+import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
+import ca.uwaterloo.tunein.viewmodel.ProfileViewModel
+import coil.compose.AsyncImage
+
 
 
 data class Post(val id: Int, val content: String, val author: String, val imageResId: Int, val profilePhotoResId: Int, val username: String)
@@ -65,7 +71,7 @@ val samplePosts = listOf(
 )
 
 class PostsActivity : ComponentActivity() {
-
+    private val viewModel by viewModels<FeedViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -83,6 +89,7 @@ class PostsActivity : ComponentActivity() {
             PostsContent(
                 handleClickFriends= { handleClickFriends() },
                 handleClickSettings= { handleClickSettings() },
+                feedViewModel = viewModel
             )
         }
     }
@@ -173,15 +180,23 @@ fun PostItem(post: Post, handleClickSettings: () -> Unit) {
 fun PostsContent(
     handleClickFriends: () -> Unit,
     handleClickSettings: () -> Unit,
-    viewModel: FriendsViewModel = viewModel()
+    viewModel: FriendsViewModel = viewModel(),
+    feedViewModel: FeedViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val pendingInvites by viewModel.pendingInvites.collectAsStateWithLifecycle()
+
+    val returnedFeed by remember { feedViewModel.returnedFeed }
+
 
     LaunchedEffect(Unit) {
         thread {
             viewModel.getPendingInvites(context)
         }
+    }
+
+    LaunchedEffect(returnedFeed) {
+        feedViewModel.updateReturnedFeed(user.id)
     }
 
     TuneInTheme {
