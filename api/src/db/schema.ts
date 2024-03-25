@@ -15,6 +15,7 @@ export const userTable = sqliteTable("user", {
   passwordHash: text("password_hash").notNull(),
   salt: text("salt").notNull(),
   profilePicture: text("profile_picture"),
+  displayName: text("display_name"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
