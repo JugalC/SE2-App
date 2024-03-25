@@ -1,5 +1,5 @@
 import { db } from "../db/db";
-import { getUserSchema, insertUserSchema, postTable, userTable } from "../db/schema";
+import { friendshipTable, getUserSchema, insertUserSchema, postTable, userTable } from "../db/schema";
 import { randomUUID, timingSafeEqual } from "crypto";
 import { generateSalt, hash } from "../lib/hashing";
 import { z } from "zod";
@@ -8,6 +8,9 @@ import { Plugin, paginationSchema, searchSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
 import { encrypt } from "../lib/encryption";
 import { CONNREFUSED } from "dns";
+import { asc, desc } from 'drizzle-orm';
+import { count, sql } from 'drizzle-orm';
+
 
 export const users: Plugin = (server, _, done) => {
   server.post(
@@ -27,12 +30,15 @@ export const users: Plugin = (server, _, done) => {
         const id = randomUUID();
 
         const profilePicture = ""
+        var createdAt = new Date()
+
         await db.insert(userTable).values({
           id,
           ...body,
           passwordHash,
           salt,
           profilePicture,
+          createdAt
         });
         
         return res.code(200).send({id, ...body, passwordHash: undefined, salt: undefined, token: encrypt(`${body.username}:${password}`) });
@@ -235,6 +241,90 @@ export const users: Plugin = (server, _, done) => {
   );
 
   server.get(
+    "/profile_info/:identifier",
+    {
+      schema: {
+        params: z.object({
+          identifier: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { identifier } = req.params;
+
+        const user = await db.query.userTable.findFirst({
+          where: or(eq(userTable.username, identifier), eq(userTable.id, identifier)),
+        });
+
+        const posts = await db.select().from(postTable).where(eq(postTable.userId, identifier)).orderBy((postTable.name)).limit(3);
+
+        var previous_posts = [{}]
+
+        if ((posts.length) == 3) {
+          previous_posts = [
+            {name: posts[0].name, album_name: posts[0].albumName, artists: posts[0].artists, image_url: posts[0].imageUrl, caption: "Today"},
+            {name: posts[1].name, album_name: posts[1].albumName, artists: posts[1].artists, image_url: posts[1].imageUrl, caption: "Yesterday"},
+            {name: posts[2].name, album_name: posts[2].albumName, artists: posts[2].artists, image_url: posts[2].imageUrl, caption: "2 Days Ago"}
+          ]
+        }
+
+        if ((posts.length) == 2) {
+          previous_posts = [
+            {name: posts[0].name, album_name: posts[0].albumName, artists: posts[0].artists, image_url: posts[0].imageUrl, caption: "Today"},
+            {name: posts[1].name, album_name: posts[1].albumName, artists: posts[1].artists, image_url: posts[1].imageUrl, caption: "Yesterday"}
+          ]
+        }
+
+        if ((posts.length) == 1) {
+          previous_posts = [
+            {name: posts[0].name, album_name: posts[0].albumName, artists: posts[0].artists, image_url: posts[0].imageUrl, caption: "Today"},
+          ]
+        }
+
+        if ((posts.length) == 0) {
+          previous_posts = [
+            {name: "No Posts", album_name: "Wait for the next", artists: "Wait for Daily Post", image_url: "https://en.wikipedia.org/wiki/File:Color_icon_gray_v2.svg", caption: "No Posts"},
+          ]
+        }
+
+        const friends_number = await db.select({ count: count() }).from(friendshipTable).where(or(eq(friendshipTable.userId1, identifier), eq(friendshipTable.userId2, identifier)));
+        const friends_num = (friends_number[0]["count"])
+
+        if (!user) {
+          return res.code(404).send({ error: "User not found with given parameters." });
+        }
+
+        const first_name = user["firstName"]
+        const username = user["username"]
+        const profile_pic = user["profilePicture"]
+        var created = user["createdAt"]
+        
+        if (created == null) {
+          created = new Date()
+        }
+
+
+        const spotify_name = user["displayName"]
+        
+        // const previous_posts = [
+        //   {name: "Keep The Family Close", album_name: "Views", artists: "Drake", image_url: "https://i.scdn.co/image/ab67616d00001e029416ed64daf84936d89e671c", caption: "Today"},
+        //   {name: "Out of Time", album_name: "The Highlights (Deluxe)", artists: "The Weeknd", image_url: "https://i.scdn.co/image/ab67616d00001e02c87bfeef81a210ddb7f717b5", caption: "Yesterday"},
+        // ]
+
+
+
+        return res.code(200).send(
+          { first_name: first_name, username: username, spotify_name: spotify_name, friends_num: friends_num, profile_pic: profile_pic, created: created, previous_posts: previous_posts}
+        );
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.get(
     "/profile_pic/:identifier",
     {
       schema: {
@@ -259,7 +349,7 @@ export const users: Plugin = (server, _, done) => {
         var starting = "Bearer "
 
         const response = await fetch('https://api.spotify.com/v1/me', {headers: {'Authorization': starting.concat(access_token)}})
-        // console.log(response.text())
+
         const value = await response.json();
 
         if (value["images"].length > 0){

@@ -116,6 +116,8 @@ export const spotify: Plugin = (server, _, done) => {
         // console.log(response.text())
         const value = await response.json();
 
+        const display_name = value["display_name"]
+
         if (value["images"].length > 0){
           profile_pic = value["images"][1]["url"]
         }
@@ -128,7 +130,8 @@ export const spotify: Plugin = (server, _, done) => {
           .set({
             spotifyAccessToken: data.access_token,
             spotifyRefreshToken: data.refresh_token,
-            profilePicture: profile_pic
+            profilePicture: profile_pic,
+            displayName: display_name
           })
           .where(or(eq(userTable.username, identifier), eq(userTable.id, identifier)));
 
