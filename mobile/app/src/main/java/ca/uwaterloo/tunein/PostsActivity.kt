@@ -75,8 +75,10 @@ class PostsActivity : ComponentActivity() {
             startActivity(intent)
         }
 
-        fun handleClickSettings() {
+        fun handleClickSettings(user_id: String) {
             val intent = Intent(this, ProfileActivity::class.java)
+            println("Adding $user_id")
+            intent.putExtra("user_profile", user_id);
             startActivity(intent)
         }
 
@@ -84,7 +86,7 @@ class PostsActivity : ComponentActivity() {
             PostsContent(
                 user,
                 handleClickFriends= { handleClickFriends() },
-                handleClickSettings= { handleClickSettings() },
+                handleClickSettings= ::handleClickSettings,
                 feedViewModel = viewModel
             )
         }
@@ -92,7 +94,7 @@ class PostsActivity : ComponentActivity() {
 }
 
 @Composable
-fun PostItemGeneration(post: SinglePost, handleClickSettings: () -> Unit) {
+fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) -> Unit) {
     var isLiked by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.padding(bottom = 16.dp, end = 16.dp).fillMaxWidth()) {
@@ -104,7 +106,7 @@ fun PostItemGeneration(post: SinglePost, handleClickSettings: () -> Unit) {
             backgroundColor = Color(0xFF1E1E1E),
         ) {
             Column {
-                Row (modifier = Modifier.clickable { handleClickSettings() })
+                Row (modifier = Modifier.clickable { handleClickSettings(post.user_id) })
                 {
                     AsyncImage(
                         model = post.profile_picture,
@@ -171,90 +173,12 @@ fun PostItemGeneration(post: SinglePost, handleClickSettings: () -> Unit) {
 
 
 
-//@Composable
-//fun PostItem(post: Post, handleClickSettings: () -> Unit) {
-//    var isLiked by remember { mutableStateOf(false) }
-//
-//    Box(modifier = Modifier.padding(bottom = 16.dp, end = 16.dp).fillMaxWidth()) {
-//        Card(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(vertical = 8.dp),
-//            elevation = 4.dp,
-//            backgroundColor = Color(0xFF1E1E1E),
-//        ) {
-//            Column {
-//                Row (modifier = Modifier.clickable { handleClickSettings() })
-//                {
-//                    Image(
-//                        painter = painterResource(id = post.profilePhotoResId),
-//                        contentDescription = "Profile photo",
-//                        modifier = Modifier
-//                            .size(30.dp)
-//                            .clip(CircleShape)
-//                            .align(Alignment.Top)
-//                    )
-//                    Spacer(modifier = Modifier.width(8.dp))
-//
-//                    Column(modifier = Modifier.align(Alignment.CenterVertically)) {
-//                        Text(text = post.username, style = MaterialTheme.typography.bodyLarge)
-//                    }
-//                }
-//
-//                Spacer(modifier = Modifier.height(16.dp))
-//                Row{
-//                    Image(
-//                        painter = painterResource(id = post.imageResId),
-//                        contentDescription = "Post image",
-//                        contentScale = ContentScale.Crop,
-//                        modifier = Modifier.size(150.dp)
-//                    )
-//                    Spacer(modifier = Modifier.width(12.dp))
-//                    Column {
-//                        Text(text = post.content, style = MaterialTheme.typography.bodyLarge)
-//                        Spacer(modifier = Modifier.height(5.dp))
-//                        Text(text = post.author, style = MaterialTheme.typography.bodyMedium)
-//                    }
-//                }
-//            }
-//        }
-//        Row(
-//            modifier = Modifier.align(Alignment.BottomEnd)
-//        ) {
-//
-//            IconButton(
-//                onClick = { isLiked = !isLiked },
-//                modifier = Modifier
-//                    .size(48.dp)
-//            ) {
-//                Icon(
-//                    imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-//                    contentDescription = "Like",
-//                    tint = if (isLiked) Color.Red else Color.White
-//                )
-//            }
-//            IconButton(
-//                onClick = { /* TODO: comment button click action */ },
-//                modifier = Modifier.size(48.dp)
-//            ) {
-//                androidx.compose.material.Icon(
-//                    painter = painterResource(id = R.drawable.comment),
-//                    contentDescription = "Comment",
-//                    modifier = Modifier.size(24.dp),
-//                    tint = Color.White
-//                )
-//            }
-//        }
-//    }
-//}
-
-
 
 @Composable
 fun PostsContent(
     user: User,
     handleClickFriends: () -> Unit,
-    handleClickSettings: () -> Unit,
+    handleClickSettings: (user_id: String) -> Unit,
     viewModel: FriendsViewModel = viewModel(),
     feedViewModel: FeedViewModel = viewModel()
 ) {
@@ -304,7 +228,7 @@ fun PostsContent(
                         text = "TuneIn",
                         style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     )
-                    IconButton(onClick = { handleClickSettings() }) {
+                    IconButton(onClick = { handleClickSettings(user.id) }) {
                         Icon(Icons.Default.Face, contentDescription = "Settings")
                     }
                 }
@@ -312,7 +236,7 @@ fun PostsContent(
                 LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     items(returnedFeed.posts) { post ->
                         PostItemGeneration(post) {
-                            handleClickSettings()
+                            handleClickSettings(post.user_id)
                         }
                     }
                 }
@@ -321,9 +245,3 @@ fun PostsContent(
     }
 
 }
-
-//@Preview
-//@Composable
-//fun PostsPreview() {
-//    PostsContent({}, {})
-//}

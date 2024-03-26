@@ -2,7 +2,6 @@ package ca.uwaterloo.tunein
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -42,32 +41,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
-import ca.uwaterloo.tunein.data.PreviousPost
+import ca.uwaterloo.tunein.data.Profile
 import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.messaging.Firebase
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.data.Profile
-import com.android.volley.Request
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.viewmodel.compose.viewModel
-import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
 import ca.uwaterloo.tunein.viewmodel.ProfileViewModel
 import coil.compose.AsyncImage
 
@@ -83,8 +70,21 @@ class ProfileActivity : ComponentActivity() {
 
         var profileReturned: Profile = Profile()
 
+        val intent = this.intent
+        var userId = ""
+        userId = intent.getStringExtra("user_profile").toString()
+//        println(gameId)
 
         val user = AuthManager.getUser(this)
+
+        var self_profile = ""
+        if (userId == user.id) {
+            self_profile = "True"
+        }
+        else {
+            self_profile = "False"
+        }
+
 
         fun goBack() {
             val intent = Intent(this, PostsActivity::class.java)
@@ -115,7 +115,8 @@ class ProfileActivity : ComponentActivity() {
 
         setContent {
             ProfileContent(
-                user,
+                userId,
+                self_profile,
                 profileReturned,
                 goBack={goBack()},
                 handleClickAccountSettings={handleClickAccountSettings()},
@@ -131,7 +132,8 @@ class ProfileActivity : ComponentActivity() {
 
 
 @Composable
-fun ProfileContent(user: User,
+fun ProfileContent(userId: String,
+                   self_profile: String,
                    profileReturned: Profile,
                    goBack: () -> Unit,
                    handleClickAccountSettings: () -> Unit,
@@ -145,7 +147,7 @@ fun ProfileContent(user: User,
 
     // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
     LaunchedEffect(returnedProfile) {
-        profileViewModel.updateReturnedProfile(user.id)
+        profileViewModel.updateReturnedProfile(userId)
     }
     //This is the end of GPT 3.5 generation
 
@@ -186,7 +188,7 @@ fun ProfileContent(user: User,
                             .fillMaxWidth(0.6f)
 
                     ){
-                        Text(text = returnedProfile.first_name, fontSize=32.sp,)
+                        Text(text = returnedProfile.first_name, fontSize = 32.sp)
                         Text(text = "@${returnedProfile.username}", fontSize=16.sp)
                         Spacer(modifier = Modifier.height(34.dp))
                         Row(
@@ -234,58 +236,61 @@ fun ProfileContent(user: User,
                 returnedProfile.previous_posts.forEach{item -> PreviousPostsGen(item.image_url, item.name, item.artists, item.caption)}
 
                 Spacer(modifier = Modifier.weight(1f))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { handleClickAccountSettings() }
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
+                if (self_profile == "True") {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { handleClickAccountSettings() }
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
                         Text(text = "Account Settings")
-                }
+                    }
 
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { handleLogout() }
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(text = "Log Out")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { handleLogout() }
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(text = "Log Out")
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showDialog.value = true }
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(text = "Delete Account")
+                    }
+
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showDialog.value = true }
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(text = "Delete Account")
-                }
 
 
                 Spacer(modifier = Modifier.height(10.dp))
