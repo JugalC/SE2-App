@@ -27,3 +27,5 @@
 | 2024/03/19 |       |       |         | 2       |        |        | Working on posts API to get most recent activity                   |
 | 2024/03/20 |       |       |         | 3       |        |        | Working on posts endpoint and db table insertion                   |
 | 2024/03/21 |       |       |         | 4       |        |        | Profile Picture spotify API, backend API and database integration  |
+| 2024/03/24 |       |       |         | 5       |        |        | D5 example 1 (adapter) and profile view model and api integration  |
+| 2024/03/25 |       |       |         | 5       |        |        | Finishing profile page & feed api/view model/ integration          |
