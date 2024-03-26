@@ -8,7 +8,7 @@ import ca.uwaterloo.tunein.BuildConfig
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.data.PreviousPost
-import ca.uwaterloo.tunein.data.Profile
+import ca.uwaterloo.tunein.data.Feed
 import ca.uwaterloo.tunein.data.UserDeserializer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,21 +24,18 @@ import androidx.compose.runtime.setValue
 import kotlinx.serialization.decodeFromString
 
 
-class ProfileViewModel: ViewModel() {
-    var returnedProfile = mutableStateOf(Profile())
-    suspend fun updateReturnedProfile(userId: String) = withContext(Dispatchers.IO) {
-        println("Called Function")
-        val searchUrl = "${BuildConfig.BASE_URL}/profile_info/${userId}"
+class FeedViewModel: ViewModel() {
+    var returnedFeed = mutableStateOf(Feed())
+    suspend fun updateReturnedFeed(userId: String) = withContext(Dispatchers.IO) {
+        val searchUrl = "${BuildConfig.BASE_URL}/feed/${userId}"
         val client = OkHttpClient()
         val request: okhttp3.Request = okhttp3.Request.Builder()
             .url(searchUrl)
             .get()
             .build()
 
-        println("Finished builder")
         val response = client.newCall(request).execute()
-        println("Finished response")
         val json = response.body.string()
-        returnedProfile.value = Json.decodeFromString<Profile>(json)
+        returnedFeed.value = Json.decodeFromString<Feed>(json)
     }
 }

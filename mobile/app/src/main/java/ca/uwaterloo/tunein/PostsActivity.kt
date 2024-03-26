@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -52,22 +53,22 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
+import ca.uwaterloo.tunein.viewmodel.FeedViewModel
 import kotlin.concurrent.thread
+import androidx.lifecycle.viewmodel.compose.viewModel
+import ca.uwaterloo.tunein.data.User
+import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
+import ca.uwaterloo.tunein.data.SinglePost
+import ca.uwaterloo.tunein.viewmodel.ProfileViewModel
+import coil.compose.AsyncImage
 
-
-data class Post(val id: Int, val content: String, val author: String, val imageResId: Int, val profilePhotoResId: Int, val username: String)
-val samplePosts = listOf(
-    Post(1, "Passport Bros (with J.Cole)", "Bas, J. Cole", R.drawable.jcole_passport, R.drawable.stock_profile, "JohnDoe123"),
-    Post(2, "Blinding Lights", "The Weeknd", R.drawable.the_weeknd_blinding,R.drawable.stock_profile, "JaneDoe321" ),
-    Post(3, "Marvins Room", "Drake", R.drawable.drake_marvins,R.drawable.stock_profile, "JohnSmith123"),
-    Post(4, "Passport Bros (with J.Cole)", "Bas, J. Cole", R.drawable.jcole_passport, R.drawable.stock_profile, "TestUser123")
-)
 
 class PostsActivity : ComponentActivity() {
-
+    private val viewModel by viewModels<FeedViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val user = AuthManager.getUser(this)
 
         fun handleClickFriends() {
             val intent = Intent(this, FriendsActivity::class.java)
@@ -81,17 +82,17 @@ class PostsActivity : ComponentActivity() {
 
         setContent {
             PostsContent(
+                user,
                 handleClickFriends= { handleClickFriends() },
                 handleClickSettings= { handleClickSettings() },
+                feedViewModel = viewModel
             )
         }
     }
 }
 
-
-
 @Composable
-fun PostItem(post: Post, handleClickSettings: () -> Unit) {
+fun PostItemGeneration(post: SinglePost, handleClickSettings: () -> Unit) {
     var isLiked by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.padding(bottom = 16.dp, end = 16.dp).fillMaxWidth()) {
@@ -103,11 +104,12 @@ fun PostItem(post: Post, handleClickSettings: () -> Unit) {
             backgroundColor = Color(0xFF1E1E1E),
         ) {
             Column {
-                Row (modifier = Modifier.clickable { handleClickSettings() }) 
+                Row (modifier = Modifier.clickable { handleClickSettings() })
                 {
-                    Image(
-                        painter = painterResource(id = post.profilePhotoResId),
+                    AsyncImage(
+                        model = post.profile_picture,
                         contentDescription = "Profile photo",
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(30.dp)
                             .clip(CircleShape)
@@ -122,17 +124,17 @@ fun PostItem(post: Post, handleClickSettings: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Row{
-                    Image(
-                        painter = painterResource(id = post.imageResId),
+                    AsyncImage(
+                        model = post.image_url,
                         contentDescription = "Post image",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.size(150.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(text = post.content, style = MaterialTheme.typography.bodyLarge)
+                        Text(text = post.name, style = MaterialTheme.typography.bodyLarge)
                         Spacer(modifier = Modifier.height(5.dp))
-                        Text(text = post.author, style = MaterialTheme.typography.bodyMedium)
+                        Text(text = post.artists, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
@@ -169,19 +171,107 @@ fun PostItem(post: Post, handleClickSettings: () -> Unit) {
 
 
 
+//@Composable
+//fun PostItem(post: Post, handleClickSettings: () -> Unit) {
+//    var isLiked by remember { mutableStateOf(false) }
+//
+//    Box(modifier = Modifier.padding(bottom = 16.dp, end = 16.dp).fillMaxWidth()) {
+//        Card(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(vertical = 8.dp),
+//            elevation = 4.dp,
+//            backgroundColor = Color(0xFF1E1E1E),
+//        ) {
+//            Column {
+//                Row (modifier = Modifier.clickable { handleClickSettings() })
+//                {
+//                    Image(
+//                        painter = painterResource(id = post.profilePhotoResId),
+//                        contentDescription = "Profile photo",
+//                        modifier = Modifier
+//                            .size(30.dp)
+//                            .clip(CircleShape)
+//                            .align(Alignment.Top)
+//                    )
+//                    Spacer(modifier = Modifier.width(8.dp))
+//
+//                    Column(modifier = Modifier.align(Alignment.CenterVertically)) {
+//                        Text(text = post.username, style = MaterialTheme.typography.bodyLarge)
+//                    }
+//                }
+//
+//                Spacer(modifier = Modifier.height(16.dp))
+//                Row{
+//                    Image(
+//                        painter = painterResource(id = post.imageResId),
+//                        contentDescription = "Post image",
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier.size(150.dp)
+//                    )
+//                    Spacer(modifier = Modifier.width(12.dp))
+//                    Column {
+//                        Text(text = post.content, style = MaterialTheme.typography.bodyLarge)
+//                        Spacer(modifier = Modifier.height(5.dp))
+//                        Text(text = post.author, style = MaterialTheme.typography.bodyMedium)
+//                    }
+//                }
+//            }
+//        }
+//        Row(
+//            modifier = Modifier.align(Alignment.BottomEnd)
+//        ) {
+//
+//            IconButton(
+//                onClick = { isLiked = !isLiked },
+//                modifier = Modifier
+//                    .size(48.dp)
+//            ) {
+//                Icon(
+//                    imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+//                    contentDescription = "Like",
+//                    tint = if (isLiked) Color.Red else Color.White
+//                )
+//            }
+//            IconButton(
+//                onClick = { /* TODO: comment button click action */ },
+//                modifier = Modifier.size(48.dp)
+//            ) {
+//                androidx.compose.material.Icon(
+//                    painter = painterResource(id = R.drawable.comment),
+//                    contentDescription = "Comment",
+//                    modifier = Modifier.size(24.dp),
+//                    tint = Color.White
+//                )
+//            }
+//        }
+//    }
+//}
+
+
+
 @Composable
 fun PostsContent(
+    user: User,
     handleClickFriends: () -> Unit,
     handleClickSettings: () -> Unit,
-    viewModel: FriendsViewModel = viewModel()
+    viewModel: FriendsViewModel = viewModel(),
+    feedViewModel: FeedViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val pendingInvites by viewModel.pendingInvites.collectAsStateWithLifecycle()
+
+    val returnedFeed by remember { feedViewModel.returnedFeed }
+
 
     LaunchedEffect(Unit) {
         thread {
             viewModel.getPendingInvites(context)
         }
+    }
+
+    LaunchedEffect(returnedFeed) {
+        feedViewModel.updateReturnedFeed(user.id)
     }
 
     TuneInTheme {
@@ -220,8 +310,8 @@ fun PostsContent(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    items(samplePosts) { post ->
-                        PostItem(post) {
+                    items(returnedFeed.posts) { post ->
+                        PostItemGeneration(post) {
                             handleClickSettings()
                         }
                     }
@@ -232,8 +322,8 @@ fun PostsContent(
 
 }
 
-@Preview
-@Composable
-fun PostsPreview() {
-    PostsContent({}, {})
-}
+//@Preview
+//@Composable
+//fun PostsPreview() {
+//    PostsContent({}, {})
+//}

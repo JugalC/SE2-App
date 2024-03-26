@@ -91,6 +91,103 @@ export const users: Plugin = (server, _, done) => {
   );
 
   server.get(
+    "/feed/:identifier",
+    {
+      schema: {
+        params: z.object({
+          identifier: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { identifier } = req.params;
+        
+        // await db.execute()
+
+        // const results = await db.all(sql`select * from user`)
+
+        interface resultsObj {
+            id: string,
+            name: string,
+            album_name: string,
+            artists: string,
+            image_url: string,
+            user_id: string,
+            username: string,
+            profile_picture: string
+        
+        }
+
+        const results: resultsObj[] = await db.all(sql`
+        WITH
+        RankedPosts AS (
+          SELECT
+            *,
+            ROW_NUMBER() OVER (
+              PARTITION BY
+                user_id
+              ORDER BY
+                listened_at DESC
+            ) AS RowNum
+          FROM
+            post
+        )
+      SELECT
+        rp.id,
+        rp.name,
+        rp.album_name,
+        rp.artists,
+        rp.image_url,
+        rp.user_id,
+        ut.username,
+        ut.profile_picture
+      FROM
+        RankedPosts rp
+        INNER JOIN user ut ON rp.user_id = ut.id
+      WHERE
+        RowNum = 1;
+        `)
+
+        interface friendsObj {
+          other_user_id: string;
+      }
+
+  
+        
+        const friends: friendsObj[] = await db.all(sql`
+          SELECT user_id_1 AS other_user_id
+          FROM friendship
+          WHERE user_id_2 = ${identifier}
+          UNION
+          SELECT user_id_2 AS other_user_id
+          FROM friendship
+          WHERE user_id_1 = ${identifier};
+        `)
+
+      
+
+        var filter_list = []
+        for (let i = 0; i < friends.length; i++) {
+          filter_list.push(friends[i]["other_user_id"]); // Access each object using array indexing 
+        }
+        filter_list.push(identifier)
+
+        var final_posts = []
+        for (let x = 0; x < results.length; x++) {
+          if (filter_list.includes(results[x]["user_id"]))
+          final_posts.push(results[x]); // Access each object using array indexing 
+        }
+        
+        return res.code(200).send({ posts: final_posts });
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.get(
     "/user/:identifier",
     {
       schema: {
@@ -257,7 +354,7 @@ export const users: Plugin = (server, _, done) => {
           where: or(eq(userTable.username, identifier), eq(userTable.id, identifier)),
         });
 
-        const posts = await db.select().from(postTable).where(eq(postTable.userId, identifier)).orderBy((postTable.name)).limit(3);
+        const posts = await db.select().from(postTable).where(eq(postTable.userId, identifier)).orderBy(desc(postTable.name)).limit(3);
 
         var previous_posts = [{}]
 
