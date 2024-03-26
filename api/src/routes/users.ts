@@ -171,6 +171,7 @@ export const users: Plugin = (server, _, done) => {
         for (let i = 0; i < friends.length; i++) {
           filter_list.push(friends[i]["other_user_id"]); // Access each object using array indexing 
         }
+        filter_list.push(identifier)
 
         var final_posts = []
         for (let x = 0; x < results.length; x++) {
@@ -353,7 +354,7 @@ export const users: Plugin = (server, _, done) => {
           where: or(eq(userTable.username, identifier), eq(userTable.id, identifier)),
         });
 
-        const posts = await db.select().from(postTable).where(eq(postTable.userId, identifier)).orderBy((postTable.name)).limit(3);
+        const posts = await db.select().from(postTable).where(eq(postTable.userId, identifier)).orderBy(desc(postTable.name)).limit(3);
 
         var previous_posts = [{}]
 
