@@ -1,4 +1,4 @@
-import { sqliteTable, text, unique, numeric, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, unique, numeric, integer, primaryKey } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -56,6 +56,37 @@ export const postTable = sqliteTable("post", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const likeTable = sqliteTable(
+  "like",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => userTable.id),
+    postId: text("post_id")
+      .notNull()
+      .references(() => postTable.id),
+  },
+  ({ userId, postId }) => ({
+    primary: primaryKey({ columns: [userId, postId] }),
+  }),
+);
+
+export const commentTable = sqliteTable(
+  "comment",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => userTable.id),
+    postId: text("post_id")
+      .notNull()
+      .references(() => postTable.id),
+    content: text("text").notNull(),
+  },
+  ({ userId, postId }) => ({
+    primary: primaryKey({ columns: [userId, postId] }),
+  }),
+);
 
 export const getPostSchema = createSelectSchema(postTable)
   .omit({ listenedAt: true, createdAt: true })

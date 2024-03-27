@@ -3,6 +3,8 @@ import { serializerCompiler, validatorCompiler, ZodTypeProvider } from "fastify-
 import { users } from "./routes/users";
 import { spotify } from "./routes/spotify";
 import { friendships } from "./routes/friendships";
+import { likes } from "./routes/likes";
+import { comments } from "./routes/comments";
 
 const server = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -12,6 +14,8 @@ server.setSerializerCompiler(serializerCompiler);
 server.register(users);
 server.register(spotify);
 server.register(friendships);
+server.register(likes);
+server.register(comments);
 
 server.get("/ping", async () => {
   return "pong\n";
