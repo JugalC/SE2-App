@@ -7,12 +7,15 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonTransformingSerializer
 
+val DEFAULT_PROFILE_PIC = "https://builtprefab.com/wp-content/uploads/2019/01/cropped-blank-profile-picture-973460_960_720-300x300.png"
+
 @Serializable
 data class User(
     val id: String = "",
     val username: String = "",
     val firstName: String = "",
-    val lastName: String = ""
+    val lastName: String = "",
+    val profilePicture: String = DEFAULT_PROFILE_PIC,
 )
 
 // Some tables store id as uId, so we must map it to properly deserialize the User object

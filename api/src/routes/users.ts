@@ -30,7 +30,7 @@ export const users: Plugin = (server, _, done) => {
         const id = randomUUID();
 
         const profilePicture = ""
-        var createdAt = new Date()
+        const createdAt = new Date()
 
         await db.insert(userTable).values({
           id,
@@ -167,13 +167,13 @@ export const users: Plugin = (server, _, done) => {
 
       
 
-        var filter_list = []
+        const filter_list = []
         for (let i = 0; i < friends.length; i++) {
           filter_list.push(friends[i]["other_user_id"]); // Access each object using array indexing 
         }
         filter_list.push(identifier)
 
-        var final_posts = []
+        const final_posts = []
         for (let x = 0; x < results.length; x++) {
           if (filter_list.includes(results[x]["user_id"]))
           final_posts.push(results[x]); // Access each object using array indexing 
@@ -356,7 +356,7 @@ export const users: Plugin = (server, _, done) => {
 
         const posts = await db.select().from(postTable).where(eq(postTable.userId, identifier)).orderBy(desc(postTable.name)).limit(3);
 
-        var previous_posts = [{}]
+        let previous_posts = [{}]
 
         if ((posts.length) == 3) {
           previous_posts = [
@@ -395,7 +395,7 @@ export const users: Plugin = (server, _, done) => {
         const first_name = user["firstName"]
         const username = user["username"]
         const profile_pic = user["profilePicture"]
-        var created = user["createdAt"]
+        let created = user["createdAt"]
         
         if (created == null) {
           created = new Date()
@@ -442,8 +442,8 @@ export const users: Plugin = (server, _, done) => {
           return res.code(404).send({ error: "User not found with given parameters." });
         }
 
-        var access_token = user["spotifyAccessToken"] || "None"
-        var starting = "Bearer "
+        const access_token = user["spotifyAccessToken"] || "None"
+        const starting = "Bearer "
 
         const response = await fetch('https://api.spotify.com/v1/me', {headers: {'Authorization': starting.concat(access_token)}})
 
@@ -484,10 +484,9 @@ export const users: Plugin = (server, _, done) => {
         if (!user) {
           return res.code(404).send({ error: "User not found with given parameters." });
         }
-        var access_token = user["spotifyAccessToken"] || "None"
-        var reset_token = user["spotifyRefreshToken"] || "None"
-
-        var starting = "Bearer "
+        const access_token = user["spotifyAccessToken"] || "None"
+        const reset_token = user["spotifyRefreshToken"] || "None"
+        const starting = "Bearer "
 
         const response = await fetch('https://api.spotify.com/v1/me/player/recently-played', {headers: {'Authorization': starting.concat(access_token)}})
         // console.log(response.text())
@@ -527,10 +526,9 @@ export const users: Plugin = (server, _, done) => {
             if (!user) {
               return res.code(404).send({ error: "User not found with given parameters." });
             }
-            var access_token = user["spotifyAccessToken"] || "None"
-            var reset_token = user["spotifyRefreshToken"] || "None"
+            const access_token = user["spotifyAccessToken"] || "None"
     
-            var starting = "Bearer "
+            const starting = "Bearer "
     
             const response = await fetch('https://api.spotify.com/v1/me/player/recently-played', {headers: {'Authorization': starting.concat(access_token)}})
             // console.log(response.text())
@@ -538,24 +536,24 @@ export const users: Plugin = (server, _, done) => {
 
             const recently_played_song = value["items"][0]
           
-            let all_artists = []
+            const all_artists = []
             for (const artist_obj of recently_played_song["track"]["album"]["artists"]) { all_artists.push(artist_obj["name"]) }
-            var artists = all_artists.join(',');
+            const artists = all_artists.join(',');
             console.log(artists)
 
-            var imageUrl = value["items"][0]["track"]["album"]["images"][1]["url"]
-            var albumName = value["items"][0]["track"]["album"]["name"]
-            var name = value["items"][0]["track"]["name"]
+            const imageUrl = value["items"][0]["track"]["album"]["images"][1]["url"]
+            const albumName = value["items"][0]["track"]["album"]["name"]
+            const name = value["items"][0]["track"]["name"]
 
             const id = randomUUID();
-            var spotifyTrackId = recently_played_song["track"]["id"]
-            var durationMs = recently_played_song["track"]["duration_ms"]
-            var spotifyUrl = recently_played_song["track"]["external_urls"]["spotify"]
-            var userId = identifier
-            var listenedAt = new Date(recently_played_song["played_at"])
-            var createdAt = new Date()
+            const spotifyTrackId = recently_played_song["track"]["id"]
+            const durationMs = recently_played_song["track"]["duration_ms"]
+            const spotifyUrl = recently_played_song["track"]["external_urls"]["spotify"]
+            const userId = identifier
+            const listenedAt = new Date(recently_played_song["played_at"])
+            const createdAt = new Date()
 
-            var resp_obj = {"id": id, "spotify_track_id": spotifyTrackId, "name": name, "album_name": albumName, 
+            const resp_obj = {"id": id, "spotify_track_id": spotifyTrackId, "name": name, "album_name": albumName, 
             "artists": artists, "duration_ms": durationMs, "image_url": imageUrl, "spotify_url": spotifyUrl,
             "user_id": userId, "listened_at": listenedAt, "created_at": createdAt}
 
@@ -585,24 +583,24 @@ export const users: Plugin = (server, _, done) => {
         
           const recently_played_song = value["items"][0]
           
-          let all_artists = []
+          const all_artists = []
           for (const artist_obj of recently_played_song["track"]["album"]["artists"]) { all_artists.push(artist_obj["name"]) }
-          var artists = all_artists.join(',');
+          const artists = all_artists.join(',');
           console.log(artists)
 
-          var imageUrl = value["items"][0]["track"]["album"]["images"][1]["url"]
-          var albumName = value["items"][0]["track"]["album"]["name"]
-          var name = value["items"][0]["track"]["name"]
+          const imageUrl = value["items"][0]["track"]["album"]["images"][1]["url"]
+          const albumName = value["items"][0]["track"]["album"]["name"]
+          const name = value["items"][0]["track"]["name"]
 
           const id = randomUUID();
-          var spotifyTrackId = recently_played_song["track"]["id"]
-          var durationMs = recently_played_song["track"]["duration_ms"]
-          var spotifyUrl = recently_played_song["track"]["external_urls"]["spotify"]
-          var userId = identifier
-          var listenedAt = new Date(recently_played_song["played_at"])
-          var createdAt = new Date()
+          const spotifyTrackId = recently_played_song["track"]["id"]
+          const durationMs = recently_played_song["track"]["duration_ms"]
+          const spotifyUrl = recently_played_song["track"]["external_urls"]["spotify"]
+          const userId = identifier
+          const listenedAt = new Date(recently_played_song["played_at"])
+          const createdAt = new Date()
 
-          var resp_obj_2 = {"id": id, "spotify_track_id": spotifyTrackId, "name": name, "album_name": albumName, 
+          const resp_obj_2 = {"id": id, "spotify_track_id": spotifyTrackId, "name": name, "album_name": albumName, 
           "artists": artists, "duration_ms": durationMs, "image_url": imageUrl, "spotify_url": spotifyUrl,
           "user_id": userId, "listened_at": listenedAt, "created_at": createdAt}
 

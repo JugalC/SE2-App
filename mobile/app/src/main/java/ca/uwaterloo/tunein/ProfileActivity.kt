@@ -50,8 +50,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
+import ca.uwaterloo.tunein.components.ProfilePic
 import ca.uwaterloo.tunein.data.Profile
-import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.messaging.Firebase
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
@@ -222,7 +222,13 @@ fun ProfileContent(userId: String,
                         modifier = Modifier
 
                     ){
-                        ProfilePicURL(returnedProfile.profile_pic)
+                        ProfilePic(
+                            url = returnedProfile.profile_pic,
+                            modifier = Modifier
+                                    .size(156.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .aspectRatio(1f / 1f)
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -303,18 +309,6 @@ fun ProfileContent(userId: String,
     if(showDialog.value) {
         DialogWithImage(onDismissRequest, onConfirmation)
     }
-}
-@Composable
-fun ProfilePicURL(url: String) {
-    AsyncImage(
-        model = url,
-        contentDescription = "User's Profile Pic",
-        contentScale = ContentScale.Crop,
-        modifier = Modifier
-            .size(156.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .aspectRatio(1f / 1f)
-    )
 }
 
 @Composable

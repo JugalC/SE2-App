@@ -4,6 +4,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uwaterloo.tunein.BuildConfig
+import ca.uwaterloo.tunein.data.DEFAULT_PROFILE_PIC
 import ca.uwaterloo.tunein.data.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +31,7 @@ data class SearchResults(
     val username: String = "",
     val firstName: String = "",
     val lastName: String = "",
+    val profilePicture: String = DEFAULT_PROFILE_PIC,
     val friendshipRequest: String?,
     val friendship: String?,
 )
@@ -39,7 +41,8 @@ fun searchResultsToUser(user: SearchResults): User {
         id = user.id,
         username = user.username,
         firstName = user.firstName,
-        lastName = user.lastName
+        lastName = user.lastName,
+        profilePicture = user.profilePicture,
     )
 }
 

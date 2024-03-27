@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.IconButton
@@ -36,9 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
+import ca.uwaterloo.tunein.components.ProfilePic
 import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
@@ -358,10 +356,8 @@ fun SearchResultsRow(
             Column(
                 modifier = Modifier.padding(0.dp, 0.dp, 20.dp, 0.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.weeknd),
-                    contentDescription = "weeknd art",
-                    contentScale = ContentScale.Crop,
+                ProfilePic(
+                    url = user.profilePicture,
                     modifier = Modifier
                         .size(50.dp)
                         .clip(RoundedCornerShape(25.dp))
@@ -369,13 +365,13 @@ fun SearchResultsRow(
                 )
             }
             Column {
-                Text(user.firstName)
+                Text("${user.firstName} ${user.lastName}")
                 Text("@${user.username}", fontSize = 12.sp, color = Color.LightGray)
             }
         }
         IconButton(onClick = { handleAddFriend(user) }) {
             Icon(
-                imageVector = Icons.Default.AddCircle,
+                imageVector = Icons.Default.Add,
                 contentDescription = "Add friend",
                 modifier = Modifier.size(18.dp),
                 tint = androidx.compose.ui.graphics.Color.Green
@@ -412,10 +408,8 @@ fun FriendRow(user: User, handleRemoveFriend: (user: User) -> Unit) {
                 Column(
                     modifier = Modifier.padding(0.dp, 0.dp, 20.dp, 0.dp)
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.weeknd),
-                        contentDescription = "weeknd art",
-                        contentScale = ContentScale.Crop,
+                    ProfilePic(
+                        url = user.profilePicture,
                         modifier = Modifier
                             .size(50.dp)
                             .clip(RoundedCornerShape(25.dp))
@@ -458,10 +452,8 @@ fun PendingFriendRow(user: User, handleAcceptInvite: (user: User, accept: Boolea
                 Column(
                     modifier = Modifier.padding(0.dp, 0.dp, 20.dp, 0.dp)
                 ) {
-                    Image( // TODO: replace this with user's profile picture
-                        painter = painterResource(id = R.drawable.weeknd),
-                        contentDescription = "weeknd art",
-                        contentScale = ContentScale.Crop,
+                    ProfilePic(
+                        url = user.profilePicture,
                         modifier = Modifier
                             .size(50.dp)
                             .clip(RoundedCornerShape(25.dp))

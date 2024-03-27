@@ -1,11 +1,6 @@
 package ca.uwaterloo.tunein.data
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonTransformingSerializer
 
 @Serializable
 data class PreviousPost(
@@ -22,7 +17,7 @@ data class Profile(
     val first_name: String = "",
     val spotify_name: String = "",
     val friends_num: Int = 0,
-    val profile_pic: String = "",
+    val profile_pic: String = DEFAULT_PROFILE_PIC,
     val created: String = "",
     val previous_posts: List<PreviousPost> = listOf(PreviousPost())
 )
