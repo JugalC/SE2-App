@@ -1,9 +1,14 @@
 | Date       | Jugal | Ralph | Cameron | Hrishit | Nathan | Adrian | Task                                                               |
-|------------|-------|-------|---------|---------|--------|--------|--------------------------------------------------------------------|
+| ---------- | ----- | ----- | ------- | ------- | ------ | ------ | ------------------------------------------------------------------ |
 | 2024/01/29 |       |       |         | 3       |        |        | D1 User scenarios and architecture diagram                         |
+| 2024/01/29 | 3     |       |         |         |        |        | D1 Project proposal doc - Intro, functional, and non functional    |
 | 2024/01/29 |       |       |         |         |        | 4      | Work on D1 proposal details, revisions & edits                     |
-| 2024/02/05 |       |       |         |         |        | 2      | Setup frontend repo                                                |
-| 2024/02/13 |       |       |         | 3       |        |        | D2 Q1 and Q2 content work                                          |
+| 2024/02/05 | 1     |       |         |         |        | 2      | Setup frontend repo                                                |
+| 2024/02/13 | 2     |       |         | 3       |        |        | D2 Q1 and Q2 content work                                          |
+| 2024/02/13 | 3     |       |         |         |        |        | Figma Mockups of logic, signup and initial page                    |
+| 2024/02/14 | 2     | 5     |         |         |        |        | API Backend creation and boilerplate                               |
+| 2024/02/14 | 2     |       |         |         |        |        | Mockups of posts, feed, navigation component                       |
+| 2024/02/17 | 1     |       |         |         |        |        | Graphic design for app assets (custom PNG and logos for in app)    |
 | 2024/02/17 |       |       |         | 4       |        |        | Working on Landing Page & Learning Compose                         |
 | 2024/02/18 |       |       |         | 1       |        |        | Continued landing repo                                             |
 | 2024/02/19 |       |       | 2       |         |        | 2      | Update activities to include previews                              |
@@ -11,21 +16,26 @@
 | 2024/02/19 |       |       | 3       |         |        | 3      | Research MVVM & implement state for login screen                   |
 | 2024/02/25 |       |       |         |         |        | 3      | Implement MVVM for authentication & persist state between sessions |
 | 2024/02/25 |       |       |         |         |        | 2      | Finish UI & state logic for login / signup                         |
-| 2024/02/25 |       |       | 4       |         |        |        | Integrate signup page with backend                                 |
-| 2024/02/26 |       |       | 2       |         |        |        | Integrate login page with backend                                  |
+| 2024/02/25 | 1     |       | 4       |         |        |        | Integrate signup page with backend                                 |
+| 2024/02/26 | 1     |       | 2       |         |        |        | Integrate login page with backend                                  |
 | 2024/02/26 |       |       | 2       |         |        | 3      | Add pages for profile & settings, update global app styling        |
 | 2024/02/26 |       |       | 2       |         |        | 2      | Work on profile page                                               |
+| 2024/02/27 | 5     |       |         |         |        |        | Test and prototype Spotify integration methods                     |
+| 2024/02/28 | 3     |       |         |         |        |        | Refine and integrate Spotify integration feature                   |
 | 2024/03/02 |       |       |         | 3       |        |        | Profile page design and implementation                             |
 | 2024/03/03 |       |       |         | 2       |        |        | Prototype Demo Presentation and Settings Page                      |
 | 2024/03/04 |       |       |         |         |        | 6      | Add friends page                                                   |
 | 2024/03/04 |       |       |         | 2       |        |        | Routing and bug fixing for profile and settings                    |
+| 2024/03/04 | 2     |       |         |         |        |        | UI cleanup for demo                                                |
 | 2024/03/05 |       |       |         | 3       |        |        | Pop-up menus for confirmation and entry in profile and settings    |
 | 2024/03/06 |       |       |         | 4       |        |        | Get most recent song API work and D3 Status Report section         |
 | 2024/03/16 |       |       |         |         |        | 5      | Finish add fiends workflow with correct authorization header       |
 | 2024/03/17 |       |       |         |         |        | 6      | Finish actions for searching / removing / adding friends           |
 | 2024/03/18 |       |       |         | 3       |        |        | D4 Report Example 3 Work                                           |
+| 2024/03/19 | 2     |       |         |         |        |        | D4 Report Example 1 Work                                           |
 | 2024/03/19 |       |       |         | 2       |        |        | Working on posts API to get most recent activity                   |
 | 2024/03/20 |       |       |         | 3       |        |        | Working on posts endpoint and db table insertion                   |
 | 2024/03/21 |       |       |         | 4       |        |        | Profile Picture spotify API, backend API and database integration  |
 | 2024/03/24 |       |       |         | 5       |        |        | D5 example 1 (adapter) and profile view model and api integration  |
 | 2024/03/25 |       |       |         | 5       |        |        | Finishing profile page & feed api/view model/ integration          |
+| 2024/03/25 | 2     |       |         |         |        |        | D5 example 2 (singleton)                                           |
