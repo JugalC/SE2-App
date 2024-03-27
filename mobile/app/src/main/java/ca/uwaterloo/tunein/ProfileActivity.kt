@@ -73,7 +73,6 @@ class ProfileActivity : ComponentActivity() {
         val intent = this.intent
         var userId = ""
         userId = intent.getStringExtra("user_profile").toString()
-//        println(gameId)
 
         val user = AuthManager.getUser(this)
 
@@ -147,6 +146,7 @@ fun ProfileContent(userId: String,
     // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
     LaunchedEffect(returnedProfile) {
         profileViewModel.updateReturnedProfile(userId)
+        println( returnedProfile.profile_pic)
     }
     //This is the end of GPT 3.5 generation
 

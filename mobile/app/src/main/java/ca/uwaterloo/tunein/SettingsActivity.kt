@@ -1,5 +1,6 @@
 package ca.uwaterloo.tunein
 
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -76,7 +77,7 @@ class SettingsActivity : ComponentActivity() {
         // url for updating password
         val passwordURL = "${BuildConfig.BASE_URL}/user/update_password"
         // url for updating photo
-        val photoURL = "${BuildConfig.BASE_URL}/user/update_photo"
+        val photoURL = "${BuildConfig.BASE_URL}/user/update_profile_picture"
         // url for reauthorizing spotify
         // val spotifyURL = "${BuildConfig.BASE_URL}/user/spotify_auth"
 
@@ -159,28 +160,61 @@ class SettingsActivity : ComponentActivity() {
             showDialogPassword.value = false
         }
 
+        fun onConfirmationPhoto() {
+            val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
+            val user = AuthManager.getUser(this)
 
-        
+            val req = JSONObject()
+            req.put("username", user.username)
+
+            val userUpdateReq = JsonObjectRequest(
+                Request.Method.POST, photoURL, req,
+                { _ ->
+                    val positiveAlert = android.app.AlertDialog.Builder(this).setTitle("Success")
+                    positiveAlert.setMessage("Photo has been updated")
+                    positiveAlert.create().show()
+                    showDialogPhoto.value = false
+                },
+                { error ->
+                    Log.e("Settings", error.toString())
+                    alert.setMessage("An unexpected error has occurred")
+                    alert.create().show()
+                }
+            )
+
+            queue.add(userUpdateReq)
+            showDialogPhoto.value = false
+        }
+
+        fun onDismissRequestPhoto() {
+            showDialogPhoto.value = false
+        }
+
+
 
 
         setContent {
             SettingsContent(
-                goBack ={goBack()},
                 onConfirmationUsername = ::onConfirmationUsername,
                 onDismissRequestUsername={onDismissRequestUsername()},
-                onConfirmationPassword =::onConfirmationPassword
-            ) { onDismissRequestPassword() }
+                onConfirmationPassword =::onConfirmationPassword,
+                onDismissRequestPassword={onDismissRequestPassword()},
+                onConfirmationPhoto = {onConfirmationPhoto()},
+                onDismissRequestPhoto = {onDismissRequestPhoto()}
+            ) { goBack() }
         }
     }
 }
 
 @Composable
 fun SettingsContent(
-    goBack: () -> Unit,
     onConfirmationUsername: (String) -> Unit,
     onDismissRequestUsername: () -> Unit,
     onConfirmationPassword: (String, String) -> Unit,
-    onDismissRequestPassword: () -> Unit
+    onDismissRequestPassword: () -> Unit,
+    onConfirmationPhoto: () -> Unit,
+    onDismissRequestPhoto: () -> Unit,
+    goBack: () -> Unit
 ) {
     TuneInTheme {
         Surface(
@@ -226,7 +260,10 @@ fun SettingsContent(
                             onClick = {  showDialogUsername.value = true},
                             colors = ButtonDefaults.buttonColors(
                                 backgroundColor = Color.DarkGreen),
-                            modifier = Modifier.fillMaxWidth(0.8f).height(IntrinsicSize.Max).clip(RoundedCornerShape(10.dp))
+                            modifier = Modifier
+                                .fillMaxWidth(0.8f)
+                                .height(IntrinsicSize.Max)
+                                .clip(RoundedCornerShape(10.dp))
                         ) {
                             Text("Change Username", color = Color.TextBlack, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
                         }
@@ -235,16 +272,22 @@ fun SettingsContent(
                             onClick = { showDialogPassword.value = true},
                             colors = ButtonDefaults.buttonColors(
                                 backgroundColor = Color.DarkGreen),
-                            modifier = Modifier.fillMaxWidth(0.8f).height(IntrinsicSize.Max).clip(RoundedCornerShape(10.dp))
+                            modifier = Modifier
+                                .fillMaxWidth(0.8f)
+                                .height(IntrinsicSize.Max)
+                                .clip(RoundedCornerShape(10.dp))
                         ) {
                             Text("Change Password", color = Color.TextBlack, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
                         }
                         Spacer(modifier = Modifier.height(32.dp))
                         Button(
-                            onClick = { },
+                            onClick = {showDialogPhoto.value = true },
                             colors = ButtonDefaults.buttonColors(
                                 backgroundColor = Color.DarkGreen),
-                            modifier = Modifier.fillMaxWidth(0.8f).height(IntrinsicSize.Max).clip(RoundedCornerShape(10.dp))
+                            modifier = Modifier
+                                .fillMaxWidth(0.8f)
+                                .height(IntrinsicSize.Max)
+                                .clip(RoundedCornerShape(10.dp))
                         ) {
                             Text("Update Photo", color = Color.TextBlack, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
                         }
@@ -253,7 +296,10 @@ fun SettingsContent(
                             onClick = { },
                             colors = ButtonDefaults.buttonColors(
                                 backgroundColor = Color.DarkGreen),
-                            modifier = Modifier.fillMaxWidth(0.8f).height(IntrinsicSize.Max).clip(RoundedCornerShape(10.dp))
+                            modifier = Modifier
+                                .fillMaxWidth(0.8f)
+                                .height(IntrinsicSize.Max)
+                                .clip(RoundedCornerShape(10.dp))
                         ) {
                             Text("Reauthorize Spotify", color = Color.TextBlack, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
                         }
@@ -268,6 +314,9 @@ fun SettingsContent(
     }
     if(showDialogPassword.value) {
         DialogChangePassword(onDismissRequestPassword, onConfirmationPassword)
+    }
+    if(showDialogPhoto.value) {
+        DialogChangePhoto(onDismissRequestPhoto, onConfirmationPhoto)
     }
 }
 
@@ -359,7 +408,8 @@ fun DialogChangePassword(
         // Draw a rectangle shape with rounded corners inside the dialog
         Card(
             modifier = Modifier
-                .fillMaxWidth().height(IntrinsicSize.Max)
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max)
                 .padding(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.DarkGray,
@@ -432,10 +482,83 @@ fun DialogChangePassword(
     }
 }
 
+@Composable
+fun DialogChangePhoto(
+    onDismissRequestPhoto: () -> Unit,
+    onConfirmationPhoto: () -> Unit
+) {
+
+    Dialog(onDismissRequest = { onDismissRequestPhoto() }) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max)
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.DarkGray,
+            ),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Pull latest photo from your Spotify account?",
+                    style = TextStyle(
+                        color = Color.LightGray,
+                        fontSize = 18.sp // Increase the font size to 18.sp
+                    ),
+                    modifier = Modifier.padding(18.dp),
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    TextButton(
+                        onClick = { onDismissRequestPhoto() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Dismiss", color=Color.LightGreen)
+                    }
+                    TextButton(
+                        onClick = { onConfirmationPhoto() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Confirm", color=Color.LightGreen)
+                    }
+                }
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.Center,
+//                ) {
+//                    TextButton(
+//                        onClick = { onDismissRequestPassword() },
+//                        modifier = Modifier.padding(8.dp),
+//                    ) {
+//                        Text("Dismiss", color=Color.LightGreen)
+//                    }
+//                    TextButton(
+//                        onClick = { onConfirmationPassword(pass,confirmPass) },
+//                        modifier = Modifier.padding(8.dp),
+//                    ) {
+//                        Text("Confirm", color=Color.LightGreen)
+//                    }
+//                }
+            }
+        }
+    }
+}
+
 @Preview
 @Composable
 fun SettingsView() {
-    SettingsContent ({}, {}, {}, { _: String, _: String -> }){}
+    SettingsContent ({}, {}, { _: String, _: String -> }, {},{},{}){}
 }
 
 
