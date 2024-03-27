@@ -7,38 +7,39 @@ import { Plugin } from "../types";
 
 const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI } = process.env;
 
-const x = `<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentication Success</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #003847;
-            color: #00FC64;
-            font-family: 'Arial', sans-serif;
-        }
+const x = /*html*/ `
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Authentication Success</title>
+      <style>
+          body {
+              margin: 0;
+              padding: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 100vh;
+              background-color: #003847;
+              color: #00FC64;
+              font-family: 'Arial', sans-serif;
+          }
 
-        #message-container {
-            text-align: center;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #001823;
-        }
-    </style>
-</head>
-<body>
-    <div id="message-container">
-        <p>Authenticated, you can return to the app</p>
-    </div>
-</body>
-</html>`;
+          #message-container {
+              text-align: center;
+              padding: 20px;
+              border-radius: 10px;
+              background-color: #001823;
+          }
+      </style>
+    </head>
+    <body>
+        <div id="message-container">
+            <p>Authenticated, you can return to the app</p>
+        </div>
+    </body>
+  </html>`;
 
 export const spotify: Plugin = (server, _, done) => {
   server.get(
@@ -109,20 +110,21 @@ export const spotify: Plugin = (server, _, done) => {
         const data = await resp.json();
 
         // const profile_pic = getProfilePic(data.access_token)
-        var profile_pic = ""
-        var starting = "Bearer "
+        let profile_pic = "";
 
-        const response = await fetch('https://api.spotify.com/v1/me', {headers: {'Authorization': starting.concat(data.access_token)}})
+        const response = await fetch("https://api.spotify.com/v1/me", {
+          headers: { Authorization: `Bearer ${data.access_token}` },
+        });
         // console.log(response.text())
         const value = await response.json();
 
-        const display_name = value["display_name"]
+        const display_name = value["display_name"];
 
-        if (value["images"].length > 0){
-          profile_pic = value["images"][1]["url"]
-        }
-        else {
-          profile_pic = "https://builtprefab.com/wp-content/uploads/2019/01/cropped-blank-profile-picture-973460_960_720-300x300.png"
+        if (value["images"].length > 0) {
+          profile_pic = value["images"][1]["url"];
+        } else {
+          profile_pic =
+            "https://builtprefab.com/wp-content/uploads/2019/01/cropped-blank-profile-picture-973460_960_720-300x300.png";
         }
 
         await db
@@ -131,7 +133,7 @@ export const spotify: Plugin = (server, _, done) => {
             spotifyAccessToken: data.access_token,
             spotifyRefreshToken: data.refresh_token,
             profilePicture: profile_pic,
-            displayName: display_name
+            displayName: display_name,
           })
           .where(or(eq(userTable.username, identifier), eq(userTable.id, identifier)));
 

@@ -6,22 +6,26 @@
 | 2024/02/05 | 1     |       |         |         |        | 2      | Setup frontend repo                                                |
 | 2024/02/13 | 2     |       |         | 3       |        |        | D2 Q1 and Q2 content work                                          |
 | 2024/02/13 | 3     |       |         |         |        |        | Figma Mockups of logic, signup and initial page                    |
-| 2024/02/14 | 2     | 5     |         |         |        |        | API Backend creation and boilerplate                               |
-| 2024/02/14 | 2     |       |         |         |        |        | Mockups of posts, feed, navigation component                       |
+| 2024/02/14 | 2     | 10    |         |         |        |        | API Backend creation and boilerplate                               |
+| 2024/02/14 |       |       |         |         |        |        | Mockups of posts, feed, navigation component                       |
+| 2024/02/15 |       | 5     |         |         |        |        | API Backend friendship routes                                      |
+| 2024/02/16 |       | 5     |         |         |        |        | API Backend post routes                                            |
+| 2024/02/16 |       | 5     |         |         |        |        | API Backend user routes                                            |
 | 2024/02/17 | 1     |       |         |         | 2      |        | Graphic design for app assets (custom PNG and logos for in app)    |
 | 2024/02/17 |       |       |         | 4       | 3      |        | Working on Landing Page & Learning Compose                         |
 | 2024/02/18 |       |       |         | 1       |        |        | Continued landing repo                                             |
 | 2024/02/19 |       |       | 2       |         |        | 2      | Update activities to include previews                              |
 | 2024/02/19 |       |       | 1       |         |        | 1      | Add back arrows for login/signup activities                        |
 | 2024/02/19 |       |       | 3       |         | 2      | 3      | Research MVVM & implement state for login screen                   |
+| 2024/02/23 |       | 10    |         |         |        |        | Backend authentication logic                                       |
 | 2024/02/25 |       |       |         |         |        | 3      | Implement MVVM for authentication & persist state between sessions |
 | 2024/02/25 |       |       |         |         | 3      | 2      | Finish UI & state logic for login / signup                         |
 | 2024/02/25 | 1     |       | 4       |         |        |        | Integrate signup page with backend                                 |
 | 2024/02/26 | 1     |       | 2       |         |        |        | Integrate login page with backend                                  |
 | 2024/02/26 |       |       | 2       |         |        | 3      | Add pages for profile & settings, update global app styling        |
 | 2024/02/26 |       |       | 2       |         |        | 2      | Work on profile page                                               |
-| 2024/02/27 | 5     |       |         |         |        |        | Test and prototype Spotify integration methods                     |
-| 2024/02/28 | 3     |       |         |         |        |        | Refine and integrate Spotify integration feature                   |
+| 2024/02/27 | 5     |   5   |         |         |        |        | Test and prototype Spotify integration methods                     |
+| 2024/02/28 | 3     |   5   |         |         |        |        | Refine and integrate Spotify integration feature                   |
 | 2024/03/02 |       |       |         | 3       |        |        | Profile page design and implementation                             |
 | 2024/03/03 |       |       |         | 2       |        |        | Prototype Demo Presentation and Settings Page                      |
 | 2024/03/04 |       |       |         |         |        | 6      | Add friends page                                                   |
@@ -30,7 +34,7 @@
 | 2024/03/04 | 2     |       |         |         |        |        | UI cleanup for demo                                                |
 | 2024/03/05 |       |       |         | 3       |        |        | Pop-up menus for confirmation and entry in profile and settings    |
 | 2024/03/06 |       |       |         | 4       |        |        | Get most recent song API work and D3 Status Report section         |
-| 2024/03/16 |       |       |         |         |        | 5      | Finish add fiends workflow with correct authorization header       |
+| 2024/03/16 |       |   5   |         |         |        | 5      | Finish add fiends workflow with correct authorization header       |
 | 2024/03/17 |       |       |         |         |        | 6      | Finish actions for searching / removing / adding friends           |
 | 2024/03/18 |       |       |         | 3       |        |        | D4 Report Example 3 Work                                           |
 | 2024/03/19 | 2     |       |         |         |        |        | D4 Report Example 1 Work                                           |
@@ -42,3 +46,5 @@
 | 2024/03/25 | 2     |       |         |         |        |        | D5 example 2 (singleton)                                           |
 | 2024/03/25 |       |       |         |         |  2     |        | D5 example 3 (Observer)                                            |
 | 2024/03/27 |       |       |         |         |        | 1      | Add profile pics to friends                                        |
+| 2024/03/27 |       | 5     |         |         |        |        | API Backend like routes                                            |
+| 2024/03/27 |       | 5     |         |         |        |        | API Backend comment routes                                         |
