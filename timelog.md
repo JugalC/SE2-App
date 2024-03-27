@@ -1,21 +1,21 @@
 | Date       | Jugal | Ralph | Cameron | Hrishit | Nathan | Adrian | Task                                                               |
 | ---------- | ----- | ----- | ------- | ------- | ------ | ------ | ------------------------------------------------------------------ |
 | 2024/01/29 |       |       |         | 3       |        |        | D1 User scenarios and architecture diagram                         |
-| 2024/01/29 | 3     |       |         |         |        |        | D1 Project proposal doc - Intro, functional, and non functional    |
+| 2024/01/29 | 3     |       |         |         | 2      |        | D1 Project proposal doc - Intro, functional, and non functional    |
 | 2024/01/29 |       |       |         |         |        | 4      | Work on D1 proposal details, revisions & edits                     |
 | 2024/02/05 | 1     |       |         |         |        | 2      | Setup frontend repo                                                |
 | 2024/02/13 | 2     |       |         | 3       |        |        | D2 Q1 and Q2 content work                                          |
 | 2024/02/13 | 3     |       |         |         |        |        | Figma Mockups of logic, signup and initial page                    |
 | 2024/02/14 | 2     | 5     |         |         |        |        | API Backend creation and boilerplate                               |
 | 2024/02/14 | 2     |       |         |         |        |        | Mockups of posts, feed, navigation component                       |
-| 2024/02/17 | 1     |       |         |         |        |        | Graphic design for app assets (custom PNG and logos for in app)    |
-| 2024/02/17 |       |       |         | 4       |        |        | Working on Landing Page & Learning Compose                         |
+| 2024/02/17 | 1     |       |         |         | 2      |        | Graphic design for app assets (custom PNG and logos for in app)    |
+| 2024/02/17 |       |       |         | 4       | 3      |        | Working on Landing Page & Learning Compose                         |
 | 2024/02/18 |       |       |         | 1       |        |        | Continued landing repo                                             |
 | 2024/02/19 |       |       | 2       |         |        | 2      | Update activities to include previews                              |
 | 2024/02/19 |       |       | 1       |         |        | 1      | Add back arrows for login/signup activities                        |
-| 2024/02/19 |       |       | 3       |         |        | 3      | Research MVVM & implement state for login screen                   |
+| 2024/02/19 |       |       | 3       |         | 2      | 3      | Research MVVM & implement state for login screen                   |
 | 2024/02/25 |       |       |         |         |        | 3      | Implement MVVM for authentication & persist state between sessions |
-| 2024/02/25 |       |       |         |         |        | 2      | Finish UI & state logic for login / signup                         |
+| 2024/02/25 |       |       |         |         | 3      | 2      | Finish UI & state logic for login / signup                         |
 | 2024/02/25 | 1     |       | 4       |         |        |        | Integrate signup page with backend                                 |
 | 2024/02/26 | 1     |       | 2       |         |        |        | Integrate login page with backend                                  |
 | 2024/02/26 |       |       | 2       |         |        | 3      | Add pages for profile & settings, update global app styling        |
@@ -25,6 +25,7 @@
 | 2024/03/02 |       |       |         | 3       |        |        | Profile page design and implementation                             |
 | 2024/03/03 |       |       |         | 2       |        |        | Prototype Demo Presentation and Settings Page                      |
 | 2024/03/04 |       |       |         |         |        | 6      | Add friends page                                                   |
+| 2024/03/04 |       |       |         |         | 6      |        | Add feed page with static data, likes state and comment icons      |
 | 2024/03/04 |       |       |         | 2       |        |        | Routing and bug fixing for profile and settings                    |
 | 2024/03/04 | 2     |       |         |         |        |        | UI cleanup for demo                                                |
 | 2024/03/05 |       |       |         | 3       |        |        | Pop-up menus for confirmation and entry in profile and settings    |
@@ -39,4 +40,5 @@
 | 2024/03/24 |       |       |         | 5       |        |        | D5 example 1 (adapter) and profile view model and api integration  |
 | 2024/03/25 |       |       |         | 5       |        |        | Finishing profile page & feed api/view model/ integration          |
 | 2024/03/25 | 2     |       |         |         |        |        | D5 example 2 (singleton)                                           |
+| 2024/03/25 |       |       |         |         |  2     |        | D5 example 3 (Observer)                                            |
 | 2024/03/27 |       |       |         |         |        | 1      | Add profile pics to friends                                        |
