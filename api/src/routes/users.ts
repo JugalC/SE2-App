@@ -68,14 +68,6 @@ export const users: Plugin = (server, _, done) => {
       try {
         const { currUsername, newUsername } = req.body;
 
-        // log currUsername and newUsername
-        console.log("currUsername: ", currUsername);
-        console.log("newUsername: ", newUsername);
-
-        // const user = await db.query.userTable.findFirst({
-        //   where: eq(userTable.username, username),
-        // });
-
         // check if newUsername already exists in the database
         const user = await db.query.userTable.findFirst({
           where: eq(userTable.username, newUsername),
@@ -95,6 +87,51 @@ export const users: Plugin = (server, _, done) => {
           .where(eq(userTable.username, currUsername));
 
         return res.code(200).send({ newUsername: newUsername });
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.post(
+    "/user/update_password",
+    {
+      schema: {
+        body: z.object({
+          username: z.string(),
+          newPassword: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { username, newPassword } = req.body;
+
+        // check if user exists in DB
+        const user = await db.query.userTable.findFirst({
+          where: eq(userTable.username, username),
+        });
+
+        // if user doesn't exist, return error
+        if (!user) {
+          return res.code(404).send({ error: "User not found with given parameters." });
+        }
+
+        // generate new salt and hash for new password
+        const salt = await generateSalt();
+        const passwordHash = (await hash(newPassword, salt)).toString("hex");
+
+        // update user with new password
+        await db
+          .update(userTable)
+          .set({
+            passwordHash,
+            salt,
+          })
+          .where(eq(userTable.username, username));
+
+        return res.code(200).send({ message: "Password updated successfully." });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });

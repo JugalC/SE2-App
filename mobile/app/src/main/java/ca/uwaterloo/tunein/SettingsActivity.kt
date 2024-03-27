@@ -65,8 +65,6 @@ class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-//        val user = AuthManager.getUser(this)
-
         fun goBack() {
             finish()
         }
@@ -127,48 +125,34 @@ class SettingsActivity : ComponentActivity() {
         }
 
         fun onConfirmationPassword(pass: String, confirmPass: String) {
-
             val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
-            val user = AuthManager.getUser(this)
-            if (user.username == u.toString()) {
-                alert.setMessage("Username is the same as the current username")
+            if (pass != confirmPass) {
+                alert.setMessage("Passwords do not match")
                 alert.create().show()
                 return
             }
+
+            val user = AuthManager.getUser(this)
+
             val req = JSONObject()
-            req.put("currUsername", user.username)
-            req.put("newUsername", u)
+            req.put("username", user.username)
+            req.put("newPassword", pass)
 
             val userUpdateReq = JsonObjectRequest(
-                Request.Method.POST, usernameURL, req,
-                { updateRes ->
-                    val userLocal = AuthManager.getUser(this)
-                    AuthManager.setUser(this, User(
-                        id=userLocal.id,
-                        username=updateRes.getString("newUsername"),
-                        firstName=userLocal.firstName,
-                        lastName=userLocal.lastName
-                    ))
-                    showDialogUsername.value = false
+                Request.Method.POST, passwordURL, req,
+                { _ ->
+                    val positiveAlert = android.app.AlertDialog.Builder(this).setTitle("Success")
+                    positiveAlert.setMessage("Password has been updated")
+                    positiveAlert.create().show()
+                    showDialogPassword.value = false
                 },
                 { error ->
-                    val statusCode: Int = error.networkResponse.statusCode
-                    if (statusCode == 400) {
-                        alert.setMessage("username already exists, try another")
-                        alert.create().show()
-                    } else {
-                        Log.e("Settings", error.toString())
-                        alert.setMessage("An unexpected error has occurred")
-                        alert.create().show()
-                    }
+                    Log.e("Settings", error.toString())
+                    alert.setMessage("An unexpected error has occurred")
+                    alert.create().show()
                 }
             )
             queue.add(userUpdateReq)
-
-
-
-
-            showDialogPassword.value = false
         }
 
         fun onDismissRequestPassword() {
@@ -176,12 +160,14 @@ class SettingsActivity : ComponentActivity() {
         }
 
 
+        
+
 
         setContent {
             SettingsContent(
                 goBack ={goBack()},
                 onConfirmationUsername = ::onConfirmationUsername,
-                onDismissRequestUsername ={onDismissRequestUsername()},
+                onDismissRequestUsername={onDismissRequestUsername()},
                 onConfirmationPassword =::onConfirmationPassword
             ) { onDismissRequestPassword() }
         }
