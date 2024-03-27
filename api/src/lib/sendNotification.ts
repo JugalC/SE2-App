@@ -1,4 +1,4 @@
-import { initializeApp, applicationDefault } from "firebase-admin/app";
+import { initializeApp } from "firebase-admin/app";
 import { getMessaging } from "firebase-admin/messaging";
 import { User } from "../db/schema";
 import admin from "firebase-admin";

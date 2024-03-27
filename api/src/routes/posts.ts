@@ -1,7 +1,5 @@
 import { db } from "../db/db";
 import { getPostSchema, postTable } from "../db/schema";
-import { friendshipTable, getUserSchema, insertUserSchema, userTable } from "../db/schema";
-import { sql } from 'drizzle-orm' 
 import { z } from "zod";
 import { and, between, eq } from "drizzle-orm";
 import { Plugin, paginationSchema } from "../types";
@@ -36,7 +34,6 @@ export const posts: Plugin = (server, _, done) => {
       }
     },
   );
-
 
   server.get(
     "/posts",
