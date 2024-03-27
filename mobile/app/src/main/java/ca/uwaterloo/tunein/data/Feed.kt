@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class SinglePost(
     val id: String = "",
     val user_id: String = "",
-    val profile_picture: String = "",
+    val profile_picture: String = DEFAULT_PROFILE_PIC,
     val username: String = "",
     val name: String = "",
     val album_name: String = "",

@@ -39,3 +39,4 @@
 | 2024/03/24 |       |       |         | 5       |        |        | D5 example 1 (adapter) and profile view model and api integration  |
 | 2024/03/25 |       |       |         | 5       |        |        | Finishing profile page & feed api/view model/ integration          |
 | 2024/03/25 | 2     |       |         |         |        |        | D5 example 2 (singleton)                                           |
+| 2024/03/27 |       |       |         |         |        | 1      | Add profile pics to friends                                        |
