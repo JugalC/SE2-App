@@ -7,7 +7,8 @@ import { eq, or } from "drizzle-orm";
 import { Plugin, paginationSchema, searchSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
 import { encrypt } from "../lib/encryption";
-import { desc } from "drizzle-orm";
+import { CONNREFUSED } from "dns";
+import { asc, desc } from "drizzle-orm";
 import { count, sql } from "drizzle-orm";
 
 export const users: Plugin = (server, _, done) => {
@@ -39,15 +40,61 @@ export const users: Plugin = (server, _, done) => {
           createdAt,
         });
 
-        return res
-          .code(200)
-          .send({
-            id,
-            ...body,
-            passwordHash: undefined,
-            salt: undefined,
-            token: encrypt(`${body.username}:${password}`),
-          });
+        return res.code(200).send({
+          id,
+          ...body,
+          passwordHash: undefined,
+          salt: undefined,
+          token: encrypt(`${body.username}:${password}`),
+        });
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.post(
+    "/user/update_user",
+    {
+      schema: {
+        body: z.object({
+          currUsername: z.string(),
+          newUsername: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { currUsername, newUsername } = req.body;
+
+        // log currUsername and newUsername
+        console.log("currUsername: ", currUsername);
+        console.log("newUsername: ", newUsername);
+
+        // const user = await db.query.userTable.findFirst({
+        //   where: eq(userTable.username, username),
+        // });
+
+        // check if newUsername already exists in the database
+        const user = await db.query.userTable.findFirst({
+          where: eq(userTable.username, newUsername),
+        });
+
+        // if user exists, return error
+        if (user) {
+          return res.code(400).send({ error: "User already exists with given parameters." });
+        }
+
+        // update user with new username
+        await db
+          .update(userTable)
+          .set({
+            username: newUsername,
+          })
+          .where(eq(userTable.username, currUsername));
+
+        return res.code(200).send({ newUsername: newUsername });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -461,17 +508,15 @@ export const users: Plugin = (server, _, done) => {
         //   {name: "Out of Time", album_name: "The Highlights (Deluxe)", artists: "The Weeknd", image_url: "https://i.scdn.co/image/ab67616d00001e02c87bfeef81a210ddb7f717b5", caption: "Yesterday"},
         // ]
 
-        return res
-          .code(200)
-          .send({
-            first_name: first_name,
-            username: username,
-            spotify_name: spotify_name,
-            friends_num: friends_num,
-            profile_pic: profile_pic,
-            created: created,
-            previous_posts: previous_posts,
-          });
+        return res.code(200).send({
+          first_name: first_name,
+          username: username,
+          spotify_name: spotify_name,
+          friends_num: friends_num,
+          profile_pic: profile_pic,
+          created: created,
+          previous_posts: previous_posts,
+        });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });

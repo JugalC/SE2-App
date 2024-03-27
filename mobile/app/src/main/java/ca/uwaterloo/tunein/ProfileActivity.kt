@@ -87,8 +87,7 @@ class ProfileActivity : ComponentActivity() {
 
 
         fun goBack() {
-            val intent = Intent(this, PostsActivity::class.java)
-            startActivity(intent)
+           finish()
         }
 
         fun handleClickAccountSettings() {
