@@ -65,8 +65,7 @@ class FriendsActivity : ComponentActivity() {
         val context = this
 
         fun goBack() {
-            val intent = Intent(this, PostsActivity::class.java)
-            startActivity(intent)
+            finish()
         }
 
         val friendsViewModel = FriendsViewModel()

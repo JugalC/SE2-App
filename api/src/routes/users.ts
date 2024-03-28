@@ -7,7 +7,8 @@ import { eq, or } from "drizzle-orm";
 import { Plugin, paginationSchema, searchSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
 import { encrypt } from "../lib/encryption";
-import { desc } from "drizzle-orm";
+import { CONNREFUSED } from "dns";
+import { asc, desc } from "drizzle-orm";
 import { count, sql } from "drizzle-orm";
 
 export const users: Plugin = (server, _, done) => {
@@ -39,15 +40,237 @@ export const users: Plugin = (server, _, done) => {
           createdAt,
         });
 
-        return res
-          .code(200)
-          .send({
-            id,
-            ...body,
-            passwordHash: undefined,
-            salt: undefined,
-            token: encrypt(`${body.username}:${password}`),
+        return res.code(200).send({
+          id,
+          ...body,
+          passwordHash: undefined,
+          salt: undefined,
+          token: encrypt(`${body.username}:${password}`),
+        });
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.post(
+    "/user/update_user",
+    {
+      schema: {
+        body: z.object({
+          currUsername: z.string(),
+          newUsername: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { currUsername, newUsername } = req.body;
+
+        // check if newUsername already exists in the database
+        const user = await db.query.userTable.findFirst({
+          where: eq(userTable.username, newUsername),
+        });
+
+        // if user exists, return error
+        if (user) {
+          return res.code(400).send({ error: "User already exists with given parameters." });
+        }
+
+        // update user with new username
+        await db
+          .update(userTable)
+          .set({
+            username: newUsername,
+          })
+          .where(eq(userTable.username, currUsername));
+
+        return res.code(200).send({ newUsername: newUsername });
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.post(
+    "/user/update_password",
+    {
+      schema: {
+        body: z.object({
+          username: z.string(),
+          newPassword: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { username, newPassword } = req.body;
+
+        // check if user exists in DB
+        const user = await db.query.userTable.findFirst({
+          where: eq(userTable.username, username),
+        });
+
+        // if user doesn't exist, return error
+        if (!user) {
+          return res.code(404).send({ error: "User not found with given parameters." });
+        }
+
+        // generate new salt and hash for new password
+        const salt = await generateSalt();
+        const passwordHash = (await hash(newPassword, salt)).toString("hex");
+
+        // update user with new password
+        await db
+          .update(userTable)
+          .set({
+            passwordHash,
+            salt,
+          })
+          .where(eq(userTable.username, username));
+
+        return res.code(200).send({ message: "Password updated successfully." });
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.post(
+    "/user/update_profile_picture",
+    {
+      schema: {
+        body: z.object({
+          username: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { username } = req.body;
+
+        // check if user exists in DB
+        const user = await db.query.userTable.findFirst({
+          where: eq(userTable.username, username),
+        });
+
+        // if user doesn't exist, return error
+        if (!user) {
+          return res.code(404).send({ error: "User not found with given parameters." });
+        }
+
+        // let url_default =
+        // "https://builtprefab.com/wp-content/uploads/2019/01/cropped-blank-profile-picture-973460_960_720-300x300.png";
+
+        // // update user with new profile picture
+        // await db
+        //   .update(userTable)
+        //   .set({
+        //     profilePicture: "",
+        //   })
+        //   .where(eq(userTable.username, username));
+
+        const access_token = user["spotifyAccessToken"] || "None";
+        const reset_token = user["spotifyRefreshToken"] || "None";
+        const starting = "Bearer ";
+
+        const response = await fetch("https://api.spotify.com/v1/me", {
+          headers: { Authorization: starting.concat(access_token) },
+        });
+
+        const value = await response.json();
+
+        let refresh_flag = false;
+
+        if (Object.keys(value)[0] === "error") {
+          console.log("Need to refresh token");
+          refresh_flag = true;
+
+          const url = "https://accounts.spotify.com/api/token";
+
+          const payload = {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              Authorization:
+                "Basic " +
+                Buffer.from(process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_CLIENT_SECRET).toString("base64"),
+            },
+            body: new URLSearchParams({
+              grant_type: "refresh_token",
+              refresh_token: reset_token,
+              client_id: process.env.SPOTIFY_CLIENT_ID,
+            }),
+          };
+          const refresh_response = await fetch(url, payload);
+          const refresh_response_json = await refresh_response.json();
+
+          console.log(refresh_response_json["access_token"]);
+
+          await db
+            .update(userTable)
+            .set({
+              spotifyAccessToken: refresh_response_json["access_token"],
+              spotifyRefreshToken: refresh_response_json["refresh_token"],
+            })
+            .where(eq(userTable.username, username));
+        }
+
+        if (refresh_flag) {
+          const user = await db.query.userTable.findFirst({
+            where: eq(userTable.username, username),
           });
+
+          if (!user) {
+            return res.code(404).send({ error: "User not found with given parameters." });
+          }
+
+          const access_token = user["spotifyAccessToken"] || "None";
+          const starting = "Bearer ";
+
+          const response = await fetch("https://api.spotify.com/v1/me", {
+            headers: { Authorization: starting.concat(access_token) },
+          });
+
+          const value = await response.json();
+
+          let profile_pic = "";
+          if (value["images"].length > 0) {
+            profile_pic = value["images"][1]["url"];
+          } else {
+            profile_pic =
+              "https://builtprefab.com/wp-content/uploads/2019/01/cropped-blank-profile-picture-973460_960_720-300x300.png";
+          }
+
+          await db
+            .update(userTable)
+            .set({
+              profilePicture: profile_pic,
+            })
+            .where(eq(userTable.username, username));
+
+          return res.code(200).send({ message: "Profile picture updated successfully." });
+        } else {
+          let profile_pic = "";
+          if (value["images"].length > 0) {
+            profile_pic = value["images"][1]["url"];
+          } else {
+            profile_pic =
+              "https://builtprefab.com/wp-content/uploads/2019/01/cropped-blank-profile-picture-973460_960_720-300x300.png";
+          }
+
+          await db
+            .update(userTable)
+            .set({
+              profilePicture: profile_pic,
+            })
+            .where(eq(userTable.username, username));
+
+          return res.code(200).send({ message: "Profile picture updated successfully." });
+        }
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -461,17 +684,15 @@ export const users: Plugin = (server, _, done) => {
         //   {name: "Out of Time", album_name: "The Highlights (Deluxe)", artists: "The Weeknd", image_url: "https://i.scdn.co/image/ab67616d00001e02c87bfeef81a210ddb7f717b5", caption: "Yesterday"},
         // ]
 
-        return res
-          .code(200)
-          .send({
-            first_name: first_name,
-            username: username,
-            spotify_name: spotify_name,
-            friends_num: friends_num,
-            profile_pic: profile_pic,
-            created: created,
-            previous_posts: previous_posts,
-          });
+        return res.code(200).send({
+          first_name: first_name,
+          username: username,
+          spotify_name: spotify_name,
+          friends_num: friends_num,
+          profile_pic: profile_pic,
+          created: created,
+          previous_posts: previous_posts,
+        });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
