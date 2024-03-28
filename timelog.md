@@ -12,7 +12,8 @@
 | 2024/02/16 |       | 5     |         |         |        |        | API Backend post routes                                            |
 | 2024/02/16 |       | 5     |         |         |        |        | API Backend user routes                                            |
 | 2024/02/17 | 1     |       |         |         | 2      |        | Graphic design for app assets (custom PNG and logos for in app)    |
-| 2024/02/17 |       |       |         | 4       | 3      |        | Working on Landing Page & Learning Compose                         |
+| 2024/02/17 |       |       |         | 4       | 5      |        | Working on Landing Page & Learning Compose                         |
+| 2024/02/17 |       |       |         | 4       | 5      |        | Working on scrollable view for sign up page and navigation         |
 | 2024/02/18 |       |       |         | 1       |        |        | Continued landing repo                                             |
 | 2024/02/19 |       |       | 2       |         |        | 2      | Update activities to include previews                              |
 | 2024/02/19 |       |       | 1       |         |        | 1      | Add back arrows for login/signup activities                        |
@@ -30,6 +31,7 @@
 | 2024/03/03 |       |       |         | 2       |        |        | Prototype Demo Presentation and Settings Page                      |
 | 2024/03/04 |       |       |         |         |        | 6      | Add friends page                                                   |
 | 2024/03/04 |       |       |         |         | 6      |        | Add feed page with static data, likes state and comment icons      |
+| 2024/03/04 |       |       |         |         | 3      |        | Modularize feed page for future integration with dynamic data      |
 | 2024/03/04 |       |       |         | 2       |        |        | Routing and bug fixing for profile and settings                    |
 | 2024/03/04 | 2     |       |         |         |        |        | UI cleanup for demo                                                |
 | 2024/03/05 |       |       |         | 3       |        |        | Pop-up menus for confirmation and entry in profile and settings    |
