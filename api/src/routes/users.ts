@@ -665,7 +665,7 @@ export const users: Plugin = (server, _, done) => {
             spotifyName,
             friendsNum,
             profilePic,
-            created: created,
+            created,
           },
           posts: previousPosts,
         });
