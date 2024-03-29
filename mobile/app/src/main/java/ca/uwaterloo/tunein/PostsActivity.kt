@@ -75,7 +75,19 @@ class PostsActivity : ComponentActivity() {
         fun handleClickSettings(user_id: String) {
             val intent = Intent(this, ProfileActivity::class.java)
             println("Adding $user_id")
-            intent.putExtra("user_profile", user_id);
+            intent.putExtra("user_profile", user_id)
+            startActivity(intent)
+        }
+
+        fun handleClickComment(postId: String) {
+            val intent = Intent(this, CommentsActivity::class.java)
+            intent.putExtra("postId", postId)
+            startActivity(intent)
+        }
+
+        fun handleClickComment(postId: String) {
+            val intent = Intent(this, CommentsActivity::class.java)
+            intent.putExtra("postId", postId)
             startActivity(intent)
         }
 
@@ -84,6 +96,7 @@ class PostsActivity : ComponentActivity() {
                 user,
                 handleClickFriends= { handleClickFriends() },
                 handleClickSettings= ::handleClickSettings,
+                handleClickComment = ::handleClickComment,
                 feedViewModel = viewModel
             )
         }
@@ -92,6 +105,7 @@ class PostsActivity : ComponentActivity() {
 
 @Composable
 fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) -> Unit) {
+//fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) -> Unit, handleClickComment: (postId: String) -> Unit) {
     var isLiked by remember { mutableStateOf(false) }
     val uriHandler = LocalUriHandler.current
 
@@ -170,7 +184,8 @@ fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) ->
                 )
             }
             IconButton(
-                onClick = { /* TODO: comment button click action */ },
+                onClick = { /* TODO */ },
+//                onClick = { handleClickComment(post.id) },
                 modifier = Modifier.size(48.dp)
             ) {
                 androidx.compose.material.Icon(
@@ -192,6 +207,7 @@ fun PostsContent(
     user: User,
     handleClickFriends: () -> Unit,
     handleClickSettings: (user_id: String) -> Unit,
+    handleClickComment: (postId: String) -> Unit,
     viewModel: FriendsViewModel = viewModel(),
     feedViewModel: FeedViewModel = viewModel()
 ) {
@@ -248,9 +264,19 @@ fun PostsContent(
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     items(returnedFeed.posts) { post ->
+//                        PostItemGeneration(
+//                            post = post,
+//                            handleClickSettings = { userId -> handleClickSettings(userId) },
+//                            handleClickComment = { postId -> handleClickComment(postId) }
+//                        )
                         PostItemGeneration(post) {
                             handleClickSettings(post.userId)
                         }
+//                        PostItemGeneration(
+//                            post = post,
+//                            handleClickSettings = { userId -> handleClickSettings(userId) },
+//                            handleClickComment = { postId -> handleClickComment(postId) }
+//                        )
                     }
                 }
             }
