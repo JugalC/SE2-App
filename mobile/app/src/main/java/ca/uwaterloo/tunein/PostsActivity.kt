@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
@@ -41,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -94,6 +96,7 @@ class PostsActivity : ComponentActivity() {
 @Composable
 fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> Unit) {
     var isLiked by remember { mutableStateOf(false) }
+    val uriHandler = LocalUriHandler.current
 
     Box(modifier = Modifier
         .padding(bottom = 16.dp, end = 16.dp)
@@ -143,6 +146,21 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
             }
         }
         Row(
+            modifier = Modifier.align(Alignment.BottomStart)
+        ){
+            IconButton(
+                onClick = { uriHandler.openUri(post.spotifyUrl) },
+                modifier = Modifier.size(48.dp)
+            ) {
+                androidx.compose.material.Icon(
+                    painter = painterResource(id = R.drawable.green_play_button),
+                    contentDescription = "Comment",
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Unspecified
+                )
+            }
+        }
+        Row(
             modifier = Modifier.align(Alignment.BottomEnd)
         ) {
 
@@ -183,6 +201,11 @@ fun PostsContent(
     val pendingInvites by viewModel.pendingInvites.collectAsStateWithLifecycle()
     val returnedFeed by feedViewModel.returnedFeed.collectAsStateWithLifecycle()
 
+    fun refreshFeed() {
+        feedViewModel.updateReturnedFeed(user.id)
+    }
+
+
     TuneInTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -209,12 +232,18 @@ fun PostsContent(
                             Icon(Icons.Default.Person, contentDescription = "Friends")
                         }
                     }
-                    Text(
-                        text = "TuneIn",
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    )
+                    TextButton(
+                        // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
+                        onClick = { refreshFeed() }
+                        // End of GPT 3.5 Generation
+                    ) {
+                        Text(
+                            text = "TuneIn",
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        )
+                    }
                     IconButton(onClick = { handleClickProfile(user.id) }) {
-                        Icon(Icons.Default.Face, contentDescription = "Settings")
+                    Icon(Icons.Default.Face, contentDescription = "Profile")
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))

@@ -342,6 +342,7 @@ export const users: Plugin = (server, _, done) => {
           userId: string;
           username: string;
           profilePicture: string;
+          spotifyUrl: string;
         }
 
         const results: resultsObj[] = await db.all(sql`
@@ -367,7 +368,8 @@ export const users: Plugin = (server, _, done) => {
             rp.image_url AS imageUrl,
             rp.user_id AS userId,
             ut.username,
-            ut.profile_picture AS profilePicture
+            ut.profile_picture AS profilePicture,
+            rp.spotify_url AS spotifyUrl
           FROM
             RankedPosts rp
             INNER JOIN user ut ON rp.user_id = ut.id
@@ -582,7 +584,7 @@ export const users: Plugin = (server, _, done) => {
           .select()
           .from(postTable)
           .where(eq(postTable.userId, identifier))
-          .orderBy(desc(postTable.name))
+          .orderBy(desc(postTable.createdAt))
           .limit(3);
 
         const previousPosts = [];
@@ -830,7 +832,7 @@ export const users: Plugin = (server, _, done) => {
             const durationMs = currently_played_song["duration_ms"];
             const spotifyUrl = currently_played_song["external_urls"]["spotify"];
             const userId = identifier;
-            const listenedAt = new Date(currently_played_song["played_at"]);
+            const listenedAt = new Date();
             const createdAt = new Date();
 
             const resp_obj = {

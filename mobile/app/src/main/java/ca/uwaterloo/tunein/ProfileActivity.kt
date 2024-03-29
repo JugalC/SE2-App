@@ -21,7 +21,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -130,6 +132,7 @@ fun ProfileContent(
     val profile by profileViewModel.profile.collectAsStateWithLifecycle()
     val posts by profileViewModel.posts.collectAsStateWithLifecycle()
 
+    val scrollState = rememberScrollState()
     TuneInTheme {
         Surface(
             modifier = Modifier.fillMaxSize()
@@ -137,7 +140,8 @@ fun ProfileContent(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
