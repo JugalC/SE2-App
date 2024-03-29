@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
@@ -36,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +60,8 @@ import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
 import ca.uwaterloo.tunein.data.FeedPost
 import coil.compose.AsyncImage
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 
 class PostsActivity : ComponentActivity() {
@@ -216,6 +220,7 @@ fun PostsContent(
 
     val returnedFeed by remember { feedViewModel.returnedFeed }
 
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         thread {
@@ -226,6 +231,13 @@ fun PostsContent(
     LaunchedEffect(returnedFeed) {
         feedViewModel.updateReturnedFeed(user.id)
     }
+
+    // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
+    suspend fun refreshFeed() {
+        feedViewModel.updateReturnedFeed(user.id)
+    }
+    // End of GPT 3.5 Generation
+
 
     TuneInTheme {
         // A surface container using the 'background' color from the theme
@@ -253,10 +265,16 @@ fun PostsContent(
                             Icon(Icons.Default.Person, contentDescription = "Friends")
                         }
                     }
-                    Text(
-                        text = "TuneIn",
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    )
+                    TextButton(
+                        // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
+                        onClick = { coroutineScope.launch { refreshFeed() } }
+                        // End of GPT 3.5 Generation
+                    ) {
+                        Text(
+                            text = "TuneIn",
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        )
+                    }
                     IconButton(onClick = { handleClickSettings(user.id) }) {
                         Icon(Icons.Default.Face, contentDescription = "Settings")
                     }

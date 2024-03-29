@@ -583,7 +583,7 @@ export const users: Plugin = (server, _, done) => {
           .select()
           .from(postTable)
           .where(eq(postTable.userId, identifier))
-          .orderBy(desc(postTable.name))
+          .orderBy(desc(postTable.createdAt))
           .limit(3);
 
         const previousPosts = [];
@@ -831,7 +831,7 @@ export const users: Plugin = (server, _, done) => {
             const durationMs = currently_played_song["duration_ms"];
             const spotifyUrl = currently_played_song["external_urls"]["spotify"];
             const userId = identifier;
-            const listenedAt = new Date(currently_played_song["played_at"]);
+            const listenedAt = new Date();
             const createdAt = new Date();
 
             const resp_obj = {
