@@ -19,15 +19,15 @@ import okhttp3.OkHttpClient
 
 
 @Serializable
-data class PendingInvites(
+data class Users(
     val users: List<User> = emptyList()
 )
 
 class FriendsViewModel : ViewModel() {
-    private val _pendingInvites = MutableStateFlow(PendingInvites())
-    val pendingInvites: StateFlow<PendingInvites> = _pendingInvites.asStateFlow()
-    private val _friends = MutableStateFlow(PendingInvites())
-    val friends: StateFlow<PendingInvites> = _friends.asStateFlow()
+    private val _pendingInvites = MutableStateFlow(Users())
+    val pendingInvites: StateFlow<Users> = _pendingInvites.asStateFlow()
+    private val _friends = MutableStateFlow(Users())
+    val friends: StateFlow<Users> = _friends.asStateFlow()
 
 //    TODO: implement this
     fun removePendingInvite(user: User) {
