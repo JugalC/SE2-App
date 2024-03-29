@@ -342,6 +342,7 @@ export const users: Plugin = (server, _, done) => {
           userId: string;
           username: string;
           profilePicture: string;
+          spotifyUrl: string;
         }
 
         const results: resultsObj[] = await db.all(sql`
@@ -365,7 +366,8 @@ export const users: Plugin = (server, _, done) => {
             rp.image_url AS imageUrl,
             rp.user_id AS userId,
             ut.username,
-            ut.profile_picture AS profilePicture
+            ut.profile_picture AS profilePicture,
+            rp.spotify_url AS spotifyUrl
           FROM
             RankedPosts rp
             INNER JOIN user ut ON rp.user_id = ut.id
