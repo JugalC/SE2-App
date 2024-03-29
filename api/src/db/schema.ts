@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { zodPreprocessDate } from "../lib/zodHelpers";
+import { boolean } from "drizzle-orm/mysql-core";
 
 export const userTable = sqliteTable("user", {
   id: text("id").notNull().primaryKey(),
@@ -55,6 +56,7 @@ export const postTable = sqliteTable("post", {
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
+  visible: integer("visible", { mode: "boolean"}).notNull().default(true),
 });
 
 export const likeTable = sqliteTable(

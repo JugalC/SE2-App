@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,7 +45,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -55,11 +53,9 @@ import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.FeedViewModel
 import kotlin.concurrent.thread
-import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
-import ca.uwaterloo.tunein.data.SinglePost
-import ca.uwaterloo.tunein.viewmodel.ProfileViewModel
+import ca.uwaterloo.tunein.data.FeedPost
 import coil.compose.AsyncImage
 
 
@@ -101,7 +97,8 @@ class PostsActivity : ComponentActivity() {
 }
 
 @Composable
-fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) -> Unit, handleClickComment: (postId: String) -> Unit) {
+//fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) -> Unit, handleClickComment: (postId: String) -> Unit) {
+fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) -> Unit) {
     var isLiked by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.padding(bottom = 16.dp, end = 16.dp).fillMaxWidth()) {
@@ -113,10 +110,10 @@ fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) 
             backgroundColor = Color(0xFF1E1E1E),
         ) {
             Column {
-                Row (modifier = Modifier.clickable { handleClickSettings(post.user_id) })
+                Row (modifier = Modifier.clickable { handleClickSettings(post.userId) })
                 {
                     AsyncImage(
-                        model = post.profile_picture,
+                        model = post.profilePicture,
                         contentDescription = "Profile photo",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -134,7 +131,7 @@ fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) 
                 Spacer(modifier = Modifier.height(16.dp))
                 Row{
                     AsyncImage(
-                        model = post.image_url,
+                        model = post.imageUrl,
                         contentDescription = "Post image",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.size(150.dp)
@@ -164,7 +161,8 @@ fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) 
                 )
             }
             IconButton(
-                onClick = { handleClickComment(post.id) },
+                onClick = {  },
+//                onClick = { handleClickComment(post.id) },
                 modifier = Modifier.size(48.dp)
             ) {
                 androidx.compose.material.Icon(
@@ -243,11 +241,14 @@ fun PostsContent(
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     items(returnedFeed.posts) { post ->
-                        PostItemGeneration(
-                            post = post,
-                            handleClickSettings = { userId -> handleClickSettings(userId) },
-                            handleClickComment = { postId -> handleClickComment(postId) }
-                        )
+//                        PostItemGeneration(
+//                            post = post,
+//                            handleClickSettings = { userId -> handleClickSettings(userId) },
+//                            handleClickComment = { postId -> handleClickComment(postId) }
+//                        )
+                        PostItemGeneration(post) {
+                            handleClickSettings(post.userId)
+                        }
                     }
                 }
             }

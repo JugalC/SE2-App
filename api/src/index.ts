@@ -5,6 +5,7 @@ import { spotify } from "./routes/spotify";
 import { friendships } from "./routes/friendships";
 import { likes } from "./routes/likes";
 import { comments } from "./routes/comments";
+import { posts } from "./routes/posts";
 
 const server = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -16,6 +17,7 @@ server.register(spotify);
 server.register(friendships);
 server.register(likes);
 server.register(comments);
+server.register(posts);
 
 server.get("/ping", async () => {
   return "pong\n";
