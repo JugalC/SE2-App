@@ -29,6 +29,7 @@ class FriendsViewModel : ViewModel() {
     private val _friends = MutableStateFlow(PendingInvites())
     val friends: StateFlow<PendingInvites> = _friends.asStateFlow()
 
+//    TODO: implement this
     fun removePendingInvite(user: User) {
         val updatedUsers = _pendingInvites.value.users.toMutableList() // Make a mutable copy
         updatedUsers.remove(user) // Remove the user from the list
@@ -73,7 +74,6 @@ suspend fun getFriends(context: Context): List<User> = withContext(Dispatchers.I
         .addHeader("cache-control", "no-cache")
         .addHeader("Authorization", "Bearer ${AuthManager.getAuthToken(context).toString()}")
         .build()
-
 
     val response = client.newCall(request).execute()
     val json = response.body.string()

@@ -1,5 +1,6 @@
 package ca.uwaterloo.tunein
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -31,32 +32,36 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.components.ProfilePic
-import ca.uwaterloo.tunein.data.Profile
+import ca.uwaterloo.tunein.data.Post
 import ca.uwaterloo.tunein.messaging.Firebase
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.ProfileViewModel
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 
 private val showDialog = mutableStateOf(false)
 
@@ -68,43 +73,26 @@ class ProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        var profileReturned: Profile = Profile()
-
-        val intent = this.intent
-        var userId = ""
-        userId = intent.getStringExtra("user_profile").toString()
-
+        val userId = this.intent.getStringExtra("user_profile").toString()
         val user = AuthManager.getUser(this)
-
-        var self_profile = ""
-        if (userId == user.id) {
-            self_profile = "True"
-        }
-        else {
-            self_profile = "False"
-        }
-
 
         fun goBack() {
            finish()
         }
 
         fun handleClickAccountSettings() {
-            val intent = Intent(this, SettingsActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
 
         fun handleLogout() {
             AuthManager.setAuthToken(this, null)
             Firebase.clearRegistrationToken(this)
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, MainActivity::class.java))
         }
 
         fun onConfirmation() {
-            val intent = Intent(this, PostsActivity::class.java)
             showDialog.value = false
-            startActivity(intent)
+            startActivity(Intent(this, PostsActivity::class.java))
         }
 
         fun onDismissRequest() {
@@ -114,8 +102,7 @@ class ProfileActivity : ComponentActivity() {
         setContent {
             ProfileContent(
                 userId,
-                self_profile,
-                profileReturned,
+                selfProfile = userId == user.id,
                 goBack={goBack()},
                 handleClickAccountSettings={handleClickAccountSettings()},
                 handleLogout = { handleLogout() },
@@ -130,26 +117,24 @@ class ProfileActivity : ComponentActivity() {
 
 
 @Composable
-fun ProfileContent(userId: String,
-                   self_profile: String,
-                   profileReturned: Profile,
-                   goBack: () -> Unit,
-                   handleClickAccountSettings: () -> Unit,
-                   handleLogout: () -> Unit,
-                   onConfirmation: () -> Unit,
-                   onDismissRequest: () -> Unit,
-                   profileViewModel: ProfileViewModel = viewModel()
+fun ProfileContent(
+    userId: String,
+    selfProfile: Boolean,
+    goBack: () -> Unit,
+    handleClickAccountSettings: () -> Unit,
+    handleLogout: () -> Unit,
+    onConfirmation: () -> Unit,
+    onDismissRequest: () -> Unit,
+    profileViewModel: ProfileViewModel = viewModel()
 ) {
-
-    val returnedProfile by remember { profileViewModel.returnedProfile }
+    val profile by profileViewModel.profile.collectAsStateWithLifecycle()
+    val posts by profileViewModel.posts.collectAsStateWithLifecycle()
 
     // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
-    LaunchedEffect(returnedProfile) {
-        profileViewModel.updateReturnedProfile(userId)
-        println( returnedProfile.profile_pic)
+    LaunchedEffect(profile) {
+        profileViewModel.getProfile(userId)
     }
     //This is the end of GPT 3.5 generation
-
 
     TuneInTheme {
         Surface(
@@ -165,7 +150,7 @@ fun ProfileContent(userId: String,
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column() {
+                    Column {
                         IconButton(onClick = { goBack() }) {
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack,
@@ -173,10 +158,13 @@ fun ProfileContent(userId: String,
                             )
                         }
                     }
-                    Column(modifier = Modifier
-                        .fillMaxWidth(0.8f),
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f),
                         horizontalAlignment = Alignment.CenterHorizontally
-                        ){Text("Profile", textAlign= TextAlign.Center)}
+                    ){
+                        Text("Profile", textAlign= TextAlign.Center)
+                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
@@ -185,10 +173,9 @@ fun ProfileContent(userId: String,
                     Column(
                         modifier = Modifier
                             .fillMaxWidth(0.6f)
-
                     ){
-                        Text(text = returnedProfile.first_name, fontSize = 32.sp)
-                        Text(text = "@${returnedProfile.username}", fontSize=16.sp)
+                        Text(text = profile.firstName, fontSize = 32.sp)
+                        Text(text = "@${profile.username}", fontSize = 16.sp)
                         Spacer(modifier = Modifier.height(34.dp))
                         Row(
                             modifier = Modifier
@@ -200,8 +187,8 @@ fun ProfileContent(userId: String,
                                 modifier = Modifier
                                     .size(24.dp)
                             )
-                            Text(text = " ${returnedProfile.spotify_name}", fontSize=16.sp)
-
+                            Spacer(modifier = Modifier.padding(horizontal = 10.dp))
+                            Text(text = profile.spotifyName, fontSize = 16.sp)
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(
@@ -211,22 +198,23 @@ fun ProfileContent(userId: String,
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = null,
-                                modifier = Modifier.size(24.dp),
+                                modifier = Modifier
+                                    .size(24.dp)
                             )
-                            Text(text = " ${returnedProfile.friends_num} Friends", fontSize=16.sp)
+                            Spacer(modifier = Modifier.padding(horizontal = 10.dp))
+                            val friendsText = if (profile.friendsNum == 1) "Friend" else "Friends"
+                            Text(text = "${profile.friendsNum} $friendsText", fontSize=16.sp)
                         }
-
                     }
                     Column(
                         modifier = Modifier
-
                     ){
                         ProfilePic(
-                            url = returnedProfile.profile_pic,
+                            url = profile.profilePic,
                             modifier = Modifier
-                                    .size(156.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .aspectRatio(1f / 1f)
+                                .size(156.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .aspectRatio(1f / 1f)
                         )
                     }
                 }
@@ -238,10 +226,15 @@ fun ProfileContent(userId: String,
                         .background(color = Color.LightGray)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                returnedProfile.previous_posts.forEach{item -> PreviousPostsGen(item.image_url, item.name, item.artists, item.caption)}
+                posts.forEach{
+                    PostHistory(
+                        it,
+                        profileViewModel::updateVisibility
+                    )
+                }
 
                 Spacer(modifier = Modifier.weight(1f))
-                if (self_profile == "True") {
+                if (selfProfile) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
@@ -293,14 +286,9 @@ fun ProfileContent(userId: String,
                         Spacer(modifier = Modifier.width(16.dp))
                         Text(text = "Delete Account")
                     }
-
                 }
-
-
-
                 Spacer(modifier = Modifier.height(10.dp))
-                Text("TuneIn Member Since ${returnedProfile.created}", fontSize=10.sp, color=Color.LightGray)
-
+                Text("TuneIn Member Since ${profile.created}", fontSize=10.sp, color=Color.LightGray)
             }
 
         }
@@ -311,36 +299,46 @@ fun ProfileContent(userId: String,
 }
 
 @Composable
-fun PreviousPostsGen(album_art: String, song_name: String, artists: String, caption: String) {
+fun PostHistory(
+    post: Post,
+    updateVisibility: suspend (Post, Context) -> Unit,
+) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
     Column(modifier = Modifier
         .fillMaxWidth()){
-        Text(text = caption, fontSize = 12.sp, color = Color.LightGray)
+        Text(text = post.caption, fontSize = 12.sp, color = Color.LightGray)
         Spacer(modifier = Modifier.height(8.dp))
-        Row() {
+        Row {
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.3f)
             ){
                 AsyncImage(
-                    model = album_art,
-                    contentDescription = "albumart",
+                    model = post.imageUrl,
+                    contentDescription = "Album Art",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(96.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .aspectRatio(1f / 1f)
-
-
                 )
             }
             Column(
                 modifier = Modifier
-
             ){
-                Text(song_name)
-                Text(artists, fontSize=12.sp, color = Color.LightGray)
+                Text(post.name)
+                Text(post.artists, fontSize=12.sp, color = Color.LightGray)
+                Switch (
+                    checked = post.visible,
+                    onCheckedChange = {
+                        coroutineScope.launch {
+                            updateVisibility(post, context)
+                        }
+                    },
+                )
             }
-
         }
     }
     Spacer(modifier = Modifier.height(8.dp))
