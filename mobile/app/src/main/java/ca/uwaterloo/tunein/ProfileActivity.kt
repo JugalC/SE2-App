@@ -63,6 +63,7 @@ import ca.uwaterloo.tunein.viewmodel.ProfileViewModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
+
 private val showDialog = mutableStateOf(false)
 
 
@@ -187,7 +188,7 @@ fun ProfileContent(
                                 modifier = Modifier
                                     .size(24.dp)
                             )
-                            Spacer(modifier = Modifier.padding(horizontal = 10.dp))
+                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
                             Text(text = profile.spotifyName, fontSize = 16.sp)
                         }
                         Spacer(modifier = Modifier.height(4.dp))
@@ -201,7 +202,7 @@ fun ProfileContent(
                                 modifier = Modifier
                                     .size(24.dp)
                             )
-                            Spacer(modifier = Modifier.padding(horizontal = 10.dp))
+                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
                             val friendsText = if (profile.friendsNum == 1) "Friend" else "Friends"
                             Text(text = "${profile.friendsNum} $friendsText", fontSize=16.sp)
                         }
@@ -235,56 +236,60 @@ fun ProfileContent(
 
                 Spacer(modifier = Modifier.weight(1f))
                 if (selfProfile) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { handleClickAccountSettings() }
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    Column(
+                        Modifier
+                            .fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(text = "Account Settings")
-                    }
-
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { handleLogout() }
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(text = "Log Out")
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showDialog.value = true }
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(text = "Delete Account")
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { handleClickAccountSettings() }
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp),
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(text = "Account Settings")
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { handleLogout() }
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp),
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(text = "Log Out")
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { showDialog.value = true }
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp),
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(text = "Delete Account")
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(10.dp))
@@ -306,8 +311,10 @@ fun PostHistory(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    Column(modifier = Modifier
-        .fillMaxWidth()){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+    ){
         Text(text = post.caption, fontSize = 12.sp, color = Color.LightGray)
         Spacer(modifier = Modifier.height(8.dp))
         Row {
@@ -325,19 +332,26 @@ fun PostHistory(
                         .aspectRatio(1f / 1f)
                 )
             }
-            Column(
-                modifier = Modifier
-            ){
+            Column{
                 Text(post.name)
                 Text(post.artists, fontSize=12.sp, color = Color.LightGray)
-                Switch (
-                    checked = post.visible,
-                    onCheckedChange = {
-                        coroutineScope.launch {
-                            updateVisibility(post, context)
-                        }
-                    },
-                )
+                Row(
+                    modifier = Modifier
+                        .padding(vertical = 24.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Share with friends:")
+                    Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                    Switch (
+                        modifier = Modifier.height(10.dp),
+                        checked = post.visible,
+                        onCheckedChange = {
+                            coroutineScope.launch {
+                                updateVisibility(post, context)
+                            }
+                        },
+                    )
+                }
             }
         }
     }
