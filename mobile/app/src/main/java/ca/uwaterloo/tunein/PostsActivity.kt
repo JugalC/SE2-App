@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -100,6 +101,7 @@ class PostsActivity : ComponentActivity() {
 //fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) -> Unit, handleClickComment: (postId: String) -> Unit) {
 fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) -> Unit) {
     var isLiked by remember { mutableStateOf(false) }
+    val uriHandler = LocalUriHandler.current
 
     Box(modifier = Modifier.padding(bottom = 16.dp, end = 16.dp).fillMaxWidth()) {
         Card(
@@ -143,6 +145,21 @@ fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) ->
                         Text(text = post.artists, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
+            }
+        }
+        Row(
+            modifier = Modifier.align(Alignment.BottomStart)
+        ){
+            IconButton(
+                onClick = { uriHandler.openUri(post.spotifyUrl) },
+                modifier = Modifier.size(48.dp)
+            ) {
+                androidx.compose.material.Icon(
+                    painter = painterResource(id = R.drawable.green_play_button),
+                    contentDescription = "Comment",
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Unspecified
+                )
             }
         }
         Row(
