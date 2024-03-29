@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -69,6 +70,8 @@ class PostsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val user = AuthManager.getUser(this)
+
+
 
         fun handleClickFriends() {
             val intent = Intent(this, FriendsActivity::class.java)
@@ -96,8 +99,11 @@ class PostsActivity : ComponentActivity() {
 @Composable
 fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) -> Unit) {
     var isLiked by remember { mutableStateOf(false) }
+    val uriHandler = LocalUriHandler.current
 
-    Box(modifier = Modifier.padding(bottom = 16.dp, end = 16.dp).fillMaxWidth()) {
+    Box(modifier = Modifier
+        .padding(bottom = 16.dp, end = 16.dp)
+        .fillMaxWidth()) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -142,9 +148,23 @@ fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) 
             }
         }
         Row(
+            modifier = Modifier.align(Alignment.BottomStart)
+        ) {
+            IconButton(
+                onClick = { uriHandler.openUri(post.spotify_url) },
+                modifier = Modifier.size(48.dp)
+            ) {
+                androidx.compose.material.Icon(
+                    painter = painterResource(id = R.drawable.green_play_button),
+                    contentDescription = "Comment",
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Unspecified
+                )
+            }
+        }
+        Row(
             modifier = Modifier.align(Alignment.BottomEnd)
         ) {
-
             IconButton(
                 onClick = { isLiked = !isLiked },
                 modifier = Modifier
@@ -233,7 +253,9 @@ fun PostsContent(
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                LazyColumn(modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()) {
                     items(returnedFeed.posts) { post ->
                         PostItemGeneration(post) {
                             handleClickSettings(post.user_id)

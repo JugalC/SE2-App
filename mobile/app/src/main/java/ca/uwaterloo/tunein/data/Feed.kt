@@ -11,7 +11,8 @@ data class SinglePost(
     val name: String = "",
     val album_name: String = "",
     val artists: String = "",
-    val image_url: String = ""
+    val image_url: String = "",
+    val spotify_url: String = ""
 )
 
 @Serializable

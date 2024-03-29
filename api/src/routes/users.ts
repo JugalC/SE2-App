@@ -346,6 +346,7 @@ export const users: Plugin = (server, _, done) => {
           user_id: string;
           username: string;
           profile_picture: string;
+          spotify_url: string
         }
 
         const results: resultsObj[] = await db.all(sql`
@@ -369,6 +370,7 @@ export const users: Plugin = (server, _, done) => {
         rp.artists,
         rp.image_url,
         rp.user_id,
+        rp.spotify_url,
         ut.username,
         ut.profile_picture
       FROM
