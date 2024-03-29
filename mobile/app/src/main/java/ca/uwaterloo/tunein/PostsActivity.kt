@@ -75,7 +75,13 @@ class PostsActivity : ComponentActivity() {
         fun handleClickSettings(user_id: String) {
             val intent = Intent(this, ProfileActivity::class.java)
             println("Adding $user_id")
-            intent.putExtra("user_profile", user_id);
+            intent.putExtra("user_profile", user_id)
+            startActivity(intent)
+        }
+
+        fun handleClickComment(postId: String) {
+            val intent = Intent(this, CommentsActivity::class.java)
+            intent.putExtra("postId", postId)
             startActivity(intent)
         }
 
@@ -100,6 +106,7 @@ class PostsActivity : ComponentActivity() {
 @Composable
 //fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) -> Unit, handleClickComment: (postId: String) -> Unit) {
 fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) -> Unit) {
+//fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) -> Unit, handleClickComment: (postId: String) -> Unit) {
     var isLiked by remember { mutableStateOf(false) }
     val uriHandler = LocalUriHandler.current
 
@@ -178,7 +185,7 @@ fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) ->
                 )
             }
             IconButton(
-                onClick = {  },
+                onClick = { /* TODO */ },
 //                onClick = { handleClickComment(post.id) },
                 modifier = Modifier.size(48.dp)
             ) {
@@ -266,6 +273,11 @@ fun PostsContent(
                         PostItemGeneration(post) {
                             handleClickSettings(post.userId)
                         }
+//                        PostItemGeneration(
+//                            post = post,
+//                            handleClickSettings = { userId -> handleClickSettings(userId) },
+//                            handleClickComment = { postId -> handleClickComment(postId) }
+//                        )
                     }
                 }
             }

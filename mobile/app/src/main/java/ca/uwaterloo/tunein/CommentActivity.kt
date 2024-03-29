@@ -88,7 +88,10 @@ fun CommentItem(comment: Comment) {
             text = comment.username,
             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
         )
+<<<<<<< HEAD
         Spacer(modifier = Modifier.height(8.dp))
+=======
+>>>>>>> 42cdccc (rebase, fix merge conflicts)
         Text(
             text = comment.text,
             style = MaterialTheme.typography.bodyMedium
@@ -121,8 +124,13 @@ fun CommentsContentPreview() {
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(sampleComments) { comment ->
                         CommentItem(comment)
+<<<<<<< HEAD
                         Spacer(modifier = Modifier.height(20.dp))
 //                        Divider()
+=======
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Divider()
+>>>>>>> 42cdccc (rebase, fix merge conflicts)
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
