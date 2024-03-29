@@ -120,7 +120,6 @@ export const posts: Plugin = (server, _, done) => {
     },
     async (req, res) => {
       try {
-        console.log("Hello!")
         const { authorization } = req.headers;
         const { postId } = req.params;
         const { action } = req.body;
@@ -144,8 +143,6 @@ export const posts: Plugin = (server, _, done) => {
           .update(postTable)
           .set({ visible: newVal })
           .where(eq(postTable.id, postId));
-
-        console.log("hello world");
 
         return res.code(200).send({});
       } catch(e) {
