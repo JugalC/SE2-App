@@ -1,5 +1,5 @@
 | Date       | Jugal | Ralph | Cameron | Hrishit | Nathan | Adrian | Task                                                               |
-| ---------- | ----- | ----- | ------- | ------- | ------ | ------ | ------------------------------------------------------------------ |
+|------------|-------|-------|---------|---------|--------|--------|--------------------------------------------------------------------|
 | 2024/01/29 |       |       |         | 3       |        |        | D1 User scenarios and architecture diagram                         |
 | 2024/01/29 | 3     |       |         |         | 2      |        | D1 Project proposal doc - Intro, functional, and non functional    |
 | 2024/01/29 |       |       |         |         |        | 4      | Work on D1 proposal details, revisions & edits                     |
@@ -34,10 +34,14 @@
 | 2024/03/04 |       |       |         |         | 3      |        | Modularize feed page for future integration with dynamic data      |
 | 2024/03/04 |       |       |         | 2       |        |        | Routing and bug fixing for profile and settings                    |
 | 2024/03/04 | 2     |       |         |         |        |        | UI cleanup for demo                                                |
+| 2024/03/04 |       |       | 3       |         |        |        | Create initial boilerplate for notifications                       |
 | 2024/03/05 |       |       |         | 3       |        |        | Pop-up menus for confirmation and entry in profile and settings    |
 | 2024/03/06 |       |       |         | 4       |        |        | Get most recent song API work and D3 Status Report section         |
 | 2024/03/16 |       | 5     |         |         |        | 5      | Finish add fiends workflow with correct authorization header       |
 | 2024/03/17 |       |       |         |         |        | 6      | Finish actions for searching / removing / adding friends           |
+| 2024/03/17 |       |       | 3       |         |        |        | Use token authentication for friend requests                       |
+| 2024/03/17 |       |       | 4       |         |        |        | Add logic for saving and clearing device notification token        |
+| 2024/03/17 |       |       | 4       |         |        |        | Add listener for notif messages and helper to send notifications   |
 | 2024/03/18 |       |       |         | 3       |        |        | D4 Report Example 3 Work                                           |
 | 2024/03/19 | 2     |       |         |         |        |        | D4 Report Example 1 Work                                           |
 | 2024/03/19 |       |       |         | 2       |        |        | Working on posts API to get most recent activity                   |
