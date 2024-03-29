@@ -35,29 +35,19 @@ class ProfileViewModel: ViewModel() {
         }
     }
 
-    suspend fun updateVisibility(post: Post, context: Context) = withContext(Dispatchers.IO) {
-        val curVisibility = post.visible
-        val updateUrl = "${BuildConfig.BASE_URL}/posts/visibility/${post.id}"
-        val client = OkHttpClient()
-        val body = JSONObject()
-        body.put("action", if (curVisibility) "hide" else "show")
-        val request: okhttp3.Request = okhttp3.Request.Builder()
-            .url(updateUrl)
-            .put(body.toString().toRequestBody())
-            .addHeader("Authorization", "Bearer ${AuthManager.getAuthToken(context).toString()}")
-            .addHeader("Content-Type", "application/json")
-            .build()
-
-        val response = client.newCall(request).execute()
-        if (response.isSuccessful) {
-            val updatedPosts = _posts.value.map { p ->
-                if (p.id == post.id) {
-                    p.copy(visible = !p.visible)
-                } else {
-                    p
+    fun updateVisibility(post: Post, context: Context)  {
+        viewModelScope.launch {
+            val response = updateVisibilityRequest(post, context)
+            if (response.isSuccessful) {
+                val updatedPosts = _posts.value.map { p ->
+                    if (p.id == post.id) {
+                        p.copy(visible = !p.visible)
+                    } else {
+                        p
+                    }
                 }
+                _posts.value = updatedPosts
             }
-            _posts.value = updatedPosts
         }
     }
 }
@@ -89,6 +79,5 @@ suspend fun updateVisibilityRequest(post: Post, context: Context) = withContext(
         .addHeader("Content-Type", "application/json")
         .build()
 
-    val response = client.newCall(request).execute()
-    response
+    client.newCall(request).execute()
 }

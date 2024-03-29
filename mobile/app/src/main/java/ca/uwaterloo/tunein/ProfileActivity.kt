@@ -36,7 +36,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,10 +62,7 @@ import ca.uwaterloo.tunein.viewmodel.ProfileViewModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
-
 private val showDialog = mutableStateOf(false)
-
-
 
 class ProfileActivity : ComponentActivity() {
 
@@ -74,8 +70,8 @@ class ProfileActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        val user = AuthManager.getUser(this)
-        viewModel.getProfile(user.id)
+        val userId = this.intent.getStringExtra("user_profile").toString()
+        viewModel.getProfile(userId)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -108,13 +104,12 @@ class ProfileActivity : ComponentActivity() {
 
         setContent {
             ProfileContent(
-                userId,
                 selfProfile = userId == user.id,
                 goBack={goBack()},
                 handleClickAccountSettings={handleClickAccountSettings()},
                 handleLogout = { handleLogout() },
-                onConfirmation={onConfirmation()},
-                onDismissRequest={onDismissRequest()},
+                onConfirmation={ onConfirmation() },
+                onDismissRequest={ onDismissRequest() },
                 profileViewModel = viewModel
             )
         }
@@ -124,7 +119,6 @@ class ProfileActivity : ComponentActivity() {
 
 @Composable
 fun ProfileContent(
-    userId: String,
     selfProfile: Boolean,
     goBack: () -> Unit,
     handleClickAccountSettings: () -> Unit,
@@ -135,12 +129,6 @@ fun ProfileContent(
 ) {
     val profile by profileViewModel.profile.collectAsStateWithLifecycle()
     val posts by profileViewModel.posts.collectAsStateWithLifecycle()
-
-    // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
-    LaunchedEffect(profile) {
-        profileViewModel.getProfile(userId)
-    }
-    //This is the end of GPT 3.5 generation
 
     TuneInTheme {
         Surface(
@@ -307,7 +295,6 @@ fun ProfileContent(
                 Spacer(modifier = Modifier.height(10.dp))
                 Text("TuneIn Member Since ${profile.created}", fontSize=10.sp, color=Color.LightGray)
             }
-
         }
     }
     if(showDialog.value) {

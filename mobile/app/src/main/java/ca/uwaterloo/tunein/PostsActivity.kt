@@ -32,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,15 +54,15 @@ import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.FeedViewModel
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
 import coil.compose.AsyncImage
-import kotlin.concurrent.thread
-
 
 class PostsActivity : ComponentActivity() {
-    private val viewModel by viewModels<FeedViewModel>()
+    private val feedViewModel by viewModels<FeedViewModel>()
+    private val friendsViewModel by viewModels<FriendsViewModel>()
     override fun onStart() {
         super.onStart()
         val user = AuthManager.getUser(this)
-        viewModel.updateReturnedFeed(user.id)
+        feedViewModel.updateReturnedFeed(user.id)
+        friendsViewModel.getPendingInvites(this)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,7 +85,7 @@ class PostsActivity : ComponentActivity() {
                 user,
                 handleClickFriends= { handleClickFriends() },
                 handleClickProfile= ::handleClickProfile,
-                feedViewModel = viewModel
+                feedViewModel = feedViewModel
             )
         }
     }
@@ -174,9 +172,6 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
     }
 }
 
-
-
-
 @Composable
 fun PostsContent(
     user: User,
@@ -185,18 +180,8 @@ fun PostsContent(
     viewModel: FriendsViewModel = viewModel(),
     feedViewModel: FeedViewModel = viewModel()
 ) {
-    val context = LocalContext.current
     val pendingInvites by viewModel.pendingInvites.collectAsStateWithLifecycle()
     val returnedFeed by feedViewModel.returnedFeed.collectAsStateWithLifecycle()
-
-    LaunchedEffect(Unit) {
-        thread {
-            viewModel.getPendingInvites(context)
-        }
-//        thread {
-//            feedViewModel.updateReturnedFeed(user.id)
-//        }
-    }
 
     TuneInTheme {
         // A surface container using the 'background' color from the theme
