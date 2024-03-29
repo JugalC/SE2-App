@@ -104,7 +104,6 @@ class PostsActivity : ComponentActivity() {
 }
 
 @Composable
-//fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) -> Unit, handleClickComment: (postId: String) -> Unit) {
 fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) -> Unit) {
 //fun PostItemGeneration(post: SinglePost, handleClickSettings: (user_id: String) -> Unit, handleClickComment: (postId: String) -> Unit) {
     var isLiked by remember { mutableStateOf(false) }
