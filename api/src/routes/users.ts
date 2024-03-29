@@ -333,49 +333,44 @@ export const users: Plugin = (server, _, done) => {
       try {
         const { identifier } = req.params;
 
-        // await db.execute()
-
-        // const results = await db.all(sql`select * from user`)
-
         interface resultsObj {
           id: string;
           name: string;
-          album_name: string;
+          albumName: string;
           artists: string;
-          image_url: string;
-          user_id: string;
+          imageUrl: string;
+          userId: string;
           username: string;
-          profile_picture: string;
+          profilePicture: string;
         }
 
         const results: resultsObj[] = await db.all(sql`
-        WITH
-        RankedPosts AS (
+          WITH RankedPosts AS (
+            SELECT
+              *,
+              ROW_NUMBER() OVER (
+                PARTITION BY
+                  user_id
+                ORDER BY
+                  listened_at DESC
+              ) AS RowNum
+            FROM
+              post
+          )
           SELECT
-            *,
-            ROW_NUMBER() OVER (
-              PARTITION BY
-                user_id
-              ORDER BY
-                listened_at DESC
-            ) AS RowNum
+            rp.id,
+            rp.name,
+            rp.album_name AS albumName,
+            rp.artists,
+            rp.image_url AS imageUrl,
+            rp.user_id AS userId,
+            ut.username,
+            ut.profile_picture AS profilePicture
           FROM
-            post
-        )
-      SELECT
-        rp.id,
-        rp.name,
-        rp.album_name,
-        rp.artists,
-        rp.image_url,
-        rp.user_id,
-        ut.username,
-        ut.profile_picture
-      FROM
-        RankedPosts rp
-        INNER JOIN user ut ON rp.user_id = ut.id
-      WHERE
-        RowNum = 1;
+            RankedPosts rp
+            INNER JOIN user ut ON rp.user_id = ut.id
+          WHERE
+            RowNum = 1;
         `);
 
         interface friendsObj {
@@ -400,9 +395,10 @@ export const users: Plugin = (server, _, done) => {
 
         const final_posts = [];
         for (let x = 0; x < results.length; x++) {
-          if (filter_list.includes(results[x]["user_id"])) final_posts.push(results[x]); // Access each object using array indexing
+          if (filter_list.includes(results[x]["userId"])) final_posts.push(results[x]); // Access each object using array indexing
         }
 
+        debugger;
         return res.code(200).send({ posts: final_posts });
       } catch (e) {
         console.error(e);
@@ -588,97 +584,74 @@ export const users: Plugin = (server, _, done) => {
           .orderBy(desc(postTable.name))
           .limit(3);
 
-        let previous_posts = [{}];
+        const previousPosts = [];
 
-        if (posts.length == 3) {
-          previous_posts = [
-            {
-              name: posts[0].name,
-              album_name: posts[0].albumName,
-              artists: posts[0].artists,
-              image_url: posts[0].imageUrl,
-              caption: "Today",
-            },
-            {
-              name: posts[1].name,
-              album_name: posts[1].albumName,
-              artists: posts[1].artists,
-              image_url: posts[1].imageUrl,
-              caption: "Yesterday",
-            },
-            {
-              name: posts[2].name,
-              album_name: posts[2].albumName,
-              artists: posts[2].artists,
-              image_url: posts[2].imageUrl,
-              caption: "2 Days Ago",
-            },
-          ];
+        if (posts.length === 0) {
+          previousPosts.push({
+            name: "No Posts",
+            albumName: "Wait for the next",
+            artists: "Wait for Daily Post",
+            imageUrl: "https://en.wikipedia.org/wiki/File:Color_icon_gray_v2.svg",
+            caption: "No Posts",
+          })
+        }
+        
+        if (posts.length > 0) {
+          previousPosts.push({
+            id: posts[0].id,
+            name: posts[0].name,
+            albumName: posts[0].albumName,
+            artists: posts[0].artists,
+            imageUrl: posts[0].imageUrl,
+            visible: posts[0].visible,
+            caption: "Today",
+          })
         }
 
-        if (posts.length == 2) {
-          previous_posts = [
-            {
-              name: posts[0].name,
-              album_name: posts[0].albumName,
-              artists: posts[0].artists,
-              image_url: posts[0].imageUrl,
-              caption: "Today",
-            },
-            {
-              name: posts[1].name,
-              album_name: posts[1].albumName,
-              artists: posts[1].artists,
-              image_url: posts[1].imageUrl,
-              caption: "Yesterday",
-            },
-          ];
+        if (posts.length > 1) {
+          previousPosts.push({
+            id: posts[1].id,
+            name: posts[1].name,
+            albumName: posts[1].albumName,
+            artists: posts[1].artists,
+            imageUrl: posts[1].imageUrl,
+            visible: posts[1].visible,
+            caption: "Yesterday",
+          })
         }
 
-        if (posts.length == 1) {
-          previous_posts = [
-            {
-              name: posts[0].name,
-              album_name: posts[0].albumName,
-              artists: posts[0].artists,
-              image_url: posts[0].imageUrl,
-              caption: "Today",
-            },
-          ];
-        }
-
-        if (posts.length == 0) {
-          previous_posts = [
-            {
-              name: "No Posts",
-              album_name: "Wait for the next",
-              artists: "Wait for Daily Post",
-              image_url: "https://en.wikipedia.org/wiki/File:Color_icon_gray_v2.svg",
-              caption: "No Posts",
-            },
-          ];
+        if (posts.length > 2) {
+          previousPosts.push({
+            id: posts[2].id,
+            name: posts[2].name,
+            albumName: posts[2].albumName,
+            artists: posts[2].artists,
+            imageUrl: posts[2].imageUrl,
+            visible: posts[2].visible,
+            caption: "2 Days Ago",
+          })
         }
 
         const friends_number = await db
           .select({ count: count() })
           .from(friendshipTable)
           .where(or(eq(friendshipTable.userId1, identifier), eq(friendshipTable.userId2, identifier)));
-        const friends_num = friends_number[0]["count"];
+        const friendsNum = friends_number[0]["count"];
 
         if (!user) {
           return res.code(404).send({ error: "User not found with given parameters." });
         }
 
-        const first_name = user["firstName"];
+        const firstName = user["firstName"];
         const username = user["username"];
-        const profile_pic = user["profilePicture"];
+        const profilePic = user["profilePicture"];
         let created = user["createdAt"];
 
         if (created == null) {
           created = new Date();
         }
 
-        const spotify_name = user["displayName"];
+        const spotifyName = user["displayName"];
 
         // const previous_posts = [
         //   {name: "Keep The Family Close", album_name: "Views", artists: "Drake", image_url: "https://i.scdn.co/image/ab67616d00001e029416ed64daf84936d89e671c", caption: "Today"},
@@ -686,13 +659,15 @@ export const users: Plugin = (server, _, done) => {
         // ]
 
         return res.code(200).send({
-          first_name: first_name,
-          username: username,
-          spotify_name: spotify_name,
-          friends_num: friends_num,
-          profile_pic: profile_pic,
-          created: created,
-          previous_posts: previous_posts,
+          profile: {
+            firstName,
+            username,
+            spotifyName,
+            friendsNum,
+            profilePic,
+            created: created,
+          },
+          posts: previousPosts,
         });
       } catch (e) {
         console.error(e);

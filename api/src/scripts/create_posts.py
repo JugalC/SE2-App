@@ -17,7 +17,7 @@ def get_list_of_valid_user_ids():
 
 def get_most_recent_song(user_id):
     response = requests.get(f"{API_URL}{GET_RECENT_SONG_ENDPOINT}/{user_id}").json()
-    if 'album_name' in response.keys():
+    if 'albumName' in response.keys():
         return f"Success {user_id}"
     else:
         return f"Failed {user_id}"

@@ -2,8 +2,9 @@ import { db } from "../db/db";
 import { getPostSchema, postTable } from "../db/schema";
 import { z } from "zod";
 import { and, between, eq } from "drizzle-orm";
-import { Plugin, paginationSchema } from "../types";
+import { Plugin, authSchema, paginationSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
+import { authenticateUser } from "../lib/authenticateUser";
 
 export const posts: Plugin = (server, _, done) => {
   server.get(
@@ -100,6 +101,56 @@ export const posts: Plugin = (server, _, done) => {
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.put(
+    "/posts/visibility/:postId",
+    {
+      schema: {
+        headers: authSchema,
+        params: z.object({
+          postId: z.string(),
+        }),
+        body: z.object({
+          action: z.enum(["hide", "show"]),
+        })
+      }
+    },
+    async (req, res) => {
+      try {
+        console.log("Hello!")
+        const { authorization } = req.headers;
+        const { postId } = req.params;
+        const { action } = req.body;
+        const newVal = action === "show";
+
+        const user = await authenticateUser(authorization);
+
+        if (!user) {
+          return res.code(401).send();
+        }
+
+        const post = await db.query.postTable.findFirst({
+          where: eq(postTable.id, postId)
+        });
+
+        if (!post) {
+          return res.code(404).send();
+        }
+
+        await db
+          .update(postTable)
+          .set({ visible: newVal })
+          .where(eq(postTable.id, postId));
+
+        console.log("hello world");
+
+        return res.code(200).send({});
+      } catch(e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error."});
       }
     },
   );
