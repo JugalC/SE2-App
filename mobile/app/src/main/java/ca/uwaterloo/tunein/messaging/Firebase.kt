@@ -21,17 +21,15 @@ import org.json.JSONObject
 
 class Firebase : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        // TODO(developer): Handle FCM messages here.
-        // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
         Log.d(TAG, "From: ${remoteMessage.from}")
 
         // Check if message contains a notification payload.
         remoteMessage.notification?.let {
+            Log.d(TAG, "Message Notification Title: ${it.title}")
             Log.d(TAG, "Message Notification Body: ${it.body}")
-            it.body?.let { body -> sendNotification(body) }
+            it.title?.let { title -> it.body?.let { body -> sendNotification(title, body) } }
         }
     }
-
 
     /**
      * Called if the FCM registration token is updated. This may occur if the security of
@@ -43,11 +41,7 @@ class Firebase : FirebaseMessagingService() {
         sendRegistrationToServer( this, token)
     }
 
-    private fun handleNow() {
-        Log.d(TAG, "Short lived task is done.")
-    }
-
-    private fun sendNotification(messageBody: String) {
+    private fun sendNotification(title: String, body: String) {
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val requestCode = 0
@@ -62,8 +56,8 @@ class Firebase : FirebaseMessagingService() {
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("FCM Message")
-            .setContentText(messageBody)
+            .setContentTitle(title)
+            .setContentText(body)
             .setAutoCancel(true)
             .setSound(defaultSoundUri)
             .setContentIntent(pendingIntent)
@@ -73,7 +67,7 @@ class Firebase : FirebaseMessagingService() {
 
         val channel = NotificationChannel(
             channelId,
-            "Channel human readable title",
+            "TuneInChannel",
             NotificationManager.IMPORTANCE_DEFAULT,
         )
         notificationManager.createNotificationChannel(channel)
