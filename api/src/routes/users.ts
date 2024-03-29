@@ -356,6 +356,8 @@ export const users: Plugin = (server, _, done) => {
               ) AS RowNum
             FROM
               post
+            WHERE
+              visible = 1
           )
           SELECT
             rp.id,
@@ -398,7 +400,6 @@ export const users: Plugin = (server, _, done) => {
           if (filter_list.includes(results[x]["userId"])) final_posts.push(results[x]); // Access each object using array indexing
         }
 
-        debugger;
         return res.code(200).send({ posts: final_posts });
       } catch (e) {
         console.error(e);

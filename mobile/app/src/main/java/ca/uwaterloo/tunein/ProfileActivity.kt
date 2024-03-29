@@ -71,6 +71,12 @@ private val showDialog = mutableStateOf(false)
 class ProfileActivity : ComponentActivity() {
 
     private val viewModel by viewModels<ProfileViewModel>()
+
+    override fun onStart() {
+        super.onStart()
+        val user = AuthManager.getUser(this)
+        viewModel.getProfile(user.id)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -78,7 +84,7 @@ class ProfileActivity : ComponentActivity() {
         val user = AuthManager.getUser(this)
 
         fun goBack() {
-           finish()
+            finish()
         }
 
         fun handleClickAccountSettings() {
@@ -110,7 +116,6 @@ class ProfileActivity : ComponentActivity() {
                 onConfirmation={onConfirmation()},
                 onDismissRequest={onDismissRequest()},
                 profileViewModel = viewModel
-
             )
         }
     }
@@ -230,21 +235,19 @@ fun ProfileContent(
                 posts.forEach{
                     PostHistory(
                         it,
-                        profileViewModel::updateVisibility
+                        profileViewModel::updateVisibility,
+                        selfProfile
                     )
                 }
-
                 Spacer(modifier = Modifier.weight(1f))
                 if (selfProfile) {
                     Column(
-                        Modifier
-                            .fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { handleClickAccountSettings() }
@@ -256,11 +259,14 @@ fun ProfileContent(
                                 modifier = Modifier.size(24.dp),
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = "Account Settings")
+                            Text(
+                                text = "Account Settings",
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { handleLogout() }
@@ -272,11 +278,14 @@ fun ProfileContent(
                                 modifier = Modifier.size(24.dp),
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = "Log Out")
+                            Text(
+                                text = "Log Out",
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { showDialog.value = true }
@@ -288,7 +297,10 @@ fun ProfileContent(
                                 modifier = Modifier.size(24.dp),
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = "Delete Account")
+                            Text(
+                                text = "Delete Account",
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                     }
                 }
@@ -307,6 +319,7 @@ fun ProfileContent(
 fun PostHistory(
     post: Post,
     updateVisibility: suspend (Post, Context) -> Unit,
+    selfProfile: Boolean,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -335,22 +348,24 @@ fun PostHistory(
             Column{
                 Text(post.name)
                 Text(post.artists, fontSize=12.sp, color = Color.LightGray)
-                Row(
-                    modifier = Modifier
-                        .padding(vertical = 24.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Share with friends:")
-                    Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                    Switch (
-                        modifier = Modifier.height(10.dp),
-                        checked = post.visible,
-                        onCheckedChange = {
-                            coroutineScope.launch {
-                                updateVisibility(post, context)
-                            }
-                        },
-                    )
+                if (selfProfile) {
+                    Row(
+                        modifier = Modifier
+                            .padding(vertical = 24.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Share with friends:")
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        Switch (
+                            modifier = Modifier.height(10.dp),
+                            checked = post.visible,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    updateVisibility(post, context)
+                                }
+                            },
+                        )
+                    }
                 }
             }
         }

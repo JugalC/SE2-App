@@ -50,17 +50,22 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
+import ca.uwaterloo.tunein.data.FeedPost
+import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.FeedViewModel
-import kotlin.concurrent.thread
-import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
-import ca.uwaterloo.tunein.data.FeedPost
 import coil.compose.AsyncImage
+import kotlin.concurrent.thread
 
 
 class PostsActivity : ComponentActivity() {
     private val viewModel by viewModels<FeedViewModel>()
+    override fun onStart() {
+        super.onStart()
+        val user = AuthManager.getUser(this)
+        viewModel.updateReturnedFeed(user.id)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -71,10 +76,9 @@ class PostsActivity : ComponentActivity() {
             startActivity(intent)
         }
 
-        fun handleClickSettings(user_id: String) {
+        fun handleClickProfile(userId: String) {
             val intent = Intent(this, ProfileActivity::class.java)
-            println("Adding $user_id")
-            intent.putExtra("user_profile", user_id);
+            intent.putExtra("user_profile", userId);
             startActivity(intent)
         }
 
@@ -82,7 +86,7 @@ class PostsActivity : ComponentActivity() {
             PostsContent(
                 user,
                 handleClickFriends= { handleClickFriends() },
-                handleClickSettings= ::handleClickSettings,
+                handleClickProfile= ::handleClickProfile,
                 feedViewModel = viewModel
             )
         }
@@ -90,10 +94,13 @@ class PostsActivity : ComponentActivity() {
 }
 
 @Composable
-fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) -> Unit) {
+fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> Unit) {
     var isLiked by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.padding(bottom = 16.dp, end = 16.dp).fillMaxWidth()) {
+    Box(modifier = Modifier
+        .padding(bottom = 16.dp, end = 16.dp)
+        .fillMaxWidth()
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -102,7 +109,7 @@ fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) ->
             backgroundColor = Color(0xFF1E1E1E),
         ) {
             Column {
-                Row (modifier = Modifier.clickable { handleClickSettings(post.userId) })
+                Row (modifier = Modifier.clickable { handleClickProfile(post.userId) })
                 {
                     AsyncImage(
                         model = post.profilePicture,
@@ -174,24 +181,21 @@ fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) ->
 fun PostsContent(
     user: User,
     handleClickFriends: () -> Unit,
-    handleClickSettings: (user_id: String) -> Unit,
+    handleClickProfile: (userId: String) -> Unit,
     viewModel: FriendsViewModel = viewModel(),
     feedViewModel: FeedViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val pendingInvites by viewModel.pendingInvites.collectAsStateWithLifecycle()
-
-    val returnedFeed by remember { feedViewModel.returnedFeed }
-
+    val returnedFeed by feedViewModel.returnedFeed.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         thread {
             viewModel.getPendingInvites(context)
         }
-    }
-
-    LaunchedEffect(returnedFeed) {
-        feedViewModel.updateReturnedFeed(user.id)
+//        thread {
+//            feedViewModel.updateReturnedFeed(user.id)
+//        }
     }
 
     TuneInTheme {
@@ -224,15 +228,18 @@ fun PostsContent(
                         text = "TuneIn",
                         style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     )
-                    IconButton(onClick = { handleClickSettings(user.id) }) {
+                    IconButton(onClick = { handleClickProfile(user.id) }) {
                         Icon(Icons.Default.Face, contentDescription = "Settings")
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                LazyColumn(modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                ) {
                     items(returnedFeed.posts) { post ->
                         PostItemGeneration(post) {
-                            handleClickSettings(post.userId)
+                            handleClickProfile(post.userId)
                         }
                     }
                 }
