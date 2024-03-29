@@ -2,6 +2,7 @@ package ca.uwaterloo.tunein.auth
 
 import android.content.Context
 import ca.uwaterloo.tunein.data.User
+import com.android.volley.toolbox.JsonObjectRequest
 
 private const val PREF_NAME = "auth_pref"
 private val KEY_AUTH_TOKEN = "auth_token"

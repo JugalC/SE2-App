@@ -1,6 +1,5 @@
 package ca.uwaterloo.tunein
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
