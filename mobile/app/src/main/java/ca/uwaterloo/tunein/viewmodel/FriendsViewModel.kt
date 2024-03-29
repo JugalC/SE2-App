@@ -1,6 +1,7 @@
 package ca.uwaterloo.tunein.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uwaterloo.tunein.BuildConfig
@@ -76,7 +77,9 @@ suspend fun getFriends(context: Context): List<User> = withContext(Dispatchers.I
         .build()
 
     val response = client.newCall(request).execute()
+    Log.i("FriendsViewModel", response.toString())
     val json = response.body.string()
+
     val j = Json { ignoreUnknownKeys = true }
     j.decodeFromString(UserDeserializer(), json)
 }

@@ -1,7 +1,5 @@
 package ca.uwaterloo.tunein
 
-import android.app.Dialog
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -49,13 +47,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.data.User
-import ca.uwaterloo.tunein.messaging.Firebase
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
+import com.android.volley.AuthFailureError
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.google.firebase.messaging.FirebaseMessaging
 import org.json.JSONObject
 
 private val showDialogUsername = mutableStateOf(false)
@@ -93,7 +90,9 @@ class SettingsActivity : ComponentActivity() {
             req.put("currUsername", user.username)
             req.put("newUsername", u)
 
-            val userUpdateReq = JsonObjectRequest(
+            val ctx = this;
+
+            val userUpdateReq = object: JsonObjectRequest(
                 Request.Method.POST, usernameURL, req,
                 { updateRes ->
                     val userLocal = AuthManager.getUser(this)
@@ -103,6 +102,7 @@ class SettingsActivity : ComponentActivity() {
                         firstName=userLocal.firstName,
                         lastName=userLocal.lastName
                     ))
+                    AuthManager.setAuthToken(this, updateRes.getString("token"))
                     showDialogUsername.value = false
                 },
                 { error ->
@@ -116,9 +116,17 @@ class SettingsActivity : ComponentActivity() {
                         alert.create().show()
                     }
                 }
-            )
-            queue.add(userUpdateReq)
+            ) {
+                @Throws(AuthFailureError::class)
+                override fun getHeaders(): Map<String, String> {
+                    val headers = HashMap<String, String>()
+                    headers["Authorization"] =
+                        "Bearer ${AuthManager.getAuthToken(ctx).toString()}"
+                    return headers
+                }
+            }
 
+            queue.add(userUpdateReq)
         }
 
         fun onDismissRequestUsername() {
@@ -133,15 +141,17 @@ class SettingsActivity : ComponentActivity() {
                 return
             }
 
+            val ctx = this
             val user = AuthManager.getUser(this)
 
             val req = JSONObject()
             req.put("username", user.username)
             req.put("newPassword", pass)
 
-            val userUpdateReq = JsonObjectRequest(
+            val userUpdateReq = object: JsonObjectRequest(
                 Request.Method.POST, passwordURL, req,
-                { _ ->
+                { res ->
+                    AuthManager.setAuthToken(this, res.getString("token"))
                     val positiveAlert = android.app.AlertDialog.Builder(this).setTitle("Success")
                     positiveAlert.setMessage("Password has been updated")
                     positiveAlert.create().show()
@@ -152,7 +162,17 @@ class SettingsActivity : ComponentActivity() {
                     alert.setMessage("An unexpected error has occurred")
                     alert.create().show()
                 }
-            )
+            ) {
+                @Throws(AuthFailureError::class)
+                override fun getHeaders(): Map<String, String> {
+                    val headers = HashMap<String, String>()
+                    headers["Authorization"] =
+                        "Bearer ${AuthManager.getAuthToken(ctx).toString()}"
+                    return headers
+                }
+            }
+
+
             queue.add(userUpdateReq)
         }
 

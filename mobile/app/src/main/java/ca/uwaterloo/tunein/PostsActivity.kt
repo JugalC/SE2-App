@@ -213,15 +213,16 @@ fun PostsContent(
     }
 
     LaunchedEffect(returnedFeed) {
-        feedViewModel.updateReturnedFeed(user.id)
+        val id = AuthManager.getUser(context).id
+        feedViewModel.updateReturnedFeed(id)
     }
 
     // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
     suspend fun refreshFeed() {
-        feedViewModel.updateReturnedFeed(user.id)
+        val id = AuthManager.getUser(context).id
+        feedViewModel.updateReturnedFeed(id)
     }
     // End of GPT 3.5 Generation
-
 
     TuneInTheme {
         // A surface container using the 'background' color from the theme
