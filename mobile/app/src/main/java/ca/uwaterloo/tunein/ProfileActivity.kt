@@ -126,7 +126,12 @@ class ProfileActivity : ComponentActivity() {
                 sendDeleteAcc(user.id)
             }
             showDialog.value = false
-            startActivity(Intent(this, LoginActivity::class.java))
+            AuthManager.setAuthToken(this, null)
+            Firebase.clearRegistrationToken(this)
+            val intent = Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            super.startActivity(intent)
         }
 
         fun onDismissRequest() {
