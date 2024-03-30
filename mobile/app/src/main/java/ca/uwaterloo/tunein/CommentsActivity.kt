@@ -62,10 +62,52 @@ class CommentsActivity : ComponentActivity() {
         val postId = intent.getStringExtra("postId") ?: ""
         commentsViewModel.pullComments(postId, this)
 
+        val queue = Volley.newRequestQueue(this)
+        val commentUrl = "${BuildConfig.BASE_URL}/comment/$postId"
+
+
         fun handleClickProfile(userId: String) {
             val intent = Intent(this, ProfileActivity::class.java)
             intent.putExtra("user_profile", userId)
             startActivity(intent)
+        }
+
+        fun handleAddComment(content: String) {
+            val alert = android.app.AlertDialog.Builder(this).setTitle("Error")
+            if (content.isEmpty()) {
+                alert.setMessage("Comment cannot be empty")
+                alert.show()
+                return
+            }
+            val ctx = this
+            val req = JSONObject()
+            Log.i("CommentsActivity", "content: $content")
+
+            req.put("content", content)
+            val addCommentReq = object:JsonObjectRequest(Request.Method.POST, commentUrl, req,
+                { response ->
+                    commentsViewModel.pullComments(postId, this)
+                },
+                { error ->
+                    Log.e("CommentsActivity", "Error adding comment: $error")
+                }
+            ) {
+                @Throws(AuthFailureError::class)
+                override fun getHeaders(): Map<String, String> {
+                    val headers = HashMap<String, String>()
+                    headers["Authorization"] =
+                        "Bearer ${AuthManager.getAuthToken(ctx).toString()}"
+                    return headers
+                }
+            }
+            queue.add(addCommentReq)
+
+//            commentsViewModel.pullComments(postId, this)
+        }
+
+        fun handleDeleteComment(commentId: String) {
+            // TODO actual delete part
+            commentsViewModel.pullComments(postId, this)
         }
 
         Log.i("CommentsActivity", "postId: $postId")
@@ -75,17 +117,13 @@ class CommentsActivity : ComponentActivity() {
             finish()
         }
 
-//        // create volley queue
-//        val queue = Volley.newRequestQueue(this)
-//        // url for updating username
-//        val usernameURL = "${BuildConfig.BASE_URL}/user/update_user"
-
-
         setContent {
             CommentsContent(
                 viewModel = viewModel(),
                 postId = postId,
                 handleClickProfile = ::handleClickProfile,
+                handleAddComment = ::handleAddComment,
+                handleDeleteComment = ::handleDeleteComment,
             ) { goBack() }
         }
     }
@@ -93,7 +131,7 @@ class CommentsActivity : ComponentActivity() {
 
 
 @Composable
-fun CommentsContent(viewModel: CommentsViewModel, postId: String, handleClickProfile: (userId: String) -> Unit, goBack: () -> Unit) {
+fun CommentsContent(viewModel: CommentsViewModel, postId: String, handleClickProfile: (userId: String) -> Unit, handleAddComment: (content : String) -> Unit, handleDeleteComment: (commentId : String) -> Unit, goBack: () -> Unit) {
     var newCommentText by remember { mutableStateOf("") }
     val comments by viewModel.comments.collectAsStateWithLifecycle()
 
@@ -123,9 +161,10 @@ fun CommentsContent(viewModel: CommentsViewModel, postId: String, handleClickPro
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(comments.comments) { comment ->
-                        CommentItem(comment,viewModel, handleClickProfile)
-                        Spacer(modifier = Modifier.height(16.dp))
+                        CommentItem(comment, handleClickProfile)
+                        Spacer(modifier = Modifier.height(6.dp))
                         Divider()
+                        Spacer(modifier = Modifier.height(6.dp))
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -137,7 +176,8 @@ fun CommentsContent(viewModel: CommentsViewModel, postId: String, handleClickPro
                 )
                 Button(
                     onClick = {
-                        newCommentText = "" /* TODO */
+                        handleAddComment(newCommentText);
+                        newCommentText = ""
                     },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -150,7 +190,7 @@ fun CommentsContent(viewModel: CommentsViewModel, postId: String, handleClickPro
     }
 }
 @Composable
-fun CommentItem(comment: Comment, viewModel: CommentsViewModel,  handleClickProfile: (userId: String) -> Unit) {
+fun CommentItem(comment: Comment,  handleClickProfile: (userId: String) -> Unit) {
 
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Row (modifier = Modifier.clickable { handleClickProfile(comment.userId) })
