@@ -2,9 +2,11 @@ package ca.uwaterloo.tunein
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,7 +38,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,8 +52,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
@@ -59,6 +65,11 @@ import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.FeedViewModel
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
 import coil.compose.AsyncImage
+import com.android.volley.AuthFailureError
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONObject
 
 class PostsActivity : ComponentActivity() {
     private val feedViewModel by viewModels<FeedViewModel>()
@@ -95,11 +106,97 @@ class PostsActivity : ComponentActivity() {
 
 @Composable
 fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> Unit) {
+    // setup volley queue
+    val queue = Volley.newRequestQueue(LocalContext.current)
+    val ctx = LocalContext.current
+    val likeCountURL = "${BuildConfig.BASE_URL}/likes/${post.id}"
+    val commentCountURL = "${BuildConfig.BASE_URL}/comments_count/${post.id}"
+
     var isLiked by remember { mutableStateOf(false) }
+    var likeCount by remember { mutableIntStateOf(0) }
+    var commentCount by remember { mutableIntStateOf(0) }
+
     val uriHandler = LocalUriHandler.current
 
+    // Getting like count for this post and get if user has liked this post
+    val likeCountReq = object : JsonObjectRequest(
+        Request.Method.GET, likeCountURL, null,
+        { response ->
+            likeCount = response.getInt("likes")
+            isLiked = response.getBoolean("is_liked")
+        },
+        { error ->
+            Log.e("PostsActivity", error.toString())
+
+        }
+    ) {
+        @Throws(AuthFailureError::class)
+        override fun getHeaders(): Map<String, String> {
+            val headers = HashMap<String, String>()
+            headers["Authorization"] =
+                "Bearer ${AuthManager.getAuthToken(ctx).toString()}"
+            return headers
+        }
+    }
+    // Getting comment count for this post
+    val commentCountReq = object : JsonObjectRequest(
+        Request.Method.GET, commentCountURL, null,
+        { response ->
+            commentCount = response.getInt("comments")
+        },
+        { error ->
+            Log.e("PostsActivity", error.toString())
+
+        }
+    ) {
+        @Throws(AuthFailureError::class)
+        override fun getHeaders(): Map<String, String> {
+            val headers = HashMap<String, String>()
+            headers["Authorization"] =
+                "Bearer ${AuthManager.getAuthToken(ctx).toString()}"
+            return headers
+        }
+    }
+
+    LaunchedEffect(post.id) {
+        if (post.id != "") {
+            queue.add(likeCountReq)
+            queue.add(commentCountReq)
+        }
+    }
+
+    // like handler function
+    fun handleLike() {
+        val method = Request.Method.POST
+        likeCount = if (isLiked) likeCount - 1 else likeCount + 1
+        val likeURL = if (isLiked) "${BuildConfig.BASE_URL}/unlike/${post.id}" else "${BuildConfig.BASE_URL}/like/${post.id}"
+        isLiked = !isLiked
+        val req = JSONObject()
+        val likeReq = object : JsonObjectRequest(
+            method, likeURL, req,
+            { response ->
+                likeCount = response.getInt("likes")
+            },
+            { error ->
+                // revert the changes if there is an error
+                isLiked = !isLiked
+                Log.e("PostsActivity", error.toString())
+
+            }
+        ) {
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                val headers = HashMap<String, String>()
+                headers["Authorization"] =
+                    "Bearer ${AuthManager.getAuthToken(ctx).toString()}"
+                return headers
+            }
+        }
+        queue.add(likeReq)
+    }
+
     Box(modifier = Modifier
-        .padding(bottom = 16.dp, end = 16.dp)
+        .padding(bottom = 8.dp, end = 8.dp)
         .fillMaxWidth()
     ) {
         Card(
@@ -152,22 +249,35 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
                 onClick = { uriHandler.openUri(post.spotifyUrl) },
                 modifier = Modifier.size(48.dp)
             ) {
-                androidx.compose.material.Icon(
-                    painter = painterResource(id = R.drawable.green_play_button),
-                    contentDescription = "Comment",
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.Unspecified
+                Image(
+                    painter = painterResource(id = R.drawable.spot),
+                    contentDescription = "Spotify logo",
+                    modifier = Modifier
+                        .size(24.dp)
                 )
             }
         }
         Row(
             modifier = Modifier.align(Alignment.BottomEnd)
         ) {
-
             IconButton(
-                onClick = { isLiked = !isLiked },
+                onClick = { uriHandler.openUri(post.spotifyUrl) },
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(40.dp)
+                    .padding(bottom = 8.dp, end = 8.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.spot),
+                    contentDescription = "Spotify logo",
+                    modifier = Modifier
+                        .size(24.dp)
+                )
+            }
+            IconButton(
+                onClick = { handleLike() },
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(bottom = 8.dp)
             ) {
                 Icon(
                     imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
@@ -175,9 +285,20 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
                     tint = if (isLiked) Color.Red else Color.White
                 )
             }
+            Text(
+                text = likeCount.toString(),
+                style = TextStyle(
+                    color = Color.LightGray,
+                    fontSize = 12.sp
+                ),
+                modifier = Modifier.padding(bottom = 8.dp, end = 8.dp)
+            )
             IconButton(
-                onClick = { /* TODO: comment button click action */ },
-                modifier = Modifier.size(48.dp)
+                onClick = { /*TODO()*/ },
+//                onClick = { handleClickComment(post.id) },
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(bottom = 8.dp)
             ) {
                 androidx.compose.material.Icon(
                     painter = painterResource(id = R.drawable.comment),
@@ -186,6 +307,14 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
                     tint = Color.White
                 )
             }
+            Text(
+                text = commentCount.toString(),
+                style = TextStyle(
+                    color = Color.LightGray,
+                    fontSize = 12.sp
+                ),
+                modifier = Modifier.padding(bottom = 8.dp, end = 8.dp)
+            )
         }
     }
 }
