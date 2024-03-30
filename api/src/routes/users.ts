@@ -1,9 +1,9 @@
 import { db } from "../db/db";
-import { friendshipTable, getUserSchema, insertUserSchema, postTable, userTable } from "../db/schema";
+import { commentTable, friendshipRequestTable, friendshipTable, getUserSchema, insertUserSchema, likeTable, postTable, userTable } from "../db/schema";
 import { randomUUID, timingSafeEqual } from "crypto";
 import { generateSalt, hash } from "../lib/hashing";
 import { z } from "zod";
-import { eq, or } from "drizzle-orm";
+import { eq, like, or } from "drizzle-orm";
 import { Plugin, authSchema, paginationSchema, searchSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
 import { encrypt } from "../lib/encryption";
@@ -720,6 +720,64 @@ export const users: Plugin = (server, _, done) => {
       }
     },
   );
+
+
+  server.get(
+    "/delete_user/:identifier",
+    {
+      schema: {
+        params: z.object({
+          identifier: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { identifier } = req.params;
+
+        const result = await db.select({
+          field1: postTable.id
+        }).from(postTable).where(eq(postTable.userId, identifier));
+        
+        const list_of_posts = []
+        for (const post of result) {
+          list_of_posts.push(post["field1"]);
+        }
+ 
+        for (const post_id of list_of_posts) {
+          await db.delete(commentTable).where(eq(commentTable.postId, post_id))
+          await db.delete(likeTable).where(eq(likeTable.postId, post_id))
+        }
+
+        await db.delete(commentTable).where(eq(commentTable.userId, identifier))
+        await db.delete(likeTable).where(eq(likeTable.userId, identifier))
+
+        await db.delete(friendshipTable).where(eq(friendshipTable.userId1, identifier))
+        await db.delete(friendshipTable).where(eq(friendshipTable.userId2, identifier))
+
+        await db.delete(friendshipRequestTable).where(eq(friendshipRequestTable.userIdReceiving, identifier))
+        await db.delete(friendshipRequestTable).where(eq(friendshipRequestTable.userIdRequesting, identifier))
+
+        await db.delete(postTable).where(eq(postTable.userId, identifier))
+
+        await db.delete(userTable).where(eq(userTable.id, identifier));
+
+        return res.code(200).send({ 'success': true });
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+
+
+
+
+
+
+
+
 
   server.get(
     "/most_recent_song/:identifier",

@@ -57,12 +57,20 @@ import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.components.ProfilePic
 import ca.uwaterloo.tunein.data.Post
+import ca.uwaterloo.tunein.data.ProfileResponse
 import ca.uwaterloo.tunein.messaging.Firebase
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.ProfileViewModel
 import coil.compose.AsyncImage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 private val showDialog = mutableStateOf(false)
 
@@ -98,9 +106,27 @@ class ProfileActivity : ComponentActivity() {
             super.startActivity(intent)
         }
 
+        suspend fun sendDeleteAcc(userId: String) = withContext(Dispatchers.IO) {
+            val searchUrl = "${BuildConfig.BASE_URL}/delete_user/${userId}"
+            val client = OkHttpClient()
+            val request: Request = Request.Builder()
+                .url(searchUrl)
+                .get()
+                .build()
+
+            val response = client.newCall(request).execute()
+            val json = response.body.string()
+            val j = Json{ ignoreUnknownKeys = true }
+            j.decodeFromString<ProfileResponse>(json)
+        }
+
         fun onConfirmation() {
+            CoroutineScope(Dispatchers.Main).launch {
+                // Call suspend function here
+                sendDeleteAcc(user.id)
+            }
             showDialog.value = false
-            startActivity(Intent(this, PostsActivity::class.java))
+            startActivity(Intent(this, LoginActivity::class.java))
         }
 
         fun onDismissRequest() {
