@@ -59,3 +59,4 @@
 | 2024/03/28 |       |       |         |         |        | 5      | Work on posts visibility                                           |
 | 2024/03/29 |       |       |         |         |        | 2      | Code refactoring                                                   |
 | 2024/03/28 |       |       |         | 3       |        |        | Adding currently playing song and ability to play song from app    |
+| 2024/03/30 |       |       |         |         |        | 2      | Add pull down to refresh feed functionality										    |
