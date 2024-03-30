@@ -1,5 +1,5 @@
 | Date       | Jugal | Ralph | Cameron | Hrishit | Nathan | Adrian | Task                                                               |
-|------------|-------|-------|---------|---------|--------|--------|--------------------------------------------------------------------|
+| ---------- | ----- | ----- | ------- | ------- | ------ | ------ | ------------------------------------------------------------------ |
 | 2024/01/29 |       |       |         | 3       |        |        | D1 User scenarios and architecture diagram                         |
 | 2024/01/29 | 3     |       |         |         | 2      |        | D1 Project proposal doc - Intro, functional, and non functional    |
 | 2024/01/29 |       |       |         |         |        | 4      | Work on D1 proposal details, revisions & edits                     |
@@ -57,6 +57,9 @@
 | 2024/03/27 |       | 5     |         |         |        |        | API Backend like routes                                            |
 | 2024/03/27 |       | 5     |         |         |        |        | API Backend comment routes                                         |
 | 2024/03/28 |       |       |         |         |        | 5      | Work on posts visibility                                           |
-| 2024/03/29 |       |       |         |         |        | 2      | Code refactoring                                                   |
 | 2024/03/28 |       |       |         | 3       |        |        | Adding currently playing song and ability to play song from app    |
-| 2024/03/30 |       |       |         |         |        | 2      | Add pull down to refresh feed functionality										    |
+| 2024/03/28 | 2     |       |         |         |        |        | Begin "Likes" feature                                              |
+| 2024/03/29 |       |       |         |         |        | 2      | Code refactoring                                                   |
+| 2024/03/29 | 2     |       |         |         |        |        | Likes functionality and UI finish                                  |
+| 2024/03/30 |       |       |         |         |        | 2      | Add pull down to refresh feed functionality                        |
+| 2024/03/30 | 6     |       |         |         |        |        | Comments UI and functionality and backend finish                   |
