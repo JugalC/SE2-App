@@ -94,10 +94,17 @@ class PostsActivity : ComponentActivity() {
             startActivity(intent)
         }
 
+        fun handleClickComment(postId: String) {
+            val intent = Intent(this, CommentsActivity::class.java)
+            intent.putExtra("postId", postId)
+            startActivity(intent)
+        }
+
         setContent {
             PostsContent(
                 handleClickFriends= { handleClickFriends() },
                 handleClickProfile= ::handleClickProfile,
+                handleClickComment= ::handleClickComment,
                 feedViewModel = feedViewModel
             )
         }
@@ -105,7 +112,7 @@ class PostsActivity : ComponentActivity() {
 }
 
 @Composable
-fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> Unit) {
+fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> Unit,  handleClickComment: (postId: String) -> Unit) {
     // setup volley queue
     val queue = Volley.newRequestQueue(LocalContext.current)
     val ctx = LocalContext.current
@@ -294,8 +301,7 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
                 modifier = Modifier.padding(bottom = 8.dp, end = 8.dp)
             )
             IconButton(
-                onClick = { /*TODO()*/ },
-//                onClick = { handleClickComment(post.id) },
+                onClick = { handleClickComment(post.id) },
                 modifier = Modifier
                     .size(40.dp)
                     .padding(bottom = 8.dp)
@@ -324,6 +330,7 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
 fun PostsContent(
     handleClickFriends: () -> Unit,
     handleClickProfile: (userId: String) -> Unit,
+    handleClickComment: (postId: String) -> Unit,
     friendsViewModel: FriendsViewModel = viewModel(),
     feedViewModel: FeedViewModel = viewModel()
 ) {
@@ -384,9 +391,7 @@ fun PostsContent(
                         .fillMaxWidth()
                     ) {
                         items(feed.posts) { post ->
-                            PostItemGeneration(post) {
-                                handleClickProfile(post.userId)
-                            }
+                            PostItemGeneration(post, handleClickProfile, handleClickComment)
                         }
                     }
                     PullRefreshIndicator(

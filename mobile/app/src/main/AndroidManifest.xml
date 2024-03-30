@@ -41,6 +41,11 @@
             android:label="@string/title_activity_posts"
             android:theme="@style/Theme.TuneIn" />
         <activity
+            android:name=".CommentsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_posts"
+            android:theme="@style/Theme.TuneIn" />
+        <activity
             android:name=".FriendsActivity"
             android:exported="false"
             android:label="@string/title_activity_friends"
