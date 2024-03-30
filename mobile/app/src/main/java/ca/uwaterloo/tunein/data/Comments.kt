@@ -6,13 +6,14 @@ import kotlinx.serialization.Serializable
 data class Comment(
     val id: String = "",
     val postId: String = "",
+    val userId: String = "",
+    val profilePicture: String = DEFAULT_PROFILE_PIC,
     val username: String = "",
-    val text: String = "",
-    val timestamp: Long = 0
+    val content: String = ""
 )
 
 
 @Serializable
 data class Comments(
-    val posts: List<Comment> = listOf(Comment())
+    val comments: List<Comment> = listOf(Comment())
 )

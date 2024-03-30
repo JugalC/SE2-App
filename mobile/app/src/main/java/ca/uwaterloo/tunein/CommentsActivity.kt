@@ -1,12 +1,16 @@
 package ca.uwaterloo.tunein
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
@@ -22,11 +26,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.data.Comment
@@ -34,6 +41,9 @@ import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.viewmodel.CommentsViewModel
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
+import ca.uwaterloo.tunein.viewmodel.FeedViewModel
+import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
+import coil.compose.AsyncImage
 import com.android.volley.AuthFailureError
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
@@ -44,8 +54,22 @@ import org.json.JSONObject
 
 class CommentsActivity : ComponentActivity() {
 
+    private val commentsViewModel by viewModels<CommentsViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val postId = intent.getStringExtra("postId") ?: ""
+        commentsViewModel.pullComments(postId, this)
+
+        fun handleClickProfile(userId: String) {
+            val intent = Intent(this, ProfileActivity::class.java)
+            intent.putExtra("user_profile", userId)
+            startActivity(intent)
+        }
+
+        Log.i("CommentsActivity", "postId: $postId")
+
 
         fun goBack() {
             finish()
@@ -55,18 +79,13 @@ class CommentsActivity : ComponentActivity() {
 //        val queue = Volley.newRequestQueue(this)
 //        // url for updating username
 //        val usernameURL = "${BuildConfig.BASE_URL}/user/update_user"
-//        // url for updating password
-//        val passwordURL = "${BuildConfig.BASE_URL}/user/update_password"
-//        // url for updating photo
-//        val photoURL = "${BuildConfig.BASE_URL}/user/update_profile_picture"
-//        // url for reauthorizing spotify
-//        // val spotifyURL = "${BuildConfig.BASE_URL}/user/spotify_auth"
 
 
         setContent {
             CommentsContent(
                 viewModel = viewModel(),
-                postId = intent.getStringExtra("postId") ?: ""
+                postId = postId,
+                handleClickProfile = ::handleClickProfile,
             ) { goBack() }
         }
     }
@@ -74,8 +93,9 @@ class CommentsActivity : ComponentActivity() {
 
 
 @Composable
-fun CommentsContent(viewModel: CommentsViewModel, postId: String, goBack: () -> Unit) {
+fun CommentsContent(viewModel: CommentsViewModel, postId: String, handleClickProfile: (userId: String) -> Unit, goBack: () -> Unit) {
     var newCommentText by remember { mutableStateOf("") }
+    val comments by viewModel.comments.collectAsStateWithLifecycle()
 
     TuneInTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -102,11 +122,11 @@ fun CommentsContent(viewModel: CommentsViewModel, postId: String, goBack: () -> 
                 Divider()
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.weight(1f)) {
-//                    items(sampleComments) { comment ->
-//                        CommentItem(comment)
-//                        Spacer(modifier = Modifier.height(16.dp))
-//                        Divider()
-//                    }
+                    items(comments.comments) { comment ->
+                        CommentItem(comment,viewModel, handleClickProfile)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Divider()
+                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 TextField(
@@ -128,155 +148,37 @@ fun CommentsContent(viewModel: CommentsViewModel, postId: String, goBack: () -> 
             }
         }
     }
-//
-//    TuneInTheme {
-//        Surface(
-//            modifier = Modifier.fillMaxSize()
-//        ) {
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .padding(16.dp),
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//                Row(
-//                    modifier = Modifier.fillMaxWidth(),
-////                    horizontalArrangement = Arrangement.SpaceBetween,
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    Column() {
-//                        IconButton(onClick = { goBack() }) {
-//                            ca.uwaterloo.tunein.components.Icon(
-//                                Icons.AutoMirrored.Filled.ArrowBack,
-//                                contentDescription = "Go Back"
-//                            )
-//                        }
-//                    }
-//                    Column(modifier = Modifier
-//                        .fillMaxWidth(0.85f),
-//                        horizontalAlignment = Alignment.CenterHorizontally
-//                    ){Text("Settings", textAlign= TextAlign.Center)}
-//                }
-//                Spacer(modifier = Modifier.height(16.dp))
-//                Row(
-//                    modifier = Modifier.fillMaxWidth(),
-//                ){
-//                    Column(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .fillMaxHeight(),
-//                        horizontalAlignment = Alignment.CenterHorizontally,
-//                        verticalArrangement = Arrangement.Center
-//
-//                    ){
-////                        androidx.compose.material.Button(
-////                            onClick = { showDialogUsername.value = true },
-////                            colors = ButtonDefaults.buttonColors(
-////                                backgroundColor = Color.DarkGreen
-////                            ),
-////                            modifier = Modifier
-////                                .fillMaxWidth(0.8f)
-////                                .height(IntrinsicSize.Max)
-////                                .clip(RoundedCornerShape(10.dp))
-////                        ) {
-////                            Text(
-////                                "Change Username",
-////                                color = Color.TextBlack,
-////                                fontSize = 20.sp,
-////                                fontWeight = FontWeight.SemiBold
-////                            )
-////                        }
-////                        Spacer(modifier = Modifier.height(32.dp))
-////                        androidx.compose.material.Button(
-////                            onClick = { showDialogPassword.value = true },
-////                            colors = ButtonDefaults.buttonColors(
-////                                backgroundColor = Color.DarkGreen
-////                            ),
-////                            modifier = Modifier
-////                                .fillMaxWidth(0.8f)
-////                                .height(IntrinsicSize.Max)
-////                                .clip(RoundedCornerShape(10.dp))
-////                        ) {
-////                            Text(
-////                                "Change Password",
-////                                color = Color.TextBlack,
-////                                fontSize = 20.sp,
-////                                fontWeight = FontWeight.SemiBold
-////                            )
-////                        }
-////                        Spacer(modifier = Modifier.height(32.dp))
-////                        androidx.compose.material.Button(
-////                            onClick = { showDialogPhoto.value = true },
-////                            colors = ButtonDefaults.buttonColors(
-////                                backgroundColor = Color.DarkGreen
-////                            ),
-////                            modifier = Modifier
-////                                .fillMaxWidth(0.8f)
-////                                .height(IntrinsicSize.Max)
-////                                .clip(RoundedCornerShape(10.dp))
-////                        ) {
-////                            Text(
-////                                "Update Photo",
-////                                color = Color.TextBlack,
-////                                fontSize = 20.sp,
-////                                fontWeight = FontWeight.SemiBold
-////                            )
-////                        }
-////                        Spacer(modifier = Modifier.height(32.dp))
-////                        androidx.compose.material.Button(
-////                            onClick = { },
-////                            colors = ButtonDefaults.buttonColors(
-////                                backgroundColor = Color.DarkGreen
-////                            ),
-////                            modifier = Modifier
-////                                .fillMaxWidth(0.8f)
-////                                .height(IntrinsicSize.Max)
-////                                .clip(RoundedCornerShape(10.dp))
-////                        ) {
-////                            Text(
-////                                "Reauthorize Spotify",
-////                                color = Color.TextBlack,
-////                                fontSize = 20.sp,
-////                                fontWeight = FontWeight.SemiBold
-////                            )
-////                        }
-//                    }
-//                }
-//            }
-//
-//        }
-//    }
-//
 }
-//
-//@Composable
-//fun CommentItem(comment: Comment) {
-//    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-//        Text(
-//            text = comment.username,
-//            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-//        )
-//        <<<<<<< HEAD
-//        Spacer(modifier = Modifier.height(8.dp))
-//        =======
-//        >>>>>>> 42cdccc (rebase, fix merge conflicts)
-//        Text(
-//            text = comment.text,
-//            style = MaterialTheme.typography.bodyMedium
-//        )
-//    }
-//}
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun CommentsContentPreview() {
-//    // This is a sample list of comments for preview purposes
-//    val sampleComments = listOf(
-//        Comment(id = "1", postId = "post1", username = "User1", text = "This is a sample comment.", timestamp = 1588262400000),
-//        Comment(id = "2", postId = "post1", username = "User2", text = "lol jdawg is so funny", timestamp = 1588348800000),
-//        Comment(id = "3", postId = "post1", username = "User3", text = "great taste in music jdawg, *ok emoji*", timestamp = 1588262400000),
-//    )
-//
-//    // Variable to hold the new comment text
+@Composable
+fun CommentItem(comment: Comment, viewModel: CommentsViewModel,  handleClickProfile: (userId: String) -> Unit) {
 
-//}
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+        Row (modifier = Modifier.clickable { handleClickProfile(comment.userId) })
+        {
+            AsyncImage(
+                model = comment.profilePicture,
+                contentDescription = "Profile photo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .align(Alignment.Top)
+            )
+            Column(modifier = Modifier.padding(horizontal = 10.dp)) {
+                Text(
+                    text = "@" + comment.username,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = comment.content,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.End
+                )
+            }
+        }
+
+    }
+}
+

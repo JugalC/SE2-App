@@ -3,7 +3,8 @@ import { Plugin, authSchema } from "../types";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { authenticateUser } from "../lib/authenticateUser";
-import { commentTable, postTable } from "../db/schema";
+import { commentTable, postTable, userTable } from "../db/schema";
+import { randomUUID } from "crypto";
 
 export const comments: Plugin = (server, _, done) => {
   server.post(
@@ -39,7 +40,7 @@ export const comments: Plugin = (server, _, done) => {
           return res.code(404).send({ error: "Post doesn't exist." });
         }
 
-        await db.insert(commentTable).values({ userId: user.id, postId, content });
+        await db.insert(commentTable).values({ id: randomUUID(), userId: user.id, postId, content });
 
         return res.code(200).send({});
       } catch (e) {
@@ -57,12 +58,16 @@ export const comments: Plugin = (server, _, done) => {
         params: z.object({
           postId: z.string(),
         }),
+        body: z.object({
+          commentId: z.string(),
+        }),
       },
     },
     async (req, res) => {
       try {
         const { authorization } = req.headers;
         const { postId } = req.params;
+        const { commentId } = req.body;
 
         const user = await authenticateUser(authorization);
 
@@ -109,9 +114,20 @@ export const comments: Plugin = (server, _, done) => {
           return res.code(404).send({ error: "Post doesn't exist." });
         }
 
-        const comments = await db.select().from(commentTable).where(eq(commentTable.postId, postId));
+        const comments = await db
+          .select({
+            id: commentTable.id,
+            userId: commentTable.userId,
+            username: userTable.username,
+            profilePicture: userTable.profilePicture,
+            postId: commentTable.postId,
+            content: commentTable.content,
+          })
+          .from(commentTable)
+          .innerJoin(userTable, eq(commentTable.userId, userTable.id))
+          .where(eq(commentTable.postId, postId));
 
-        return res.code(200).send(comments);
+        return res.code(200).send({ comments });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
