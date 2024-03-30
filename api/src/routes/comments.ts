@@ -109,9 +109,48 @@ export const comments: Plugin = (server, _, done) => {
           return res.code(404).send({ error: "Post doesn't exist." });
         }
 
-        const likes = await db.select().from(commentTable).where(eq(commentTable.postId, postId));
+        const comments = await db.select().from(commentTable).where(eq(commentTable.postId, postId));
 
-        return res.code(200).send(likes);
+        return res.code(200).send(comments);
+      } catch (e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error." });
+      }
+    },
+  );
+
+  server.get(
+    "/comments_count/:postId",
+    {
+      schema: {
+        headers: authSchema,
+        params: z.object({
+          postId: z.string(),
+        }),
+      },
+    },
+    async (req, res) => {
+      try {
+        const { authorization } = req.headers;
+        const { postId } = req.params;
+
+        const user = await authenticateUser(authorization);
+
+        if (!user) {
+          return res.code(401).send();
+        }
+
+        const post = await db.query.postTable.findFirst({
+          where: eq(postTable.id, postId),
+        });
+
+        if (!post) {
+          return res.code(404).send({ error: "Post doesn't exist." });
+        }
+
+        const comments = await db.select().from(commentTable).where(eq(commentTable.postId, postId));
+
+        return res.code(200).send({ comments: comments.length });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });

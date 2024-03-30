@@ -90,7 +90,11 @@ class ProfileActivity : ComponentActivity() {
         fun handleLogout() {
             AuthManager.setAuthToken(this, null)
             Firebase.clearRegistrationToken(this)
-            startActivity(Intent(this, MainActivity::class.java))
+
+            val intent = Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            super.startActivity(intent)
         }
 
         fun onConfirmation() {
