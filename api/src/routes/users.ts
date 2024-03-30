@@ -4,7 +4,7 @@ import { randomUUID, timingSafeEqual } from "crypto";
 import { generateSalt, hash } from "../lib/hashing";
 import { z } from "zod";
 import { eq, or } from "drizzle-orm";
-import { Plugin, paginationSchema, searchSchema } from "../types";
+import { Plugin, authSchema, paginationSchema, searchSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
 import { encrypt } from "../lib/encryption";
 import { CONNREFUSED } from "dns";
@@ -59,6 +59,7 @@ export const users: Plugin = (server, _, done) => {
     "/user/update_user",
     {
       schema: {
+        headers: authSchema,
         body: z.object({
           currUsername: z.string(),
           newUsername: z.string(),
@@ -67,6 +68,7 @@ export const users: Plugin = (server, _, done) => {
     },
     async (req, res) => {
       try {
+        const { authorization } = req.headers;
         const { currUsername, newUsername } = req.body;
 
         // check if newUsername already exists in the database
@@ -87,7 +89,9 @@ export const users: Plugin = (server, _, done) => {
           })
           .where(eq(userTable.username, currUsername));
 
-        return res.code(200).send({ newUsername: newUsername });
+        return res
+          .code(200)
+          .send({ newUsername: newUsername, token: encrypt(`${newUsername}:${authorization.password}`) });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -99,6 +103,7 @@ export const users: Plugin = (server, _, done) => {
     "/user/update_password",
     {
       schema: {
+        headers: authSchema,
         body: z.object({
           username: z.string(),
           newPassword: z.string(),
@@ -107,6 +112,7 @@ export const users: Plugin = (server, _, done) => {
     },
     async (req, res) => {
       try {
+        const { authorization } = req.headers;
         const { username, newPassword } = req.body;
 
         // check if user exists in DB
@@ -132,7 +138,7 @@ export const users: Plugin = (server, _, done) => {
           })
           .where(eq(userTable.username, username));
 
-        return res.code(200).send({ message: "Password updated successfully." });
+        return res.code(200).send({ token: encrypt(`${authorization.username}:${newPassword}`) });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -162,17 +168,6 @@ export const users: Plugin = (server, _, done) => {
         if (!user) {
           return res.code(404).send({ error: "User not found with given parameters." });
         }
-
-        // let url_default =
-        // "https://builtprefab.com/wp-content/uploads/2019/01/cropped-blank-profile-picture-973460_960_720-300x300.png";
-
-        // // update user with new profile picture
-        // await db
-        //   .update(userTable)
-        //   .set({
-        //     profilePicture: "",
-        //   })
-        //   .where(eq(userTable.username, username));
 
         const access_token = user["spotifyAccessToken"] || "None";
         const reset_token = user["spotifyRefreshToken"] || "None";
@@ -596,9 +591,9 @@ export const users: Plugin = (server, _, done) => {
             artists: "Wait for Daily Post",
             imageUrl: "https://en.wikipedia.org/wiki/File:Color_icon_gray_v2.svg",
             caption: "No Posts",
-          })
+          });
         }
-        
+
         if (posts.length > 0) {
           previousPosts.push({
             id: posts[0].id,
@@ -608,7 +603,7 @@ export const users: Plugin = (server, _, done) => {
             imageUrl: posts[0].imageUrl,
             visible: posts[0].visible,
             caption: "Today",
-          })
+          });
         }
 
         if (posts.length > 1) {
@@ -620,7 +615,7 @@ export const users: Plugin = (server, _, done) => {
             imageUrl: posts[1].imageUrl,
             visible: posts[1].visible,
             caption: "Yesterday",
-          })
+          });
         }
 
         if (posts.length > 2) {
@@ -632,7 +627,7 @@ export const users: Plugin = (server, _, done) => {
             imageUrl: posts[2].imageUrl,
             visible: posts[2].visible,
             caption: "2 Days Ago",
-          })
+          });
         }
 
         const friends_number = await db
@@ -799,14 +794,13 @@ export const users: Plugin = (server, _, done) => {
             headers: { Authorization: starting.concat(access_token) },
           });
 
-          let use_currently_playing = true
+          let use_currently_playing = true;
           // let value_test = {'item': ""}
 
           try {
-            const value_test = await response_test.json()
-          }
-          catch (SyntaxError) {
-            use_currently_playing = false
+            const value_test = await response_test.json();
+          } catch (SyntaxError) {
+            use_currently_playing = false;
           }
 
           if (use_currently_playing) {
@@ -848,9 +842,9 @@ export const users: Plugin = (server, _, done) => {
               listened_at: listenedAt,
               created_at: createdAt,
             };
-  
+
             console.log(resp_obj);
-  
+
             await db.insert(postTable).values({
               id,
               spotifyTrackId,
@@ -864,13 +858,11 @@ export const users: Plugin = (server, _, done) => {
               listenedAt,
               createdAt,
             });
-  
-            return res.code(200).send(resp_obj);
-          }
 
-          else {
+            return res.code(200).send(resp_obj);
+          } else {
             const response = await fetch("https://api.spotify.com/v1/me/player/recently-played", {
-            headers: { Authorization: starting.concat(access_token) },
+              headers: { Authorization: starting.concat(access_token) },
             });
             // console.log(response.text())
             const value = await response.json();
@@ -909,9 +901,9 @@ export const users: Plugin = (server, _, done) => {
               listened_at: listenedAt,
               created_at: createdAt,
             };
-  
+
             console.log(resp_obj);
-  
+
             await db.insert(postTable).values({
               id,
               spotifyTrackId,
@@ -925,11 +917,9 @@ export const users: Plugin = (server, _, done) => {
               listenedAt,
               createdAt,
             });
-  
+
             return res.code(200).send(resp_obj);
-
           }
-
         } else {
           console.log("TOken is goood");
 
@@ -937,14 +927,13 @@ export const users: Plugin = (server, _, done) => {
             headers: { Authorization: starting.concat(access_token) },
           });
 
-          let use_currently_playing = true
+          let use_currently_playing = true;
           // let value_test = {'item': ""}
 
           try {
-            const value_test = await response_test.json()
-          }
-          catch (SyntaxError) {
-            use_currently_playing = false
+            const value_test = await response_test.json();
+          } catch (SyntaxError) {
+            use_currently_playing = false;
           }
 
           if (use_currently_playing) {
@@ -986,9 +975,9 @@ export const users: Plugin = (server, _, done) => {
               listened_at: listenedAt,
               created_at: createdAt,
             };
-  
+
             console.log(resp_obj);
-  
+
             await db.insert(postTable).values({
               id,
               spotifyTrackId,
@@ -1002,13 +991,11 @@ export const users: Plugin = (server, _, done) => {
               listenedAt,
               createdAt,
             });
-  
-            return res.code(200).send(resp_obj);
-          }
 
-          else {
+            return res.code(200).send(resp_obj);
+          } else {
             const response = await fetch("https://api.spotify.com/v1/me/player/recently-played", {
-            headers: { Authorization: starting.concat(access_token) },
+              headers: { Authorization: starting.concat(access_token) },
             });
             // console.log(response.text())
             const value = await response.json();
@@ -1047,9 +1034,9 @@ export const users: Plugin = (server, _, done) => {
               listened_at: listenedAt,
               created_at: createdAt,
             };
-  
+
             console.log(resp_obj);
-  
+
             await db.insert(postTable).values({
               id,
               spotifyTrackId,
@@ -1063,11 +1050,9 @@ export const users: Plugin = (server, _, done) => {
               listenedAt,
               createdAt,
             });
-  
+
             return res.code(200).send(resp_obj);
-
           }
-
 
           // const recently_played_song = value["items"][0];
 

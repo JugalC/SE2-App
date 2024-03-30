@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -69,8 +70,6 @@ class PostsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val user = AuthManager.getUser(this)
-
         fun handleClickFriends() {
             val intent = Intent(this, FriendsActivity::class.java)
             startActivity(intent)
@@ -84,7 +83,6 @@ class PostsActivity : ComponentActivity() {
 
         setContent {
             PostsContent(
-                user,
                 handleClickFriends= { handleClickFriends() },
                 handleClickProfile= ::handleClickProfile,
                 feedViewModel = feedViewModel
@@ -192,19 +190,19 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
 
 @Composable
 fun PostsContent(
-    user: User,
     handleClickFriends: () -> Unit,
     handleClickProfile: (userId: String) -> Unit,
     viewModel: FriendsViewModel = viewModel(),
     feedViewModel: FeedViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val pendingInvites by viewModel.pendingInvites.collectAsStateWithLifecycle()
     val returnedFeed by feedViewModel.returnedFeed.collectAsStateWithLifecycle()
 
     fun refreshFeed() {
+        val user = AuthManager.getUser(context)
         feedViewModel.updateReturnedFeed(user.id)
     }
-
 
     TuneInTheme {
         // A surface container using the 'background' color from the theme
@@ -242,7 +240,7 @@ fun PostsContent(
                             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                         )
                     }
-                    IconButton(onClick = { handleClickProfile(user.id) }) {
+                    IconButton(onClick = { handleClickProfile(AuthManager.getUser(context).id) }) {
                     Icon(Icons.Default.Face, contentDescription = "Profile")
                     }
                 }
