@@ -56,7 +56,7 @@ export const postTable = sqliteTable("post", {
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-  visible: integer("visible", { mode: "boolean"}).notNull().default(true),
+  visible: integer("visible", { mode: "boolean" }).notNull().default(true),
 });
 
 export const likeTable = sqliteTable(
@@ -74,21 +74,16 @@ export const likeTable = sqliteTable(
   }),
 );
 
-export const commentTable = sqliteTable(
-  "comment",
-  {
-    userId: text("user_id")
-      .notNull()
-      .references(() => userTable.id),
-    postId: text("post_id")
-      .notNull()
-      .references(() => postTable.id),
-    content: text("text").notNull(),
-  },
-  ({ userId, postId }) => ({
-    primary: primaryKey({ columns: [userId, postId] }),
-  }),
-);
+export const commentTable = sqliteTable("comment", {
+  id: text("id").notNull().primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => userTable.id),
+  postId: text("post_id")
+    .notNull()
+    .references(() => postTable.id),
+  content: text("text").notNull(),
+});
 
 export const getPostSchema = createSelectSchema(postTable)
   .omit({ listenedAt: true, createdAt: true })
