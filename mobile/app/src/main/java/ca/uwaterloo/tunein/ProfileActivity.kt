@@ -38,7 +38,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -65,14 +64,17 @@ import ca.uwaterloo.tunein.viewmodel.ProfileViewModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
-
 private val showDialog = mutableStateOf(false)
-
-
 
 class ProfileActivity : ComponentActivity() {
 
     private val viewModel by viewModels<ProfileViewModel>()
+
+    override fun onStart() {
+        super.onStart()
+        val userId = this.intent.getStringExtra("user_profile").toString()
+        viewModel.getProfile(userId)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -80,7 +82,7 @@ class ProfileActivity : ComponentActivity() {
         val user = AuthManager.getUser(this)
 
         fun goBack() {
-           finish()
+            finish()
         }
 
         fun handleClickAccountSettings() {
@@ -104,15 +106,13 @@ class ProfileActivity : ComponentActivity() {
 
         setContent {
             ProfileContent(
-                userId,
                 selfProfile = userId == user.id,
                 goBack={goBack()},
                 handleClickAccountSettings={handleClickAccountSettings()},
                 handleLogout = { handleLogout() },
-                onConfirmation={onConfirmation()},
-                onDismissRequest={onDismissRequest()},
+                onConfirmation={ onConfirmation() },
+                onDismissRequest={ onDismissRequest() },
                 profileViewModel = viewModel
-
             )
         }
     }
@@ -121,7 +121,6 @@ class ProfileActivity : ComponentActivity() {
 
 @Composable
 fun ProfileContent(
-    userId: String,
     selfProfile: Boolean,
     goBack: () -> Unit,
     handleClickAccountSettings: () -> Unit,
@@ -133,11 +132,6 @@ fun ProfileContent(
     val profile by profileViewModel.profile.collectAsStateWithLifecycle()
     val posts by profileViewModel.posts.collectAsStateWithLifecycle()
 
-    // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
-    LaunchedEffect(profile) {
-        profileViewModel.getProfile(userId)
-    }
-    //This is the end of GPT 3.5 generation
     val scrollState = rememberScrollState()
     TuneInTheme {
         Surface(
@@ -233,21 +227,19 @@ fun ProfileContent(
                 posts.forEach{
                     PostHistory(
                         it,
-                        profileViewModel::updateVisibility
+                        profileViewModel::updateVisibility,
+                        selfProfile
                     )
                 }
-
                 Spacer(modifier = Modifier.weight(1f))
                 if (selfProfile) {
                     Column(
-                        Modifier
-                            .fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { handleClickAccountSettings() }
@@ -259,11 +251,14 @@ fun ProfileContent(
                                 modifier = Modifier.size(24.dp),
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = "Account Settings")
+                            Text(
+                                text = "Account Settings",
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { handleLogout() }
@@ -275,11 +270,14 @@ fun ProfileContent(
                                 modifier = Modifier.size(24.dp),
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = "Log Out")
+                            Text(
+                                text = "Log Out",
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { showDialog.value = true }
@@ -291,14 +289,16 @@ fun ProfileContent(
                                 modifier = Modifier.size(24.dp),
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = "Delete Account")
+                            Text(
+                                text = "Delete Account",
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 Text("TuneIn Member Since ${profile.created}", fontSize=10.sp, color=Color.LightGray)
             }
-
         }
     }
     if(showDialog.value) {
@@ -310,6 +310,7 @@ fun ProfileContent(
 fun PostHistory(
     post: Post,
     updateVisibility: suspend (Post, Context) -> Unit,
+    selfProfile: Boolean,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -338,22 +339,24 @@ fun PostHistory(
             Column{
                 Text(post.name)
                 Text(post.artists, fontSize=12.sp, color = Color.LightGray)
-                Row(
-                    modifier = Modifier
-                        .padding(vertical = 24.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Share with friends:")
-                    Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                    Switch (
-                        modifier = Modifier.height(10.dp),
-                        checked = post.visible,
-                        onCheckedChange = {
-                            coroutineScope.launch {
-                                updateVisibility(post, context)
-                            }
-                        },
-                    )
+                if (selfProfile) {
+                    Row(
+                        modifier = Modifier
+                            .padding(vertical = 24.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Share with friends:")
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        Switch (
+                            modifier = Modifier.height(10.dp),
+                            checked = post.visible,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    updateVisibility(post, context)
+                                }
+                            },
+                        )
+                    }
                 }
             }
         }

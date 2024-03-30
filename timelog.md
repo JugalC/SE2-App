@@ -56,4 +56,6 @@
 | 2024/03/27 |       |       |         |         |        | 1      | Add profile pics to friends                                        |
 | 2024/03/27 |       | 5     |         |         |        |        | API Backend like routes                                            |
 | 2024/03/27 |       | 5     |         |         |        |        | API Backend comment routes                                         |
+| 2024/03/28 |       |       |         |         |        | 5      | Work on posts visibility                                           |
+| 2024/03/29 |       |       |         |         |        | 2      | Code refactoring                                                   |
 | 2024/03/28 |       |       |         | 3       |        |        | Adding currently playing song and ability to play song from app    |

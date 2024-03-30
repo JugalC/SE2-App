@@ -147,6 +147,7 @@ export const friendships: Plugin = (server, _, done) => {
             firstName: userTable.firstName,
             lastName: userTable.lastName,
             username: userTable.username,
+            profilePicture: userTable.profilePicture,
           })
           .from(friendshipRequestTable)
           .where(

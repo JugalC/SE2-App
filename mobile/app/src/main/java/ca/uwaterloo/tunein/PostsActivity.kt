@@ -33,11 +33,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,53 +51,55 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
+import ca.uwaterloo.tunein.data.FeedPost
+import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.FeedViewModel
-import kotlin.concurrent.thread
-import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
-import ca.uwaterloo.tunein.data.FeedPost
 import coil.compose.AsyncImage
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-
 
 class PostsActivity : ComponentActivity() {
-    private val viewModel by viewModels<FeedViewModel>()
+    private val feedViewModel by viewModels<FeedViewModel>()
+    private val friendsViewModel by viewModels<FriendsViewModel>()
+    override fun onStart() {
+        super.onStart()
+        val user = AuthManager.getUser(this)
+        feedViewModel.updateReturnedFeed(user.id)
+        friendsViewModel.getPendingInvites(this)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val user = AuthManager.getUser(this)
 
         fun handleClickFriends() {
             val intent = Intent(this, FriendsActivity::class.java)
             startActivity(intent)
         }
 
-        fun handleClickSettings(user_id: String) {
+        fun handleClickProfile(userId: String) {
             val intent = Intent(this, ProfileActivity::class.java)
-            println("Adding $user_id")
-            intent.putExtra("user_profile", user_id);
+            intent.putExtra("user_profile", userId);
             startActivity(intent)
         }
 
         setContent {
             PostsContent(
-                user,
                 handleClickFriends= { handleClickFriends() },
-                handleClickSettings= ::handleClickSettings,
-                feedViewModel = viewModel
+                handleClickProfile= ::handleClickProfile,
+                feedViewModel = feedViewModel
             )
         }
     }
 }
 
 @Composable
-fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) -> Unit) {
+fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> Unit) {
     var isLiked by remember { mutableStateOf(false) }
     val uriHandler = LocalUriHandler.current
 
-    Box(modifier = Modifier.padding(bottom = 16.dp, end = 16.dp).fillMaxWidth()) {
+    Box(modifier = Modifier
+        .padding(bottom = 16.dp, end = 16.dp)
+        .fillMaxWidth()
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,7 +108,7 @@ fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) ->
             backgroundColor = Color(0xFF1E1E1E),
         ) {
             Column {
-                Row (modifier = Modifier.clickable { handleClickSettings(post.userId) })
+                Row (modifier = Modifier.clickable { handleClickProfile(post.userId) })
                 {
                     AsyncImage(
                         model = post.profilePicture,
@@ -188,41 +188,21 @@ fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) ->
     }
 }
 
-
-
-
 @Composable
 fun PostsContent(
-    user: User,
     handleClickFriends: () -> Unit,
-    handleClickSettings: (user_id: String) -> Unit,
+    handleClickProfile: (userId: String) -> Unit,
     viewModel: FriendsViewModel = viewModel(),
     feedViewModel: FeedViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val pendingInvites by viewModel.pendingInvites.collectAsStateWithLifecycle()
+    val returnedFeed by feedViewModel.returnedFeed.collectAsStateWithLifecycle()
 
-    val returnedFeed by remember { feedViewModel.returnedFeed }
-
-    val coroutineScope = rememberCoroutineScope()
-
-    LaunchedEffect(Unit) {
-        thread {
-            viewModel.getPendingInvites(context)
-        }
+    fun refreshFeed() {
+        val user = AuthManager.getUser(context)
+        feedViewModel.updateReturnedFeed(user.id)
     }
-
-    LaunchedEffect(returnedFeed) {
-        val id = AuthManager.getUser(context).id
-        feedViewModel.updateReturnedFeed(id)
-    }
-
-    // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
-    suspend fun refreshFeed() {
-        val id = AuthManager.getUser(context).id
-        feedViewModel.updateReturnedFeed(id)
-    }
-    // End of GPT 3.5 Generation
 
     TuneInTheme {
         // A surface container using the 'background' color from the theme
@@ -252,7 +232,7 @@ fun PostsContent(
                     }
                     TextButton(
                         // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
-                        onClick = { coroutineScope.launch { refreshFeed() } }
+                        onClick = { refreshFeed() }
                         // End of GPT 3.5 Generation
                     ) {
                         Text(
@@ -260,15 +240,18 @@ fun PostsContent(
                             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                         )
                     }
-                    IconButton(onClick = { handleClickSettings(user.id) }) {
-                        Icon(Icons.Default.Face, contentDescription = "Settings")
+                    IconButton(onClick = { handleClickProfile(AuthManager.getUser(context).id) }) {
+                    Icon(Icons.Default.Face, contentDescription = "Profile")
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                LazyColumn(modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                ) {
                     items(returnedFeed.posts) { post ->
                         PostItemGeneration(post) {
-                            handleClickSettings(post.userId)
+                            handleClickProfile(post.userId)
                         }
                     }
                 }
