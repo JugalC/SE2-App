@@ -93,11 +93,18 @@ class PostsActivity : ComponentActivity() {
             startActivity(intent)
         }
 
+        fun handleClickComment(postId: String) {
+            val intent = Intent(this, CommentsActivity::class.java)
+            intent.putExtra("postId", postId)
+            startActivity(intent)
+        }
+
         setContent {
             PostsContent(
                 user,
                 handleClickFriends= { handleClickFriends() },
                 handleClickSettings= ::handleClickSettings,
+                handleClickComment= ::handleClickComment,
                 feedViewModel = viewModel
             )
         }
@@ -105,7 +112,7 @@ class PostsActivity : ComponentActivity() {
 }
 
 @Composable
-fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) -> Unit) {
+fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) -> Unit, handleClickComment: (postId: String) -> Unit) {
     // setup volley queue
     val queue = Volley.newRequestQueue(LocalContext.current)
     val ctx = LocalContext.current
@@ -157,7 +164,6 @@ fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) ->
     }
 
     LaunchedEffect(post.id) {
-//        Log.i("PostsActivity", "PostItemGeneration")
         if (post.id != "") {
             queue.add(likeCountReq)
             queue.add(commentCountReq)
@@ -289,7 +295,7 @@ fun PostItemGeneration(post: FeedPost, handleClickSettings: (user_id: String) ->
                 modifier = Modifier.padding(bottom = 8.dp, end = 8.dp)
             )
             IconButton(
-                onClick = { /* TODO: comment button click action */ },
+                onClick = { handleClickComment(post.id) },
                 modifier = Modifier.size(40.dp).padding(bottom = 8.dp)
             ) {
                 androidx.compose.material.Icon(
@@ -319,6 +325,7 @@ fun PostsContent(
     user: User,
     handleClickFriends: () -> Unit,
     handleClickSettings: (user_id: String) -> Unit,
+    handleClickComment: (postId: String) -> Unit,
     viewModel: FriendsViewModel = viewModel(),
     feedViewModel: FeedViewModel = viewModel()
 ) {
@@ -390,9 +397,7 @@ fun PostsContent(
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     items(returnedFeed.posts) { post ->
-                        PostItemGeneration(post) {
-                            handleClickSettings(post.userId)
-                        }
+                        PostItemGeneration(post, handleClickSettings, handleClickComment)
                     }
                 }
             }
