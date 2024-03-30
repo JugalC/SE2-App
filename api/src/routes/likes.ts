@@ -37,7 +37,9 @@ export const likes: Plugin = (server, _, done) => {
 
         await db.insert(likeTable).values({ userId: user.id, postId });
 
-        return res.code(200).send({});
+        const likes = await db.select().from(likeTable).where(eq(likeTable.postId, postId));
+
+        return res.code(200).send({ likes: likes.length });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -45,8 +47,8 @@ export const likes: Plugin = (server, _, done) => {
     },
   );
 
-  server.delete(
-    "/like/:postId",
+  server.post(
+    "/unlike/:postId",
     {
       schema: {
         headers: authSchema,
@@ -67,8 +69,9 @@ export const likes: Plugin = (server, _, done) => {
         }
 
         await db.delete(likeTable).where(and(eq(likeTable.userId, user.id), eq(likeTable.postId, postId)));
+        const likes = await db.select().from(likeTable).where(eq(likeTable.postId, postId));
 
-        return res.code(200).send({});
+        return res.code(200).send({ likes: likes.length });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
@@ -106,8 +109,9 @@ export const likes: Plugin = (server, _, done) => {
         }
 
         const likes = await db.select().from(likeTable).where(eq(likeTable.postId, postId));
+        const is_liked = likes.some((like) => like.userId === user.id);
 
-        return res.code(200).send(likes);
+        return res.code(200).send({ likes: likes.length, is_liked: is_liked });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
