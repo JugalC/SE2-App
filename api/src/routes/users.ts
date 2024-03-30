@@ -590,6 +590,7 @@ export const users: Plugin = (server, _, done) => {
             albumName: "Wait for the next",
             artists: "Wait for Daily Post",
             imageUrl: "https://en.wikipedia.org/wiki/File:Color_icon_gray_v2.svg",
+            visible: true,
             caption: "No Posts",
           });
         }
