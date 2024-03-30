@@ -21,13 +21,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
-import androidx.compose.material.TextButton
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -52,7 +55,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.data.FeedPost
-import ca.uwaterloo.tunein.data.User
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.FeedViewModel
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
@@ -77,7 +79,7 @@ class PostsActivity : ComponentActivity() {
 
         fun handleClickProfile(userId: String) {
             val intent = Intent(this, ProfileActivity::class.java)
-            intent.putExtra("user_profile", userId);
+            intent.putExtra("user_profile", userId)
             startActivity(intent)
         }
 
@@ -188,21 +190,25 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PostsContent(
     handleClickFriends: () -> Unit,
     handleClickProfile: (userId: String) -> Unit,
-    viewModel: FriendsViewModel = viewModel(),
+    friendsViewModel: FriendsViewModel = viewModel(),
     feedViewModel: FeedViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val pendingInvites by viewModel.pendingInvites.collectAsStateWithLifecycle()
-    val returnedFeed by feedViewModel.returnedFeed.collectAsStateWithLifecycle()
+    val pendingInvites by friendsViewModel.pendingInvites.collectAsStateWithLifecycle()
+    val feed by feedViewModel.feed.collectAsStateWithLifecycle()
+    val refreshing by feedViewModel.isRefreshing.collectAsStateWithLifecycle()
 
     fun refreshFeed() {
         val user = AuthManager.getUser(context)
         feedViewModel.updateReturnedFeed(user.id)
     }
+
+    val pullRefreshState = rememberPullRefreshState(refreshing = refreshing, onRefresh = { refreshFeed() })
 
     TuneInTheme {
         // A surface container using the 'background' color from the theme
@@ -230,30 +236,35 @@ fun PostsContent(
                             Icon(Icons.Default.Person, contentDescription = "Friends")
                         }
                     }
-                    TextButton(
-                        // This was generated using GPT 3.5 OpenAI. (2023). ChatGPT (June 16 version) [Large language model]. https://chat.openai.com/chat
-                        onClick = { refreshFeed() }
-                        // End of GPT 3.5 Generation
-                    ) {
-                        Text(
-                            text = "TuneIn",
-                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                        )
-                    }
+                    Text(
+                        text = "TuneIn",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                    )
                     IconButton(onClick = { handleClickProfile(AuthManager.getUser(context).id) }) {
                     Icon(Icons.Default.Face, contentDescription = "Profile")
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                LazyColumn(modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f)
+                        .pullRefresh(pullRefreshState)
                 ) {
-                    items(returnedFeed.posts) { post ->
-                        PostItemGeneration(post) {
-                            handleClickProfile(post.userId)
+                    LazyColumn(modifier = Modifier
+                        .fillMaxWidth()
+                    ) {
+                        items(feed.posts) { post ->
+                            PostItemGeneration(post) {
+                                handleClickProfile(post.userId)
+                            }
                         }
                     }
+                    PullRefreshIndicator(
+                        refreshing = refreshing,
+                        state = pullRefreshState,
+                        modifier = Modifier.align(Alignment.TopCenter),
+                    )
                 }
             }
         }

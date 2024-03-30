@@ -830,17 +830,17 @@ export const users: Plugin = (server, _, done) => {
             const createdAt = new Date();
 
             const resp_obj = {
-              id: id,
-              spotify_track_id: spotifyTrackId,
-              name: name,
-              album_name: albumName,
-              artists: artists,
-              duration_ms: durationMs,
-              image_url: imageUrl,
-              spotify_url: spotifyUrl,
-              user_id: userId,
-              listened_at: listenedAt,
-              created_at: createdAt,
+              id,
+              spotifyTrackId,
+              name,
+              albumName,
+              artists,
+              durationMs,
+              imageUrl,
+              spotifyUrl,
+              userId,
+              listenedAt,
+              createdAt,
             };
 
             console.log(resp_obj);
@@ -889,17 +889,17 @@ export const users: Plugin = (server, _, done) => {
             const createdAt = new Date();
 
             const resp_obj = {
-              id: id,
-              spotify_track_id: spotifyTrackId,
-              name: name,
-              album_name: albumName,
-              artists: artists,
-              duration_ms: durationMs,
-              image_url: imageUrl,
-              spotify_url: spotifyUrl,
-              user_id: userId,
-              listened_at: listenedAt,
-              created_at: createdAt,
+              id,
+              spotifyTrackId,
+              name,
+              albumName,
+              artists,
+              durationMs,
+              imageUrl,
+              spotifyUrl,
+              userId,
+              listenedAt,
+              createdAt,
             };
 
             console.log(resp_obj);
@@ -963,17 +963,17 @@ export const users: Plugin = (server, _, done) => {
             const createdAt = new Date();
 
             const resp_obj = {
-              id: id,
-              spotify_track_id: spotifyTrackId,
-              name: name,
-              album_name: albumName,
-              artists: artists,
-              duration_ms: durationMs,
-              image_url: imageUrl,
-              spotify_url: spotifyUrl,
-              user_id: userId,
-              listened_at: listenedAt,
-              created_at: createdAt,
+              id,
+              spotifyTrackId,
+              name,
+              albumName,
+              artists,
+              durationMs,
+              imageUrl,
+              spotifyUrl,
+              userId,
+              listenedAt,
+              createdAt,
             };
 
             console.log(resp_obj);
@@ -1022,17 +1022,17 @@ export const users: Plugin = (server, _, done) => {
             const createdAt = new Date();
 
             const resp_obj = {
-              id: id,
-              spotify_track_id: spotifyTrackId,
-              name: name,
-              album_name: albumName,
-              artists: artists,
-              duration_ms: durationMs,
-              image_url: imageUrl,
-              spotify_url: spotifyUrl,
-              user_id: userId,
-              listened_at: listenedAt,
-              created_at: createdAt,
+              id,
+              spotifyTrackId,
+              name,
+              albumName,
+              artists,
+              durationMs,
+              imageUrl,
+              spotifyUrl,
+              userId,
+              listenedAt,
+              createdAt,
             };
 
             console.log(resp_obj);

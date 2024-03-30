@@ -17,7 +17,9 @@ import okhttp3.OkHttpClient
 
 class FeedViewModel: ViewModel() {
     private val _feed = MutableStateFlow(Feed())
-    val returnedFeed: StateFlow<Feed> = _feed.asStateFlow()
+    val feed: StateFlow<Feed> = _feed.asStateFlow()
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     fun updateReturnedFeed(userId: String) {
         viewModelScope.launch {
@@ -25,6 +27,7 @@ class FeedViewModel: ViewModel() {
             _feed.value = _feed.value.copy(
                 posts = newFeed.posts,
             )
+            _isRefreshing.emit(false)
         }
     }
 }
