@@ -59,7 +59,7 @@ export const notificationJob: Params = {
       createdAt: string;
     }
 
-    const apiUrl = "http://[::1]:8080/";
+    const apiUrl = "http://localhost:8080/";
     const allUsersEndpoint = "users";
     const getRecentSongEndpoint = "most_recent_song";
 
