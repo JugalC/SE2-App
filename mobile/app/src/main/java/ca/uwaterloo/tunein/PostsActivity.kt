@@ -112,6 +112,22 @@ class PostsActivity : ComponentActivity() {
 }
 
 @Composable
+fun NoPostsFound() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = "No Posts Found", style = MaterialTheme.typography.bodyLarge)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = "Add friends or wait until the next post time", style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
 fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> Unit,  handleClickComment: (postId: String) -> Unit) {
     // setup volley queue
     val queue = Volley.newRequestQueue(LocalContext.current)
@@ -250,21 +266,6 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
             }
         }
         Row(
-            modifier = Modifier.align(Alignment.BottomStart)
-        ){
-            IconButton(
-                onClick = { uriHandler.openUri(post.spotifyUrl) },
-                modifier = Modifier.size(48.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.spot),
-                    contentDescription = "Spotify logo",
-                    modifier = Modifier
-                        .size(24.dp)
-                )
-            }
-        }
-        Row(
             modifier = Modifier.align(Alignment.BottomEnd)
         ) {
             IconButton(
@@ -387,13 +388,19 @@ fun PostsContent(
                         .weight(1f)
                         .pullRefresh(pullRefreshState)
                 ) {
-                    LazyColumn(modifier = Modifier
-                        .fillMaxWidth()
-                    ) {
-                        items(feed.posts) { post ->
-                            PostItemGeneration(post, handleClickProfile, handleClickComment)
+                    if (feed.posts.size > 0) {
+                        LazyColumn(modifier = Modifier
+                            .fillMaxWidth()
+                        ) {
+                            items(feed.posts) { post ->
+                                PostItemGeneration(post, handleClickProfile, handleClickComment)
+                            }
                         }
                     }
+                    else {
+                        NoPostsFound()
+                    }
+
                     PullRefreshIndicator(
                         refreshing = refreshing,
                         state = pullRefreshState,
