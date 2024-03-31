@@ -5,6 +5,7 @@ import { db } from "../db/db";
 import { userTable } from "../db/schema";
 import { ne } from "drizzle-orm";
 import { Params } from "fastify-cron";
+import fetch from 'node-fetch';
 
 const serviceAccount = {
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -36,6 +37,47 @@ export const notificationJob: Params = {
 
   onTick: async (server) => {
     // TODO: create new posts before sending notification
+
+    interface userReturned {
+        id: string;
+        firstName: string;
+        lastName: string;
+        username: string;
+        spotifyAccessToken: string;
+        spotifyRefreshToken: string;
+        androidRegistrationToken: string;
+        passwordHash: string;
+        salt: string;
+        profilePicture: string;
+        displayName: string;
+        createdAt: string;  
+    }
+
+    const apiUrl = "http://[::1]:8080/"
+    const allUsersEndpoint = "users"
+    const getRecentSongEndpoint = "most_recent_song"
+
+    const response = await fetch(apiUrl + allUsersEndpoint);
+    const allUsersData = (await response.json()) as userReturned[]
+
+
+
+
+
+    const validUserIds = []
+    for (const user_account of allUsersData) {
+      if ((user_account['spotifyAccessToken'] != null) && (user_account['spotifyRefreshToken'] != null)) {
+        validUserIds.push(user_account['id'])
+      }
+    }
+
+    for (const validUser of validUserIds) {
+      const response = await fetch(apiUrl + getRecentSongEndpoint + "/" + validUser)
+    }
+
+
+
+
     const result = await db
       .select({
         token: userTable.androidRegistrationToken,
