@@ -63,3 +63,5 @@
 | 2024/03/29 | 2     |       |         |         |        |        | Likes functionality and UI finish                                  |
 | 2024/03/30 |       |       |         |         |        | 2      | Add pull down to refresh feed functionality                        |
 | 2024/03/30 | 6     |       |         |         |        |        | Comments UI and functionality and backend finish                   |
+| 2024/03/30 |       |       |         | 2       |        |        | Adding Delete User Functionality                                   |
+| 2024/03/30 |       |       |         | 1       |        |        | Visual Changes to the Feed page                                    |
