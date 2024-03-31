@@ -65,3 +65,4 @@
 | 2024/03/30 | 6     |       |         |         |        |        | Comments UI and functionality and backend finish                   |
 | 2024/03/30 |       |       |         | 2       |        |        | Adding Delete User Functionality                                   |
 | 2024/03/30 |       |       |         | 1       |        |        | Visual Changes to the Feed page                                    |
+| 2024/03/30 | 2     |       |         |         |        |        | Delete comments, ui fixes                                          |
