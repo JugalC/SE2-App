@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
@@ -27,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -81,7 +83,6 @@ class CommentsActivity : ComponentActivity() {
             }
             val ctx = this
             val req = JSONObject()
-            Log.i("CommentsActivity", "content: $content")
 
             req.put("content", content)
             val addCommentReq = object:JsonObjectRequest(Request.Method.POST, commentUrl, req,
@@ -101,17 +102,39 @@ class CommentsActivity : ComponentActivity() {
                 }
             }
             queue.add(addCommentReq)
-
-//            commentsViewModel.pullComments(postId, this)
         }
 
         fun handleDeleteComment(commentId: String) {
-            // TODO actual delete part
-            commentsViewModel.pullComments(postId, this)
+            val ctx = this
+            val alert = android.app.AlertDialog.Builder(this).setTitle("Delete Comment")
+            alert.setMessage("Are you sure you want to delete this comment?\nThis action cannot be undone")
+            alert.setPositiveButton("Yes") { _, _ ->
+                val deleteCommentUrl = "${BuildConfig.BASE_URL}/delete_comment/$commentId"
+                val req = JSONObject()
+                val deleteCommentReq = object:JsonObjectRequest(Request.Method.POST, deleteCommentUrl, req,
+                    { _ ->
+                        commentsViewModel.pullComments(postId, this)
+                    },
+                    { error ->
+                        Log.e("CommentsActivity", "Error deleting comment: $error")
+                        val alertErr = android.app.AlertDialog.Builder(this).setTitle("Error")
+                        alertErr.setMessage("Failed to delete comment")
+                        alertErr.show()
+                    }
+                ) {
+                    @Throws(AuthFailureError::class)
+                    override fun getHeaders(): Map<String, String> {
+                        val headers = HashMap<String, String>()
+                        headers["Authorization"] =
+                            "Bearer ${AuthManager.getAuthToken(ctx).toString()}"
+                        return headers
+                    }
+                }
+                queue.add(deleteCommentReq)
+            }
+            alert.setNegativeButton("No") { _, _ -> }
+            alert.show()
         }
-
-        Log.i("CommentsActivity", "postId: $postId")
-
 
         fun goBack() {
             finish()
@@ -134,6 +157,8 @@ class CommentsActivity : ComponentActivity() {
 fun CommentsContent(viewModel: CommentsViewModel, postId: String, handleClickProfile: (userId: String) -> Unit, handleAddComment: (content : String) -> Unit, handleDeleteComment: (commentId : String) -> Unit, goBack: () -> Unit) {
     var newCommentText by remember { mutableStateOf("") }
     val comments by viewModel.comments.collectAsStateWithLifecycle()
+
+    val currUser = AuthManager.getUser(LocalContext.current)
 
     TuneInTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -158,13 +183,13 @@ fun CommentsContent(viewModel: CommentsViewModel, postId: String, handleClickPro
                     ){Text("Comments", textAlign= TextAlign.Center)}
                 }
                 Divider()
-                Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(comments.comments) { comment ->
-                        CommentItem(comment, handleClickProfile)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        CommentItem(comment, currUser, handleClickProfile, handleDeleteComment)
                         Spacer(modifier = Modifier.height(6.dp))
                         Divider()
-                        Spacer(modifier = Modifier.height(6.dp))
+
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -190,24 +215,26 @@ fun CommentsContent(viewModel: CommentsViewModel, postId: String, handleClickPro
     }
 }
 @Composable
-fun CommentItem(comment: Comment,  handleClickProfile: (userId: String) -> Unit) {
+fun CommentItem(comment: Comment, currentUser: User,  handleClickProfile: (userId: String) -> Unit, handleDeleteComment: (commentId : String) -> Unit) {
 
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
-        Row (modifier = Modifier.clickable { handleClickProfile(comment.userId) })
+        Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween)
         {
             AsyncImage(
                 model = comment.profilePicture,
                 contentDescription = "Profile photo",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(30.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
                     .align(Alignment.Top)
+                    .clickable{ handleClickProfile(comment.userId)}
             )
-            Column(modifier = Modifier.padding(horizontal = 10.dp)) {
+            Column(modifier = Modifier.weight(1f).padding(horizontal = 10.dp)) {
                 Text(
                     text = "@" + comment.username,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.clickable { handleClickProfile(comment.userId) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -217,8 +244,26 @@ fun CommentItem(comment: Comment,  handleClickProfile: (userId: String) -> Unit)
                     textAlign = TextAlign.End
                 )
             }
+            if (comment.userId == currentUser.id) {
+                IconButton(
+                    onClick = { handleDeleteComment(comment.id) },
+                    modifier = Modifier.align(Alignment.CenterVertically).size(48.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete"
+                    )
+                }
+            } else {
+                Spacer(modifier = Modifier.width(48.dp))
+            }
         }
 
     }
 }
+
+//            Spacer(modifier = Modifier.weight(1f))
+//            if (User.currentUser?.id == comment.userId) {
+//                DeleteButton(onClick = { handleDeleteComment(comment.id) })
+//            }
 
