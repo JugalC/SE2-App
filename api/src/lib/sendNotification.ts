@@ -5,7 +5,7 @@ import { db } from "../db/db";
 import { userTable } from "../db/schema";
 import { ne } from "drizzle-orm";
 import { Params } from "fastify-cron";
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 
 const serviceAccount = {
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -32,49 +32,50 @@ export async function sendToDevice(token: string, title: string, body: string): 
   return await messaging.send(message);
 }
 
+function delay(minutes: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, minutes * 60 * 1000));
+}
+
 export const notificationJob: Params = {
   cronTime: "0 0 * * *", // Every day at midnight UTC
 
   onTick: async (server) => {
+    const max_delay = 60 * 6; // max 6-hour delay
+    const delay_minutes = Math.floor(Math.random() * max_delay);
+    await delay(delay_minutes);
+
     interface userReturned {
-        id: string;
-        firstName: string;
-        lastName: string;
-        username: string;
-        spotifyAccessToken: string;
-        spotifyRefreshToken: string;
-        androidRegistrationToken: string;
-        passwordHash: string;
-        salt: string;
-        profilePicture: string;
-        displayName: string;
-        createdAt: string;  
+      id: string;
+      firstName: string;
+      lastName: string;
+      username: string;
+      spotifyAccessToken: string;
+      spotifyRefreshToken: string;
+      androidRegistrationToken: string;
+      passwordHash: string;
+      salt: string;
+      profilePicture: string;
+      displayName: string;
+      createdAt: string;
     }
 
-    const apiUrl = "http://[::1]:8080/"
-    const allUsersEndpoint = "users"
-    const getRecentSongEndpoint = "most_recent_song"
+    const apiUrl = "http://localhost:8080/";
+    const allUsersEndpoint = "users";
+    const getRecentSongEndpoint = "most_recent_song";
 
     const response = await fetch(apiUrl + allUsersEndpoint);
-    const allUsersData = (await response.json()) as userReturned[]
+    const allUsersData = (await response.json()) as userReturned[];
 
-
-
-
-
-    const validUserIds = []
+    const validUserIds = [];
     for (const user_account of allUsersData) {
-      if ((user_account['spotifyAccessToken'] != null) && (user_account['spotifyRefreshToken'] != null)) {
-        validUserIds.push(user_account['id'])
+      if (user_account["spotifyAccessToken"] != null && user_account["spotifyRefreshToken"] != null) {
+        validUserIds.push(user_account["id"]);
       }
     }
 
     for (const validUser of validUserIds) {
-      const response = await fetch(apiUrl + getRecentSongEndpoint + "/" + validUser)
+      const response = await fetch(apiUrl + getRecentSongEndpoint + "/" + validUser);
     }
-
-
-
 
     const result = await db
       .select({
