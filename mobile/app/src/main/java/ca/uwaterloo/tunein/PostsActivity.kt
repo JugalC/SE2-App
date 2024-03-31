@@ -315,7 +315,7 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
                 )
             }
             Text(
-                text = commentCount.toString(),
+                text = post.commentsNum.toString(),
                 style = TextStyle(
                     color = Color.LightGray,
                     fontSize = 12.sp
