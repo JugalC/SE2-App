@@ -36,8 +36,6 @@ export const notificationJob: Params = {
   cronTime: "0 0 * * *", // Every day at midnight UTC
 
   onTick: async (server) => {
-    // TODO: create new posts before sending notification
-
     interface userReturned {
         id: string;
         firstName: string;
