@@ -50,15 +50,12 @@ export const comments: Plugin = (server, _, done) => {
     },
   );
 
-  server.delete(
-    "/comment/:postId",
+  server.post(
+    "/delete_comment/:commentId",
     {
       schema: {
         headers: authSchema,
         params: z.object({
-          postId: z.string(),
-        }),
-        body: z.object({
           commentId: z.string(),
         }),
       },
@@ -66,8 +63,7 @@ export const comments: Plugin = (server, _, done) => {
     async (req, res) => {
       try {
         const { authorization } = req.headers;
-        const { postId } = req.params;
-        const { commentId } = req.body;
+        const { commentId } = req.params;
 
         const user = await authenticateUser(authorization);
 
@@ -75,7 +71,7 @@ export const comments: Plugin = (server, _, done) => {
           return res.code(401).send();
         }
 
-        await db.delete(commentTable).where(and(eq(commentTable.userId, user.id), eq(commentTable.postId, postId)));
+        await db.delete(commentTable).where(and(eq(commentTable.id, commentId), eq(commentTable.userId, user.id)));
 
         return res.code(200).send({});
       } catch (e) {
