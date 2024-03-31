@@ -83,7 +83,6 @@ class CommentsActivity : ComponentActivity() {
             }
             val ctx = this
             val req = JSONObject()
-            Log.i("CommentsActivity", "content: $content")
 
             req.put("content", content)
             val addCommentReq = object:JsonObjectRequest(Request.Method.POST, commentUrl, req,
@@ -107,7 +106,6 @@ class CommentsActivity : ComponentActivity() {
 
         fun handleDeleteComment(commentId: String) {
             val ctx = this
-            // create an alert asking "are you sure you want to delete this comment?\nThis action cannot be undone"
             val alert = android.app.AlertDialog.Builder(this).setTitle("Delete Comment")
             alert.setMessage("Are you sure you want to delete this comment?\nThis action cannot be undone")
             alert.setPositiveButton("Yes") { _, _ ->
@@ -136,12 +134,7 @@ class CommentsActivity : ComponentActivity() {
             }
             alert.setNegativeButton("No") { _, _ -> }
             alert.show()
-
-//            commentsViewModel.pullComments(postId , this)
         }
-
-        Log.i("CommentsActivity", "postId: $postId")
-
 
         fun goBack() {
             finish()
@@ -190,7 +183,6 @@ fun CommentsContent(viewModel: CommentsViewModel, postId: String, handleClickPro
                     ){Text("Comments", textAlign= TextAlign.Center)}
                 }
                 Divider()
-//                Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(comments.comments) { comment ->
                         Spacer(modifier = Modifier.height(6.dp))
