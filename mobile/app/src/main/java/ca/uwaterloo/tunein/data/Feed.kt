@@ -12,7 +12,8 @@ data class FeedPost(
     val albumName: String = "",
     val artists: String = "",
     val imageUrl: String = "",
-    val spotifyUrl: String = ""
+    val spotifyUrl: String = "",
+    val commentsNum: Int = 0
 )
 
 @Serializable

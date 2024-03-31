@@ -338,6 +338,7 @@ export const users: Plugin = (server, _, done) => {
           username: string;
           profilePicture: string;
           spotifyUrl: string;
+          commentsNum: number
         }
 
         const results: resultsObj[] = await db.all(sql`
@@ -395,6 +396,11 @@ export const users: Plugin = (server, _, done) => {
         const final_posts = [];
         for (let x = 0; x < results.length; x++) {
           if (filter_list.includes(results[x]["userId"])) final_posts.push(results[x]); // Access each object using array indexing
+        }
+
+        for (let y=0; y<final_posts.length; y++) {
+          const comments = await db.select().from(commentTable).where(eq(commentTable.postId, final_posts[y].id));
+          final_posts[y].commentsNum = comments.length
         }
 
         return res.code(200).send({ posts: final_posts });
