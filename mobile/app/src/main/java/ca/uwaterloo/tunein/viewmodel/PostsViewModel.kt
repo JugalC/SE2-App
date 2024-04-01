@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uwaterloo.tunein.BuildConfig
 import ca.uwaterloo.tunein.auth.AuthManager
-import ca.uwaterloo.tunein.data.Feed
 import ca.uwaterloo.tunein.data.Post
+import ca.uwaterloo.tunein.data.Posts
 import ca.uwaterloo.tunein.helpers.updateVisibilityRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,9 +19,9 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 
 
-class FeedViewModel: ViewModel() {
-    private val _feed = MutableStateFlow(Feed())
-    val feed: StateFlow<Feed> = _feed.asStateFlow()
+class PostsViewModel: ViewModel() {
+    private val _posts = MutableStateFlow(Posts())
+    val posts: StateFlow<Posts> = _posts.asStateFlow()
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
     private val _showBanner = MutableStateFlow(false)
@@ -29,10 +29,10 @@ class FeedViewModel: ViewModel() {
     private val _mostRecentPost = MutableStateFlow(Post())
     val mostRecentPost = _mostRecentPost.asStateFlow()
 
-    fun updateReturnedFeed(userId: String) {
+    fun updateFeed(userId: String) {
         viewModelScope.launch {
             val newFeed = updateFeedData(userId)
-            _feed.value = _feed.value.copy(
+            _posts.value = _posts.value.copy(
                 posts = newFeed.posts,
             )
             _isRefreshing.emit(false)
@@ -53,7 +53,7 @@ class FeedViewModel: ViewModel() {
             if (response.isSuccessful) {
                 if (visible) {
                     val user = AuthManager.getUser(context)
-                    updateReturnedFeed(user.id)
+                    updateFeed(user.id)
                 }
                 val post = _mostRecentPost.value.copy()
                 post.userViewed = true
@@ -91,5 +91,5 @@ suspend fun updateFeedData(userId: String) = withContext(Dispatchers.IO) {
 
     val response = client.newCall(request).execute()
     val json = response.body.string()
-    Json.decodeFromString<Feed>(json)
+    Json.decodeFromString<Posts>(json)
 }

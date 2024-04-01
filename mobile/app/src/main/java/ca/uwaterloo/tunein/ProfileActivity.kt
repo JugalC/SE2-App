@@ -336,9 +336,9 @@ fun ProfileContent(
         }
     }
     if (dialog.value == "delete") {
-        DialogWithImage("Are you sure you want to delete your account? This cannot be undone.", onDismissRequest, onConfirmation)
+        ConfirmDialog("Are you sure you want to delete your account? This cannot be undone.", onDismissRequest, onConfirmation)
     } else if (dialog.value == "logout") {
-        DialogWithImage("Are you sure you want to log out?", onDismissRequest, handleLogout)
+        ConfirmDialog("Are you sure you want to log out?", onDismissRequest, handleLogout)
     }
 }
 
@@ -406,7 +406,7 @@ fun PostHistory(
 
 
 @Composable
-fun DialogWithImage(
+fun ConfirmDialog(
     text: String,
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit

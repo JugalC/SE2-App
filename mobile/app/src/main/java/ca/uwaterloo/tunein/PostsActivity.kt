@@ -68,8 +68,8 @@ import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.data.FeedPost
 import ca.uwaterloo.tunein.data.Post
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.viewmodel.FeedViewModel
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
+import ca.uwaterloo.tunein.viewmodel.PostsViewModel
 import coil.compose.AsyncImage
 import com.android.volley.AuthFailureError
 import com.android.volley.Request
@@ -78,13 +78,13 @@ import com.android.volley.toolbox.Volley
 import org.json.JSONObject
 
 class PostsActivity : ComponentActivity() {
-    private val feedViewModel by viewModels<FeedViewModel>()
+    private val postsViewModel by viewModels<PostsViewModel>()
     private val friendsViewModel by viewModels<FriendsViewModel>()
     override fun onStart() {
         super.onStart()
         val user = AuthManager.getUser(this)
-        feedViewModel.shouldShowPostBanner(this)
-        feedViewModel.updateReturnedFeed(user.id)
+        postsViewModel.shouldShowPostBanner(this)
+        postsViewModel.updateFeed(user.id)
         friendsViewModel.getPendingInvites(this)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,7 +112,7 @@ class PostsActivity : ComponentActivity() {
                 handleClickFriends= { handleClickFriends() },
                 handleClickProfile= ::handleClickProfile,
                 handleClickComment= ::handleClickComment,
-                feedViewModel = feedViewModel
+                postsViewModel = postsViewModel
             )
         }
     }
@@ -336,7 +336,7 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
 @Composable
 fun PostSongBanner(
     post: Post,
-    feedViewModel: FeedViewModel,
+    postsViewModel: PostsViewModel,
     context: Context,
 ) {
     Column(
@@ -355,7 +355,7 @@ fun PostSongBanner(
             )
         }
         Row {
-            IconButton(onClick = { feedViewModel.updatePostVisibility(context, true) }) {
+            IconButton(onClick = { postsViewModel.updatePostVisibility(context, true) }) {
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Post Song",
@@ -363,7 +363,7 @@ fun PostSongBanner(
                     tint = Color.Green
                 )
             }
-            IconButton(onClick = { feedViewModel.updatePostVisibility(context, false) }) {
+            IconButton(onClick = { postsViewModel.updatePostVisibility(context, false) }) {
                 Icon(
                     imageVector = Icons.Default.Clear,
                     contentDescription = "Do Not Post Song",
@@ -382,18 +382,18 @@ fun PostsContent(
     handleClickProfile: (userId: String) -> Unit,
     handleClickComment: (postId: String) -> Unit,
     friendsViewModel: FriendsViewModel = viewModel(),
-    feedViewModel: FeedViewModel = viewModel()
+    postsViewModel: PostsViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val pendingInvites by friendsViewModel.pendingInvites.collectAsStateWithLifecycle()
-    val feed by feedViewModel.feed.collectAsStateWithLifecycle()
-    val refreshing by feedViewModel.isRefreshing.collectAsStateWithLifecycle()
-    val showBanner by feedViewModel.showBanner.collectAsStateWithLifecycle()
-    val mostRecentPost by feedViewModel.mostRecentPost.collectAsStateWithLifecycle()
+    val feed by postsViewModel.posts.collectAsStateWithLifecycle()
+    val refreshing by postsViewModel.isRefreshing.collectAsStateWithLifecycle()
+    val showBanner by postsViewModel.showBanner.collectAsStateWithLifecycle()
+    val mostRecentPost by postsViewModel.mostRecentPost.collectAsStateWithLifecycle()
 
     fun refreshFeed() {
         val user = AuthManager.getUser(context)
-        feedViewModel.updateReturnedFeed(user.id)
+        postsViewModel.updateFeed(user.id)
     }
 
     val pullRefreshState = rememberPullRefreshState(refreshing = refreshing, onRefresh = { refreshFeed() })
@@ -447,7 +447,7 @@ fun PostsContent(
                                 item {
                                     PostSongBanner(
                                         mostRecentPost,
-                                        feedViewModel,
+                                        postsViewModel,
                                         context
                                     )
                                 }

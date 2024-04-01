@@ -1,17 +1,11 @@
 package ca.uwaterloo.tunein.viewmodel
 
 import android.content.Context
-import android.content.Intent
-import android.util.Log
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uwaterloo.tunein.BuildConfig
-import ca.uwaterloo.tunein.ProfileActivity
 import ca.uwaterloo.tunein.auth.AuthManager
-import ca.uwaterloo.tunein.data.Comment
 import ca.uwaterloo.tunein.data.Comments
-import ca.uwaterloo.tunein.data.Feed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +23,6 @@ class CommentsViewModel : ViewModel() {
     val comments: StateFlow<Comments> = _comments.asStateFlow()
 
     fun pullComments(postId: String, context: Context) {
-        Log.i("CommentsViewModel", "pullComments: $postId")
         viewModelScope.launch {
             val commentsResponse = getCommentsData(postId, context)
             _comments.value = _comments.value.copy(
