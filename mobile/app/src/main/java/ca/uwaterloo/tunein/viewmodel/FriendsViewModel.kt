@@ -99,12 +99,3 @@ suspend fun getPendingFriendRequests(context: Context): List<User> = withContext
     val j = Json { ignoreUnknownKeys = true }
     j.decodeFromString(UserDeserializer(), json)
 }
-
-
-suspend fun removeFriend(context: Context) {
-
-}
-
-suspend fun removeFriendRequest(context: Context) {
-
-}

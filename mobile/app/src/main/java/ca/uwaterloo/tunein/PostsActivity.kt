@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
@@ -347,11 +346,8 @@ fun PostSongBanner(
             .padding(16.dp)
             .border(BorderStroke(2.dp, Color.White)),
     ) {
-        Card(
+        Box(
             modifier = Modifier.padding(16.dp),
-            shape = RoundedCornerShape(8.dp),
-            backgroundColor = Color.Transparent,
-            elevation = 6.dp, // Optional: Set elevation to 0 to remove shadow
         ) {
             Text(
                 text = "Do you want to post a song today? You were listening to ${post.name} by ${post.artists}",

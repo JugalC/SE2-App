@@ -1,9 +1,12 @@
 package ca.uwaterloo.tunein
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -199,6 +202,39 @@ class FriendsActivity : ComponentActivity() {
 }
 
 @Composable
+fun ClickableRow(
+    context: Context,
+    user: User,
+) {
+    fun handleClickProfile(userId: String) {
+        val intent = Intent(context, ProfileActivity::class.java)
+        intent.putExtra("user_profile", userId)
+        context.startActivity(intent)
+    }
+
+    Row(
+        modifier = Modifier
+            .clickable { handleClickProfile(user.id) }
+    ) {
+        Column(
+            modifier = Modifier.padding(0.dp, 0.dp, 20.dp, 0.dp)
+        ) {
+            ProfilePic(
+                url = user.profilePicture,
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(RoundedCornerShape(25.dp))
+                    .aspectRatio(1f / 1f)
+            )
+        }
+        Column {
+            Text("${user.firstName} ${user.lastName}")
+            Text("@${user.username}", fontSize = 12.sp, color = Color.LightGray)
+        }
+    }
+}
+
+@Composable
 fun FriendsContent(
     user: User,
     handleRemoveFriend: (user: User) -> Unit,
@@ -268,6 +304,7 @@ fun FriendsContent(
                 ) {
                     if (searchUserState.searchQuery.text.isNotEmpty()) {
                         SearchFriends(
+                            context,
                             handleAddFriend,
                             handleRemoveFriend,
                             handleAcceptInvite,
@@ -279,7 +316,7 @@ fun FriendsContent(
                             Spacer(modifier = Modifier.height(16.dp))
                         }
 
-                        MyFriends(currentFriends.users, handleRemoveFriend)
+                        MyFriends(context, currentFriends.users, handleRemoveFriend)
                     }
                 }
             }
@@ -288,20 +325,21 @@ fun FriendsContent(
 }
 
 @Composable
-fun MyFriends(friends: List<User>, handleRemoveFriend: (user: User) -> Unit) {
+fun MyFriends(context: Context, friends: List<User>, handleRemoveFriend: (user: User) -> Unit) {
     Column {
         Text(
             text = "My friends (${friends.size}):",
         )
         Spacer(modifier = Modifier.height(8.dp))
         friends.forEach { user ->
-            FriendRow(user, handleRemoveFriend)
+            FriendRow(context, user, handleRemoveFriend)
         }
     }
 }
 
 @Composable
 fun SearchFriends(
+    context: Context,
     handleAddFriend: (user: SearchResults) -> Unit,
     handleRemoveFriend: (user: User) -> Unit,
     handleAcceptInvite: (user: User, accept: Boolean) -> Unit,
@@ -314,6 +352,7 @@ fun SearchFriends(
         Spacer(modifier = Modifier.height(8.dp))
         for (user in searchUserState.friends) {
             FriendRow(
+                context,
                 searchResultsToUser(user),
                 handleRemoveFriend
             )
@@ -398,7 +437,7 @@ fun PendingFriendRequests(requests: List<User>, handleAcceptInvite: (user: User,
 }
 
 @Composable
-fun FriendRow(user: User, handleRemoveFriend: (user: User) -> Unit) {
+fun FriendRow(context: Context, user: User, handleRemoveFriend: (user: User) -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -408,23 +447,7 @@ fun FriendRow(user: User, handleRemoveFriend: (user: User) -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row {
-                Column(
-                    modifier = Modifier.padding(0.dp, 0.dp, 20.dp, 0.dp)
-                ) {
-                    ProfilePic(
-                        url = user.profilePicture,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(RoundedCornerShape(25.dp))
-                            .aspectRatio(1f / 1f)
-                    )
-                }
-                Column {
-                    Text(user.firstName)
-                    Text("@${user.username}", fontSize = 12.sp, color = Color.LightGray)
-                }
-            }
+            ClickableRow(context, user)
             Row {
                 IconButton(
                     onClick = { handleRemoveFriend(user) },

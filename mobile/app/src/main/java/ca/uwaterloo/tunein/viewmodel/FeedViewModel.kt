@@ -24,7 +24,7 @@ class FeedViewModel: ViewModel() {
     val feed: StateFlow<Feed> = _feed.asStateFlow()
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
-    private val _showBanner = MutableStateFlow(true)
+    private val _showBanner = MutableStateFlow(false)
     val showBanner = _showBanner.asStateFlow()
     private val _mostRecentPost = MutableStateFlow(Post())
     val mostRecentPost = _mostRecentPost.asStateFlow()
@@ -42,12 +42,8 @@ class FeedViewModel: ViewModel() {
     fun shouldShowPostBanner(context: Context) {
         viewModelScope.launch {
             val post = getMostRecentPost(context)
-            if (!post.userViewed) {
-                _mostRecentPost.value = post
-                _showBanner.value = true
-            } else {
-                _showBanner.value = false
-            }
+            _mostRecentPost.value = post
+            _showBanner.value = !post.userViewed
         }
     }
 
@@ -55,6 +51,14 @@ class FeedViewModel: ViewModel() {
         viewModelScope.launch {
             val response = updateVisibilityRequest(_mostRecentPost.value, visible, context)
             if (response.isSuccessful) {
+                if (visible) {
+                    val user = AuthManager.getUser(context)
+                    updateReturnedFeed(user.id)
+                }
+                val post = _mostRecentPost.value.copy()
+                post.userViewed = true
+                post.visible = visible
+                _mostRecentPost.value = post
                 _showBanner.value = false
             }
         }

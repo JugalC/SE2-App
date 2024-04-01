@@ -351,8 +351,6 @@ export const users: Plugin = (server, _, done) => {
               ) AS RowNum
             FROM
               post
-            WHERE
-              visible = 1
           )
           SELECT
             rp.id,
@@ -368,7 +366,7 @@ export const users: Plugin = (server, _, done) => {
             RankedPosts rp
             INNER JOIN user ut ON rp.user_id = ut.id
           WHERE
-            RowNum = 1;
+            RowNum = 1 AND rp.visible = 1;
         `);
 
         interface friendsObj {

@@ -258,7 +258,7 @@ fun ProfileContent(
                         .background(color = Color.LightGray)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                posts.forEach{
+                posts.filter { post -> selfProfile || post.visible }.forEach{
                     PostHistory(
                         it,
                         profileViewModel::updateVisibility,

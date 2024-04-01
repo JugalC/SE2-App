@@ -10,8 +10,8 @@ data class Post(
     val artists: String = "",
     val imageUrl: String = "",
     val caption: String = "",
-    val visible: Boolean = false,
-    val userViewed: Boolean = false,
+    var visible: Boolean = false,
+    var userViewed: Boolean = false,
 )
 
 @Serializable

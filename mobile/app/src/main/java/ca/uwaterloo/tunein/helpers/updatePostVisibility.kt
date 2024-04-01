@@ -15,7 +15,7 @@ suspend fun updateVisibilityRequest(post: Post, visible: Boolean, context: Conte
     val updateUrl = "${BuildConfig.BASE_URL}/posts/visibility/${post.id}"
     val client = OkHttpClient()
     val body = JSONObject()
-    body.put("action", if (visible) "hide" else "show")
+    body.put("action", if (visible) "show" else "hide")
     val request: Request = Request.Builder()
         .url(updateUrl)
         .put(body.toString().toRequestBody())

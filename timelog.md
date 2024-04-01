@@ -71,4 +71,6 @@
 | 2024/03/31 |       |       |         | 2       |        |        | Wrote scheduled job for recent song and comment view model added   |
 | 2024/03/31 |       |       |         | 5       |        |        | D6 functional requirements explain, client-server arch and diagram |
 | 2024/04/01 |       |       |         |         |        | 1      | Fix bug in friends flow                    												|
-| 2024/04/01 |       |       |         |         |        |        | Visibility   																											|
+| 2024/04/01 |       |       |         |         |        | 1      | Enable users to click friends profile       												|
+| 2024/04/01 |       |       |         |         |        | 1      | Fix visibility bugs		                    												|
+| 2024/04/01 |       |       |         |         |        | 5      | User prompt for post visibility																		|
