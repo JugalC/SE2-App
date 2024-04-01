@@ -80,11 +80,12 @@ class FriendsActivity : ComponentActivity() {
             val acceptInviteReq = object : JsonObjectRequest(
                 Method.PUT, reqUrl, req,
                 { _ ->
-                    friendsViewModel.getPendingInvites(this)
-                    friendsViewModel.getCurrentFriends(this)
                     if (accept) {
+                        friendsViewModel.getPendingInvites(this)
+                        friendsViewModel.getCurrentFriends(this)
                         alert.setMessage("Friend request accepted!").setTitle("Success")
                     } else {
+                        friendsViewModel.removePendingInvite(user)
                         alert.setMessage("Friend request rejected!").setTitle("Success")
                     }
                     alert.create().show()
@@ -159,7 +160,7 @@ class FriendsActivity : ComponentActivity() {
             val reqUrl = "${BuildConfig.BASE_URL}/friendship/${user.id}"
 
             val req = JSONObject()
-            val addFriendReq = object : JsonObjectRequest(Method.POST, reqUrl, req,
+            val removeFriendReq = object : JsonObjectRequest(Method.POST, reqUrl, req,
                 { _ ->
                     // show success message
                     friendsViewModel.removeFriend(user)
@@ -182,7 +183,7 @@ class FriendsActivity : ComponentActivity() {
                 }
             }
 
-            queue.add(addFriendReq)
+            queue.add(removeFriendReq)
         }
 
         setContent {
@@ -279,9 +280,6 @@ fun FriendsContent(
                         }
 
                         MyFriends(currentFriends.users, handleRemoveFriend)
-
-                        // TODO: implement recommended friends (friends of friends)
-                        // RecommendedFriends(recommendedFriends)
                     }
                 }
             }
