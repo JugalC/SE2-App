@@ -42,8 +42,10 @@ class PostsViewModel: ViewModel() {
     fun shouldShowPostBanner(context: Context) {
         viewModelScope.launch {
             val post = getMostRecentPost(context)
-            _mostRecentPost.value = post
-            _showBanner.value = !post.userViewed
+            if (post != null) {
+                _mostRecentPost.value = post
+                _showBanner.value = !post.userViewed
+            }
         }
     }
 
@@ -65,7 +67,7 @@ class PostsViewModel: ViewModel() {
     }
 }
 
-suspend fun getMostRecentPost(context: Context) = withContext(Dispatchers.IO) {
+suspend fun getMostRecentPost(context: Context): Post? = withContext(Dispatchers.IO) {
     val searchUrl = "${BuildConfig.BASE_URL}/posts/recent"
     val client = OkHttpClient()
     val request: okhttp3.Request = okhttp3.Request.Builder()
@@ -77,6 +79,11 @@ suspend fun getMostRecentPost(context: Context) = withContext(Dispatchers.IO) {
 
     val response = client.newCall(request).execute()
     val json = response.body.string()
+
+    if (!response.isSuccessful) {
+        return@withContext null
+    }
+
     val j = Json { ignoreUnknownKeys = true }
     j.decodeFromString<Post>(json)
 }
