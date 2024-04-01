@@ -72,7 +72,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
-private val showDialog = mutableStateOf(false)
+private val dialog = mutableStateOf("")
 
 class ProfileActivity : ComponentActivity() {
 
@@ -125,7 +125,7 @@ class ProfileActivity : ComponentActivity() {
                 // Call suspend function here
                 sendDeleteAcc(user.id)
             }
-            showDialog.value = false
+            dialog.value = ""
             AuthManager.setAuthToken(this, null)
             Firebase.clearRegistrationToken(this)
             val intent = Intent(this, MainActivity::class.java).apply {
@@ -135,7 +135,7 @@ class ProfileActivity : ComponentActivity() {
         }
 
         fun onDismissRequest() {
-            showDialog.value = false
+            dialog.value = ""
         }
 
         setContent {
@@ -295,7 +295,7 @@ fun ProfileContent(
                             horizontalArrangement = Arrangement.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { handleLogout() }
+                                .clickable { dialog.value = "logout" }
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             Icon(
@@ -314,7 +314,7 @@ fun ProfileContent(
                             horizontalArrangement = Arrangement.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { showDialog.value = true }
+                                .clickable { dialog.value = "delete" }
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             Icon(
@@ -335,8 +335,10 @@ fun ProfileContent(
             }
         }
     }
-    if(showDialog.value) {
-        DialogWithImage(onDismissRequest, onConfirmation)
+    if (dialog.value == "delete") {
+        DialogWithImage("Are you sure you want to delete your account? This cannot be undone.", onDismissRequest, onConfirmation)
+    } else if (dialog.value == "logout") {
+        DialogWithImage("Are you sure you want to log out?", onDismissRequest, handleLogout)
     }
 }
 
@@ -408,6 +410,7 @@ fun PostHistory(
 
 @Composable
 fun DialogWithImage(
+    text: String,
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit
 ) {
@@ -430,7 +433,7 @@ fun DialogWithImage(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Confirm that you would like to delete your account",
+                    text = text,
                     modifier = Modifier.padding(16.dp),
                     color=Color.LightGray
                 )

@@ -19,13 +19,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -238,20 +236,22 @@ fun FriendsContent(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        IconButton(onClick = { goBack() }) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Go Back"
-                            )
-                        }
-                    }
+                    Spacer(Modifier.weight(1f))
                     Column(
                         modifier = Modifier
                             .fillMaxWidth(0.8f),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ){
                         Text("Friends", textAlign= TextAlign.Center)
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Column {
+                        IconButton(onClick = { goBack() }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Go Back"
+                            )
+                        }
                     }
                 }
                 SearchBar(
