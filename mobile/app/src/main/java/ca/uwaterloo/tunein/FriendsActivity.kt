@@ -202,39 +202,6 @@ class FriendsActivity : ComponentActivity() {
 }
 
 @Composable
-fun ClickableRow(
-    context: Context,
-    user: User,
-) {
-    fun handleClickProfile(userId: String) {
-        val intent = Intent(context, ProfileActivity::class.java)
-        intent.putExtra("user_profile", userId)
-        context.startActivity(intent)
-    }
-
-    Row(
-        modifier = Modifier
-            .clickable { handleClickProfile(user.id) }
-    ) {
-        Column(
-            modifier = Modifier.padding(0.dp, 0.dp, 20.dp, 0.dp)
-        ) {
-            ProfilePic(
-                url = user.profilePicture,
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(RoundedCornerShape(25.dp))
-                    .aspectRatio(1f / 1f)
-            )
-        }
-        Column {
-            Text("${user.firstName} ${user.lastName}")
-            Text("@${user.username}", fontSize = 12.sp, color = Color.LightGray)
-        }
-    }
-}
-
-@Composable
 fun FriendsContent(
     user: User,
     handleRemoveFriend: (user: User) -> Unit,
@@ -438,6 +405,12 @@ fun PendingFriendRequests(requests: List<User>, handleAcceptInvite: (user: User,
 
 @Composable
 fun FriendRow(context: Context, user: User, handleRemoveFriend: (user: User) -> Unit) {
+    fun handleClickProfile(userId: String) {
+        val intent = Intent(context, ProfileActivity::class.java)
+        intent.putExtra("user_profile", userId)
+        context.startActivity(intent)
+    }
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -447,7 +420,26 @@ fun FriendRow(context: Context, user: User, handleRemoveFriend: (user: User) -> 
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ClickableRow(context, user)
+            Row(
+                modifier = Modifier
+                    .clickable { handleClickProfile(user.id) }
+            ) {
+                Column(
+                    modifier = Modifier.padding(0.dp, 0.dp, 20.dp, 0.dp)
+                ) {
+                    ProfilePic(
+                        url = user.profilePicture,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clip(RoundedCornerShape(25.dp))
+                            .aspectRatio(1f / 1f)
+                    )
+                }
+                Column {
+                    Text("${user.firstName} ${user.lastName}")
+                    Text("@${user.username}", fontSize = 12.sp, color = Color.LightGray)
+                }
+            }
             Row {
                 IconButton(
                     onClick = { handleRemoveFriend(user) },
