@@ -116,8 +116,8 @@ export const posts: Plugin = (server, _, done) => {
         }),
         body: z.object({
           action: z.enum(["hide", "show"]),
-        })
-      }
+        }),
+      },
     },
     async (req, res) => {
       try {
@@ -133,22 +133,19 @@ export const posts: Plugin = (server, _, done) => {
         }
 
         const post = await db.query.postTable.findFirst({
-          where: eq(postTable.id, postId)
+          where: eq(postTable.id, postId),
         });
 
         if (!post) {
           return res.code(404).send();
         }
 
-        await db
-          .update(postTable)
-          .set({ visible: newVal, userViewed: true })
-          .where(eq(postTable.id, postId));
+        await db.update(postTable).set({ visible: newVal, userViewed: true }).where(eq(postTable.id, postId));
 
         return res.code(200).send({});
-      } catch(e) {
+      } catch (e) {
         console.error(e);
-        return res.code(500).send({ error: "Internal server error."});
+        return res.code(500).send({ error: "Internal server error." });
       }
     },
   );
@@ -158,7 +155,7 @@ export const posts: Plugin = (server, _, done) => {
     {
       schema: {
         headers: authSchema,
-      }
+      },
     },
     async (req, res) => {
       try {
@@ -173,9 +170,7 @@ export const posts: Plugin = (server, _, done) => {
         const post = await db
           .select()
           .from(postTable)
-          .where(
-            eq(postTable.userId, user.id),
-          )
+          .where(eq(postTable.userId, user.id))
           .orderBy(desc(postTable.createdAt))
           .get();
 
@@ -184,9 +179,9 @@ export const posts: Plugin = (server, _, done) => {
         }
 
         return res.code(200).send(post);
-      } catch(e) {
+      } catch (e) {
         console.error(e);
-        return res.code(500).send({ error: "Internal server error."});
+        return res.code(500).send({ error: "Internal server error." });
       }
     },
   );

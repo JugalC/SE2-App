@@ -1,5 +1,14 @@
 import { db } from "../db/db";
-import { commentTable, friendshipRequestTable, friendshipTable, getUserSchema, insertUserSchema, likeTable, postTable, userTable } from "../db/schema";
+import {
+  commentTable,
+  friendshipRequestTable,
+  friendshipTable,
+  getUserSchema,
+  insertUserSchema,
+  likeTable,
+  postTable,
+  userTable,
+} from "../db/schema";
 import { randomUUID, timingSafeEqual } from "crypto";
 import { generateSalt, hash } from "../lib/hashing";
 import { z } from "zod";
@@ -336,7 +345,7 @@ export const users: Plugin = (server, _, done) => {
           username: string;
           profilePicture: string;
           spotifyUrl: string;
-          commentsNum: number
+          commentsNum: number;
         }
 
         const results: resultsObj[] = await db.all(sql`
@@ -394,9 +403,9 @@ export const users: Plugin = (server, _, done) => {
           if (filter_list.includes(results[x]["userId"])) final_posts.push(results[x]); // Access each object using array indexing
         }
 
-        for (let y=0; y<final_posts.length; y++) {
+        for (let y = 0; y < final_posts.length; y++) {
           const comments = await db.select().from(commentTable).where(eq(commentTable.postId, final_posts[y].id));
-          final_posts[y].commentsNum = comments.length
+          final_posts[y].commentsNum = comments.length;
         }
 
         return res.code(200).send({ posts: final_posts });
@@ -723,7 +732,6 @@ export const users: Plugin = (server, _, done) => {
     },
   );
 
-
   server.get(
     "/delete_user/:identifier",
     {
@@ -737,49 +745,43 @@ export const users: Plugin = (server, _, done) => {
       try {
         const { identifier } = req.params;
 
-        const result = await db.select({
-          field1: postTable.id
-        }).from(postTable).where(eq(postTable.userId, identifier));
-        
-        const list_of_posts = []
+        const result = await db
+          .select({
+            field1: postTable.id,
+          })
+          .from(postTable)
+          .where(eq(postTable.userId, identifier));
+
+        const list_of_posts = [];
         for (const post of result) {
           list_of_posts.push(post["field1"]);
         }
- 
+
         for (const post_id of list_of_posts) {
-          await db.delete(commentTable).where(eq(commentTable.postId, post_id))
-          await db.delete(likeTable).where(eq(likeTable.postId, post_id))
+          await db.delete(commentTable).where(eq(commentTable.postId, post_id));
+          await db.delete(likeTable).where(eq(likeTable.postId, post_id));
         }
 
-        await db.delete(commentTable).where(eq(commentTable.userId, identifier))
-        await db.delete(likeTable).where(eq(likeTable.userId, identifier))
+        await db.delete(commentTable).where(eq(commentTable.userId, identifier));
+        await db.delete(likeTable).where(eq(likeTable.userId, identifier));
 
-        await db.delete(friendshipTable).where(eq(friendshipTable.userId1, identifier))
-        await db.delete(friendshipTable).where(eq(friendshipTable.userId2, identifier))
+        await db.delete(friendshipTable).where(eq(friendshipTable.userId1, identifier));
+        await db.delete(friendshipTable).where(eq(friendshipTable.userId2, identifier));
 
-        await db.delete(friendshipRequestTable).where(eq(friendshipRequestTable.userIdReceiving, identifier))
-        await db.delete(friendshipRequestTable).where(eq(friendshipRequestTable.userIdRequesting, identifier))
+        await db.delete(friendshipRequestTable).where(eq(friendshipRequestTable.userIdReceiving, identifier));
+        await db.delete(friendshipRequestTable).where(eq(friendshipRequestTable.userIdRequesting, identifier));
 
-        await db.delete(postTable).where(eq(postTable.userId, identifier))
+        await db.delete(postTable).where(eq(postTable.userId, identifier));
 
         await db.delete(userTable).where(eq(userTable.id, identifier));
 
-        return res.code(200).send({ 'success': true });
+        return res.code(200).send({ success: true });
       } catch (e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error." });
       }
     },
   );
-
-
-
-
-
-
-
-
-
 
   server.get(
     "/most_recent_song/:identifier",
