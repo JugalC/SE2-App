@@ -1,12 +1,15 @@
 package ca.uwaterloo.tunein
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,9 +25,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -61,6 +67,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.data.FeedPost
+import ca.uwaterloo.tunein.data.Post
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.FeedViewModel
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
@@ -77,6 +84,7 @@ class PostsActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         val user = AuthManager.getUser(this)
+        feedViewModel.shouldShowPostBanner(this)
         feedViewModel.updateReturnedFeed(user.id)
         friendsViewModel.getPendingInvites(this)
     }
@@ -143,7 +151,7 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
 
     // Getting like count for this post and get if user has liked this post
     val likeCountReq = object : JsonObjectRequest(
-        Request.Method.GET, likeCountURL, null,
+        Method.GET, likeCountURL, null,
         { response ->
             likeCount = response.getInt("likes")
             isLiked = response.getBoolean("is_liked")
@@ -163,7 +171,7 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
     }
     // Getting comment count for this post
     val commentCountReq = object : JsonObjectRequest(
-        Request.Method.GET, commentCountURL, null,
+        Method.GET, commentCountURL, null,
         { response ->
             commentCount = response.getInt("comments")
         },
@@ -326,6 +334,51 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
     }
 }
 
+@Composable
+fun PostSongBanner(
+    post: Post,
+    feedViewModel: FeedViewModel,
+    context: Context,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .border(BorderStroke(2.dp, Color.White)),
+    ) {
+        Card(
+            modifier = Modifier.padding(16.dp),
+            shape = RoundedCornerShape(8.dp),
+            backgroundColor = Color.Transparent,
+            elevation = 6.dp, // Optional: Set elevation to 0 to remove shadow
+        ) {
+            Text(
+                text = "Do you want to post a song today? You were listening to ${post.name} by ${post.artists}",
+                modifier = Modifier.padding(16.dp),
+            )
+        }
+        Row {
+            IconButton(onClick = { feedViewModel.updatePostVisibility(context, true) }) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Post Song",
+                    modifier = Modifier.size(18.dp),
+                    tint = Color.Green
+                )
+            }
+            IconButton(onClick = { feedViewModel.updatePostVisibility(context, false) }) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "Do Not Post Song",
+                    modifier = Modifier.size(18.dp),
+                    tint = Color.Red
+                )
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PostsContent(
@@ -339,6 +392,8 @@ fun PostsContent(
     val pendingInvites by friendsViewModel.pendingInvites.collectAsStateWithLifecycle()
     val feed by feedViewModel.feed.collectAsStateWithLifecycle()
     val refreshing by feedViewModel.isRefreshing.collectAsStateWithLifecycle()
+    val showBanner by feedViewModel.showBanner.collectAsStateWithLifecycle()
+    val mostRecentPost by feedViewModel.mostRecentPost.collectAsStateWithLifecycle()
 
     fun refreshFeed() {
         val user = AuthManager.getUser(context)
@@ -388,10 +443,19 @@ fun PostsContent(
                         .weight(1f)
                         .pullRefresh(pullRefreshState)
                 ) {
-                    if (feed.posts.size > 0) {
+                    if (feed.posts.isNotEmpty()) {
                         LazyColumn(modifier = Modifier
                             .fillMaxWidth()
                         ) {
+                            if (showBanner) {
+                                item {
+                                    PostSongBanner(
+                                        mostRecentPost,
+                                        feedViewModel,
+                                        context
+                                    )
+                                }
+                            }
                             items(feed.posts) { post ->
                                 PostItemGeneration(post, handleClickProfile, handleClickComment)
                             }
@@ -410,5 +474,4 @@ fun PostsContent(
             }
         }
     }
-
 }

@@ -54,6 +54,5 @@ suspend fun getCommentsData(postId: String, context: Context) = withContext(Disp
 
     val response = client.newCall(request).execute()
     val json = response.body.string()
-    Log.i("CommentsViewModel", "getCommentsData: $json")
     Json.decodeFromString<Comments>(json)
 }

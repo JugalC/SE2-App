@@ -3,14 +3,12 @@ import { commentTable, friendshipRequestTable, friendshipTable, getUserSchema, i
 import { randomUUID, timingSafeEqual } from "crypto";
 import { generateSalt, hash } from "../lib/hashing";
 import { z } from "zod";
-import { eq, like, or } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { Plugin, authSchema, paginationSchema, searchSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
 import { encrypt } from "../lib/encryption";
-import { CONNREFUSED } from "dns";
-import { asc, desc } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { count, sql } from "drizzle-orm";
-import { getSystemErrorMap } from "util";
 
 export const users: Plugin = (server, _, done) => {
   server.post(

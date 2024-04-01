@@ -40,7 +40,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -98,6 +97,7 @@ class ProfileActivity : ComponentActivity() {
         }
 
         fun handleLogout() {
+            dialog.value = ""
             AuthManager.setAuthToken(this, null)
             Firebase.clearRegistrationToken(this)
             val intent = Intent(this, MainActivity::class.java).apply {
@@ -345,11 +345,10 @@ fun ProfileContent(
 @Composable
 fun PostHistory(
     post: Post,
-    updateVisibility: suspend (Post, Context) -> Unit,
+    updateVisibility: (Post, Context) -> Unit,
     selfProfile: Boolean,
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -387,9 +386,7 @@ fun PostHistory(
                             modifier = Modifier.height(10.dp),
                             checked = post.visible,
                             onCheckedChange = {
-                                coroutineScope.launch {
-                                    updateVisibility(post, context)
-                                }
+                                updateVisibility(post, context)
                             },
                         )
                     }

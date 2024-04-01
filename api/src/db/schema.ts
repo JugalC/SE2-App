@@ -56,7 +56,8 @@ export const postTable = sqliteTable("post", {
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-  visible: integer("visible", { mode: "boolean" }).notNull().default(true),
+  visible: integer("visible", { mode: "boolean" }).notNull().default(false),
+  userViewed: integer("user_viewed", { mode: "boolean" }).notNull().default(false),
 });
 
 export const likeTable = sqliteTable(
