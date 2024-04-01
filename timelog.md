@@ -1,5 +1,5 @@
 | Date       | Jugal | Ralph | Cameron | Hrishit | Nathan | Adrian | Task                                                               |
-| ---------- | ----- | ----- | ------- | ------- | ------ | ------ | ------------------------------------------------------------------ |
+|------------|-------|-------|---------|---------|--------|--------|--------------------------------------------------------------------|
 | 2024/01/29 |       |       |         | 3       |        |        | D1 User scenarios and architecture diagram                         |
 | 2024/01/29 | 3     |       |         |         | 2      |        | D1 Project proposal doc - Intro, functional, and non functional    |
 | 2024/01/29 |       |       |         |         |        | 4      | Work on D1 proposal details, revisions & edits                     |
@@ -22,7 +22,7 @@
 | 2024/02/25 |       |       |         |         |        | 3      | Implement MVVM for authentication & persist state between sessions |
 | 2024/02/25 |       |       |         |         | 3      | 2      | Finish UI & state logic for login / signup                         |
 | 2024/02/25 | 1     |       | 4       |         |        |        | Integrate signup page with backend                                 |
-| 2024/02/26 | 1     |       | 2       |         |        |        | Integrate login page with backend                                  |
+| 2024/02/26 | 1     |       | 4       |         |        |        | Integrate login page with backend                                  |
 | 2024/02/26 |       |       | 2       |         |        | 3      | Add pages for profile & settings, update global app styling        |
 | 2024/02/26 |       |       | 2       |         |        | 2      | Work on profile page                                               |
 | 2024/02/27 | 5     | 5     |         |         |        |        | Test and prototype Spotify integration methods                     |
@@ -70,7 +70,11 @@
 | 2024/03/30 | 2     |       |         |         |        |        | Delete comments, ui fixes                                          |
 | 2024/03/31 |       |       |         | 2       |        |        | Wrote scheduled job for recent song and comment view model added   |
 | 2024/03/31 |       |       |         | 5       |        |        | D6 functional requirements explain, client-server arch and diagram |
-| 2024/04/01 |       |       |         |         |        | 1      | Fix bug in friends flow                    												|
-| 2024/04/01 |       |       |         |         |        | 1      | Enable users to click friends profile       												|
-| 2024/04/01 |       |       |         |         |        | 1      | Fix visibility bugs		                    												|
-| 2024/04/01 |       |       |         |         |        | 5      | User prompt for post visibility																		|
+| 2024/03/31 |       |       | 5       |         |        |        | Fix bugs in daily posts cronjob                                    |
+| 2024/03/31 |       |       | 2       |         |        |        | Add delay to daily posts cronjob                                   |
+| 2024/04/01 |       |       |         |         |        | 1      | Fix bug in friends flow                                            |
+| 2024/04/01 |       |       |         |         |        | 1      | Enable users to click friends profile                              |
+| 2024/04/01 |       |       |         |         |        | 1      | Fix visibility bugs                                                |
+| 2024/04/01 |       |       |         |         |        | 5      | User prompt for post visibility                                    |
+| 2024/04/01 |       |       | 5       |         |        |        | Fix various bugs                                                   |
+| 2024/04/01 |       |       | 2       |         |        |        | Record demos                                                       |
