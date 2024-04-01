@@ -5,6 +5,7 @@ import { and, between, eq } from "drizzle-orm";
 import { Plugin, authSchema, paginationSchema } from "../types";
 import { generateLikeFilters } from "../lib/generateLikeFilters";
 import { authenticateUser } from "../lib/authenticateUser";
+import { desc } from "drizzle-orm";
 
 export const posts: Plugin = (server, _, done) => {
   server.get(
@@ -141,10 +142,48 @@ export const posts: Plugin = (server, _, done) => {
 
         await db
           .update(postTable)
-          .set({ visible: newVal })
+          .set({ visible: newVal, userViewed: true })
           .where(eq(postTable.id, postId));
 
         return res.code(200).send({});
+      } catch(e) {
+        console.error(e);
+        return res.code(500).send({ error: "Internal server error."});
+      }
+    },
+  );
+
+  server.get(
+    "/posts/recent",
+    {
+      schema: {
+        headers: authSchema,
+      }
+    },
+    async (req, res) => {
+      try {
+        const { authorization } = req.headers;
+
+        const user = await authenticateUser(authorization);
+
+        if (!user) {
+          return res.code(401).send();
+        }
+
+        const post = await db
+          .select()
+          .from(postTable)
+          .where(
+            eq(postTable.userId, user.id),
+          )
+          .orderBy(desc(postTable.createdAt))
+          .get();
+
+        if (!post) {
+          return res.code(404).send();
+        }
+
+        return res.code(200).send(post);
       } catch(e) {
         console.error(e);
         return res.code(500).send({ error: "Internal server error."});

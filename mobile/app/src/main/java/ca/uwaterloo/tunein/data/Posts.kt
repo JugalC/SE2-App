@@ -17,6 +17,6 @@ data class FeedPost(
 )
 
 @Serializable
-data class Feed(
+data class Posts(
     val posts: List<FeedPost> = listOf(FeedPost())
 )

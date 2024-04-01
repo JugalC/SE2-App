@@ -30,7 +30,6 @@ class FriendsViewModel : ViewModel() {
     private val _friends = MutableStateFlow(Users())
     val friends: StateFlow<Users> = _friends.asStateFlow()
 
-//    TODO: implement this
     fun removePendingInvite(user: User) {
         val updatedUsers = _pendingInvites.value.users.toMutableList() // Make a mutable copy
         updatedUsers.remove(user) // Remove the user from the list

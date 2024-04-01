@@ -3,7 +3,7 @@
 | 2024/01/29 |       |       |         | 3       |        |        | D1 User scenarios and architecture diagram                         |
 | 2024/01/29 | 3     |       |         |         | 2      |        | D1 Project proposal doc - Intro, functional, and non functional    |
 | 2024/01/29 |       |       |         |         |        | 4      | Work on D1 proposal details, revisions & edits                     |
-| 2024/02/05 | 1     |       |         |         |        | 2      | Setup frontend repo                                                |
+| 2024/02/05 | 1     |       |         |         |        | 2      | Setup android studio repo                                          |
 | 2024/02/13 | 2     |       |         | 3       |        |        | D2 Q1 and Q2 content work                                          |
 | 2024/02/13 | 3     |       |         |         |        |        | Figma Mockups of logic, signup and initial page                    |
 | 2024/02/14 | 2     | 10    |         |         |        |        | API Backend creation and boilerplate                               |
@@ -43,6 +43,7 @@
 | 2024/03/17 |       |       | 4       |         |        |        | Add logic for saving and clearing device notification token        |
 | 2024/03/17 |       |       | 4       |         |        |        | Add listener for notif messages and helper to send notifications   |
 | 2024/03/18 |       |       |         | 3       |        |        | D4 Report Example 3 Work                                           |
+| 2024/03/18 |       |       |         |         |        | 3      | D4 Report Example 2 Work                                           |
 | 2024/03/19 | 2     |       |         |         |        |        | D4 Report Example 1 Work                                           |
 | 2024/03/19 |       |       |         | 2       |        |        | Working on posts API to get most recent activity                   |
 | 2024/03/20 |       |       |         | 3       |        |        | Working on posts endpoint and db table insertion                   |
@@ -51,6 +52,7 @@
 | 2024/03/25 |       |       |         | 5       |        |        | Finishing profile page & feed api/view model/ integration          |
 | 2024/03/25 | 2     |       |         |         |        |        | D5 example 1 (singleton)                                           |
 | 2024/03/25 |       |       |         |         | 2      |        | D5 example 3 (Observer)                                            |
+| 2024/03/25 |       |       |         |         |        | 2      | D5 edits                                                           |
 | 2024/03/26 | 2     |       |         |         |        |        | Working on settings page functionality and UI improvements         |
 | 2024/03/27 | 4     |       |         |         |        |        | Working on settings page functionality and UI improvements         |
 | 2024/03/27 |       |       |         |         |        | 1      | Add profile pics to friends                                        |
@@ -68,3 +70,7 @@
 | 2024/03/30 | 2     |       |         |         |        |        | Delete comments, ui fixes                                          |
 | 2024/03/31 |       |       |         | 2       |        |        | Wrote scheduled job for recent song and comment view model added   |
 | 2024/03/31 |       |       |         | 5       |        |        | D6 functional requirements explain, client-server arch and diagram |
+| 2024/04/01 |       |       |         |         |        | 1      | Fix bug in friends flow                    												|
+| 2024/04/01 |       |       |         |         |        | 1      | Enable users to click friends profile       												|
+| 2024/04/01 |       |       |         |         |        | 1      | Fix visibility bugs		                    												|
+| 2024/04/01 |       |       |         |         |        | 5      | User prompt for post visibility																		|

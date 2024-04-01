@@ -11,15 +11,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,26 +28,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.data.Comment
 import ca.uwaterloo.tunein.data.User
-import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.viewmodel.CommentsViewModel
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.viewmodel.FeedViewModel
-import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
 import coil.compose.AsyncImage
 import com.android.volley.AuthFailureError
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import org.json.JSONObject
 
 class CommentsActivity : ComponentActivity() {

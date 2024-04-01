@@ -1,12 +1,15 @@
 package ca.uwaterloo.tunein
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +28,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -61,9 +66,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.data.FeedPost
+import ca.uwaterloo.tunein.data.Post
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
-import ca.uwaterloo.tunein.viewmodel.FeedViewModel
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
+import ca.uwaterloo.tunein.viewmodel.PostsViewModel
 import coil.compose.AsyncImage
 import com.android.volley.AuthFailureError
 import com.android.volley.Request
@@ -72,12 +78,13 @@ import com.android.volley.toolbox.Volley
 import org.json.JSONObject
 
 class PostsActivity : ComponentActivity() {
-    private val feedViewModel by viewModels<FeedViewModel>()
+    private val postsViewModel by viewModels<PostsViewModel>()
     private val friendsViewModel by viewModels<FriendsViewModel>()
     override fun onStart() {
         super.onStart()
         val user = AuthManager.getUser(this)
-        feedViewModel.updateReturnedFeed(user.id)
+        postsViewModel.shouldShowPostBanner(this)
+        postsViewModel.updateFeed(user.id)
         friendsViewModel.getPendingInvites(this)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,7 +112,7 @@ class PostsActivity : ComponentActivity() {
                 handleClickFriends= { handleClickFriends() },
                 handleClickProfile= ::handleClickProfile,
                 handleClickComment= ::handleClickComment,
-                feedViewModel = feedViewModel
+                postsViewModel = postsViewModel
             )
         }
     }
@@ -143,7 +150,7 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
 
     // Getting like count for this post and get if user has liked this post
     val likeCountReq = object : JsonObjectRequest(
-        Request.Method.GET, likeCountURL, null,
+        Method.GET, likeCountURL, null,
         { response ->
             likeCount = response.getInt("likes")
             isLiked = response.getBoolean("is_liked")
@@ -163,7 +170,7 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
     }
     // Getting comment count for this post
     val commentCountReq = object : JsonObjectRequest(
-        Request.Method.GET, commentCountURL, null,
+        Method.GET, commentCountURL, null,
         { response ->
             commentCount = response.getInt("comments")
         },
@@ -326,6 +333,48 @@ fun PostItemGeneration(post: FeedPost, handleClickProfile: (userId: String) -> U
     }
 }
 
+@Composable
+fun PostSongBanner(
+    post: Post,
+    postsViewModel: PostsViewModel,
+    context: Context,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .border(BorderStroke(2.dp, Color.White)),
+    ) {
+        Box(
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Text(
+                text = "Do you want to post a song today? You were listening to ${post.name} by ${post.artists}",
+                modifier = Modifier.padding(16.dp),
+            )
+        }
+        Row {
+            IconButton(onClick = { postsViewModel.updatePostVisibility(context, true) }) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Post Song",
+                    modifier = Modifier.size(18.dp),
+                    tint = Color.Green
+                )
+            }
+            IconButton(onClick = { postsViewModel.updatePostVisibility(context, false) }) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "Do Not Post Song",
+                    modifier = Modifier.size(18.dp),
+                    tint = Color.Red
+                )
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PostsContent(
@@ -333,16 +382,18 @@ fun PostsContent(
     handleClickProfile: (userId: String) -> Unit,
     handleClickComment: (postId: String) -> Unit,
     friendsViewModel: FriendsViewModel = viewModel(),
-    feedViewModel: FeedViewModel = viewModel()
+    postsViewModel: PostsViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val pendingInvites by friendsViewModel.pendingInvites.collectAsStateWithLifecycle()
-    val feed by feedViewModel.feed.collectAsStateWithLifecycle()
-    val refreshing by feedViewModel.isRefreshing.collectAsStateWithLifecycle()
+    val feed by postsViewModel.posts.collectAsStateWithLifecycle()
+    val refreshing by postsViewModel.isRefreshing.collectAsStateWithLifecycle()
+    val showBanner by postsViewModel.showBanner.collectAsStateWithLifecycle()
+    val mostRecentPost by postsViewModel.mostRecentPost.collectAsStateWithLifecycle()
 
     fun refreshFeed() {
         val user = AuthManager.getUser(context)
-        feedViewModel.updateReturnedFeed(user.id)
+        postsViewModel.updateFeed(user.id)
     }
 
     val pullRefreshState = rememberPullRefreshState(refreshing = refreshing, onRefresh = { refreshFeed() })
@@ -388,10 +439,19 @@ fun PostsContent(
                         .weight(1f)
                         .pullRefresh(pullRefreshState)
                 ) {
-                    if (feed.posts.size > 0) {
+                    if (feed.posts.isNotEmpty()) {
                         LazyColumn(modifier = Modifier
                             .fillMaxWidth()
                         ) {
+                            if (showBanner) {
+                                item {
+                                    PostSongBanner(
+                                        mostRecentPost,
+                                        postsViewModel,
+                                        context
+                                    )
+                                }
+                            }
                             items(feed.posts) { post ->
                                 PostItemGeneration(post, handleClickProfile, handleClickComment)
                             }
@@ -410,5 +470,4 @@ fun PostsContent(
             }
         }
     }
-
 }

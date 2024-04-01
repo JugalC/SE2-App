@@ -40,7 +40,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,7 +71,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
-private val showDialog = mutableStateOf(false)
+private val dialog = mutableStateOf("")
 
 class ProfileActivity : ComponentActivity() {
 
@@ -98,6 +97,7 @@ class ProfileActivity : ComponentActivity() {
         }
 
         fun handleLogout() {
+            dialog.value = ""
             AuthManager.setAuthToken(this, null)
             Firebase.clearRegistrationToken(this)
             val intent = Intent(this, MainActivity::class.java).apply {
@@ -125,7 +125,7 @@ class ProfileActivity : ComponentActivity() {
                 // Call suspend function here
                 sendDeleteAcc(user.id)
             }
-            showDialog.value = false
+            dialog.value = ""
             AuthManager.setAuthToken(this, null)
             Firebase.clearRegistrationToken(this)
             val intent = Intent(this, MainActivity::class.java).apply {
@@ -135,7 +135,7 @@ class ProfileActivity : ComponentActivity() {
         }
 
         fun onDismissRequest() {
-            showDialog.value = false
+            dialog.value = ""
         }
 
         setContent {
@@ -258,7 +258,7 @@ fun ProfileContent(
                         .background(color = Color.LightGray)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                posts.forEach{
+                posts.filter { post -> selfProfile || post.visible }.forEach{
                     PostHistory(
                         it,
                         profileViewModel::updateVisibility,
@@ -295,7 +295,7 @@ fun ProfileContent(
                             horizontalArrangement = Arrangement.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { handleLogout() }
+                                .clickable { dialog.value = "logout" }
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             Icon(
@@ -314,7 +314,7 @@ fun ProfileContent(
                             horizontalArrangement = Arrangement.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { showDialog.value = true }
+                                .clickable { dialog.value = "delete" }
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             Icon(
@@ -335,19 +335,20 @@ fun ProfileContent(
             }
         }
     }
-    if(showDialog.value) {
-        DialogWithImage(onDismissRequest, onConfirmation)
+    if (dialog.value == "delete") {
+        ConfirmDialog("Are you sure you want to delete your account? This cannot be undone.", onDismissRequest, onConfirmation)
+    } else if (dialog.value == "logout") {
+        ConfirmDialog("Are you sure you want to log out?", onDismissRequest, handleLogout)
     }
 }
 
 @Composable
 fun PostHistory(
     post: Post,
-    updateVisibility: suspend (Post, Context) -> Unit,
+    updateVisibility: (Post, Context) -> Unit,
     selfProfile: Boolean,
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -385,9 +386,7 @@ fun PostHistory(
                             modifier = Modifier.height(10.dp),
                             checked = post.visible,
                             onCheckedChange = {
-                                coroutineScope.launch {
-                                    updateVisibility(post, context)
-                                }
+                                updateVisibility(post, context)
                             },
                         )
                     }
@@ -407,7 +406,8 @@ fun PostHistory(
 
 
 @Composable
-fun DialogWithImage(
+fun ConfirmDialog(
+    text: String,
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit
 ) {
@@ -430,7 +430,7 @@ fun DialogWithImage(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Confirm that you would like to delete your account",
+                    text = text,
                     modifier = Modifier.padding(16.dp),
                     color=Color.LightGray
                 )

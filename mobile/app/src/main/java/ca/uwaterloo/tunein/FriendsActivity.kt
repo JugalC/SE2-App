@@ -1,9 +1,12 @@
 package ca.uwaterloo.tunein
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,13 +22,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -82,11 +83,12 @@ class FriendsActivity : ComponentActivity() {
             val acceptInviteReq = object : JsonObjectRequest(
                 Method.PUT, reqUrl, req,
                 { _ ->
-                    friendsViewModel.getPendingInvites(this)
-                    friendsViewModel.getCurrentFriends(this)
                     if (accept) {
+                        friendsViewModel.getPendingInvites(this)
+                        friendsViewModel.getCurrentFriends(this)
                         alert.setMessage("Friend request accepted!").setTitle("Success")
                     } else {
+                        friendsViewModel.removePendingInvite(user)
                         alert.setMessage("Friend request rejected!").setTitle("Success")
                     }
                     alert.create().show()
@@ -161,7 +163,7 @@ class FriendsActivity : ComponentActivity() {
             val reqUrl = "${BuildConfig.BASE_URL}/friendship/${user.id}"
 
             val req = JSONObject()
-            val addFriendReq = object : JsonObjectRequest(Method.POST, reqUrl, req,
+            val removeFriendReq = object : JsonObjectRequest(Method.POST, reqUrl, req,
                 { _ ->
                     // show success message
                     friendsViewModel.removeFriend(user)
@@ -184,7 +186,7 @@ class FriendsActivity : ComponentActivity() {
                 }
             }
 
-            queue.add(addFriendReq)
+            queue.add(removeFriendReq)
         }
 
         setContent {
@@ -238,20 +240,22 @@ fun FriendsContent(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        IconButton(onClick = { goBack() }) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Go Back"
-                            )
-                        }
-                    }
+                    Spacer(Modifier.weight(1f))
                     Column(
                         modifier = Modifier
                             .fillMaxWidth(0.8f),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ){
                         Text("Friends", textAlign= TextAlign.Center)
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Column {
+                        IconButton(onClick = { goBack() }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Go Back"
+                            )
+                        }
                     }
                 }
                 SearchBar(
@@ -267,6 +271,7 @@ fun FriendsContent(
                 ) {
                     if (searchUserState.searchQuery.text.isNotEmpty()) {
                         SearchFriends(
+                            context,
                             handleAddFriend,
                             handleRemoveFriend,
                             handleAcceptInvite,
@@ -278,10 +283,7 @@ fun FriendsContent(
                             Spacer(modifier = Modifier.height(16.dp))
                         }
 
-                        MyFriends(currentFriends.users, handleRemoveFriend)
-
-                        // TODO: implement recommended friends (friends of friends)
-                        // RecommendedFriends(recommendedFriends)
+                        MyFriends(context, currentFriends.users, handleRemoveFriend)
                     }
                 }
             }
@@ -290,20 +292,21 @@ fun FriendsContent(
 }
 
 @Composable
-fun MyFriends(friends: List<User>, handleRemoveFriend: (user: User) -> Unit) {
+fun MyFriends(context: Context, friends: List<User>, handleRemoveFriend: (user: User) -> Unit) {
     Column {
         Text(
             text = "My friends (${friends.size}):",
         )
         Spacer(modifier = Modifier.height(8.dp))
         friends.forEach { user ->
-            FriendRow(user, handleRemoveFriend)
+            FriendRow(context, user, handleRemoveFriend)
         }
     }
 }
 
 @Composable
 fun SearchFriends(
+    context: Context,
     handleAddFriend: (user: SearchResults) -> Unit,
     handleRemoveFriend: (user: User) -> Unit,
     handleAcceptInvite: (user: User, accept: Boolean) -> Unit,
@@ -316,6 +319,7 @@ fun SearchFriends(
         Spacer(modifier = Modifier.height(8.dp))
         for (user in searchUserState.friends) {
             FriendRow(
+                context,
                 searchResultsToUser(user),
                 handleRemoveFriend
             )
@@ -400,7 +404,13 @@ fun PendingFriendRequests(requests: List<User>, handleAcceptInvite: (user: User,
 }
 
 @Composable
-fun FriendRow(user: User, handleRemoveFriend: (user: User) -> Unit) {
+fun FriendRow(context: Context, user: User, handleRemoveFriend: (user: User) -> Unit) {
+    fun handleClickProfile(userId: String) {
+        val intent = Intent(context, ProfileActivity::class.java)
+        intent.putExtra("user_profile", userId)
+        context.startActivity(intent)
+    }
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -410,7 +420,10 @@ fun FriendRow(user: User, handleRemoveFriend: (user: User) -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row {
+            Row(
+                modifier = Modifier
+                    .clickable { handleClickProfile(user.id) }
+            ) {
                 Column(
                     modifier = Modifier.padding(0.dp, 0.dp, 20.dp, 0.dp)
                 ) {
@@ -423,7 +436,7 @@ fun FriendRow(user: User, handleRemoveFriend: (user: User) -> Unit) {
                     )
                 }
                 Column {
-                    Text(user.firstName)
+                    Text("${user.firstName} ${user.lastName}")
                     Text("@${user.username}", fontSize = 12.sp, color = Color.LightGray)
                 }
             }
