@@ -66,3 +66,5 @@
 | 2024/03/30 |       |       |         | 2       |        |        | Adding Delete User Functionality                                   |
 | 2024/03/30 |       |       |         | 1       |        |        | Visual Changes to the Feed page                                    |
 | 2024/03/30 | 2     |       |         |         |        |        | Delete comments, ui fixes                                          |
+| 2024/03/31 |       |       |         | 2       |        |        | Wrote scheduled job for recent song and comment view model added   |
+| 2024/03/31 |       |       |         | 5       |        |        | D6 functional requirements explain, client-server arch and diagram |
