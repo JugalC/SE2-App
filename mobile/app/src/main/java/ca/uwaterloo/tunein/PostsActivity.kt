@@ -394,6 +394,7 @@ fun PostsContent(
     fun refreshFeed() {
         val user = AuthManager.getUser(context)
         postsViewModel.updateFeed(user.id)
+        postsViewModel.shouldShowPostBanner(context)
     }
 
     val pullRefreshState = rememberPullRefreshState(refreshing = refreshing, onRefresh = { refreshFeed() })
@@ -439,19 +440,17 @@ fun PostsContent(
                         .weight(1f)
                         .pullRefresh(pullRefreshState)
                 ) {
+                    if (showBanner) {
+                        PostSongBanner(
+                            mostRecentPost,
+                            postsViewModel,
+                            context
+                        )
+                    }
                     if (feed.posts.isNotEmpty()) {
                         LazyColumn(modifier = Modifier
                             .fillMaxWidth()
                         ) {
-                            if (showBanner) {
-                                item {
-                                    PostSongBanner(
-                                        mostRecentPost,
-                                        postsViewModel,
-                                        context
-                                    )
-                                }
-                            }
                             items(feed.posts) { post ->
                                 PostItemGeneration(post, handleClickProfile, handleClickComment)
                             }
