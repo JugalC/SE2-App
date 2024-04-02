@@ -440,17 +440,19 @@ fun PostsContent(
                         .weight(1f)
                         .pullRefresh(pullRefreshState)
                 ) {
-                    if (showBanner) {
-                        PostSongBanner(
-                            mostRecentPost,
-                            postsViewModel,
-                            context
-                        )
-                    }
-                    if (feed.posts.isNotEmpty()) {
+                    if (feed.posts.isNotEmpty() || showBanner) {
                         LazyColumn(modifier = Modifier
                             .fillMaxWidth()
                         ) {
+                            if (showBanner) {
+                                item {
+                                    PostSongBanner(
+                                        mostRecentPost,
+                                        postsViewModel,
+                                        context
+                                    )
+                            }
+                            }
                             items(feed.posts) { post ->
                                 PostItemGeneration(post, handleClickProfile, handleClickComment)
                             }
