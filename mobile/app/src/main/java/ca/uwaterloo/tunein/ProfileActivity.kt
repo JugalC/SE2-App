@@ -374,7 +374,7 @@ fun PostHistory(
             Column{
                 Text(post.name)
                 Text(post.artists, fontSize=12.sp, color = Color.LightGray)
-                if (selfProfile) {
+                if (selfProfile && post.caption != "No Posts") {
                     Row(
                         modifier = Modifier
                             .padding(vertical = 24.dp),
