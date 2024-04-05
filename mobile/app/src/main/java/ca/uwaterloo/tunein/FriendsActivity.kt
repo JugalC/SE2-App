@@ -47,14 +47,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ca.uwaterloo.tunein.auth.AuthManager
 import ca.uwaterloo.tunein.components.Icon
 import ca.uwaterloo.tunein.components.ProfilePic
+import ca.uwaterloo.tunein.data.SearchResults
+import ca.uwaterloo.tunein.data.SearchUsers
 import ca.uwaterloo.tunein.data.User
+import ca.uwaterloo.tunein.data.searchResultsToUser
 import ca.uwaterloo.tunein.ui.theme.Color
 import ca.uwaterloo.tunein.ui.theme.TuneInTheme
 import ca.uwaterloo.tunein.viewmodel.FriendsViewModel
-import ca.uwaterloo.tunein.viewmodel.SearchResults
-import ca.uwaterloo.tunein.viewmodel.SearchResultsViewModel
-import ca.uwaterloo.tunein.viewmodel.SearchUsers
-import ca.uwaterloo.tunein.viewmodel.searchResultsToUser
 import com.android.volley.AuthFailureError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -208,12 +207,11 @@ fun FriendsContent(
     handleAddFriend: (user: SearchResults) -> Unit,
     handleAcceptInvite: (user: User, accept: Boolean) -> Unit,
     friendsViewModel: FriendsViewModel = viewModel(),
-    searchResultsViewModel: SearchResultsViewModel = viewModel(),
     goBack: () -> Unit
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
-    val searchUserState by searchResultsViewModel.searchUsers.collectAsStateWithLifecycle()
+    val searchUserState by friendsViewModel.searchUsers.collectAsStateWithLifecycle()
     val pendingInvites by friendsViewModel.pendingInvites.collectAsStateWithLifecycle()
     val currentFriends by friendsViewModel.friends.collectAsStateWithLifecycle()
 
@@ -261,7 +259,7 @@ fun FriendsContent(
                 SearchBar(
                     user,
                     searchUserState,
-                    searchResultsViewModel,
+                    friendsViewModel,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Column(
@@ -516,7 +514,7 @@ fun PendingFriendRow(user: User, handleAcceptInvite: (user: User, accept: Boolea
 fun SearchBar(
     user: User,
     searchUserState: SearchUsers,
-    viewModel: SearchResultsViewModel
+    viewModel: FriendsViewModel
 ) {
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
