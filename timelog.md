@@ -79,3 +79,4 @@
 | 2024/04/01 |       |       |         |         |        | 5      | User prompt for post visibility                                    |
 | 2024/04/01 |       |       | 5       |         |        |        | Fix various bugs                                                   |
 | 2024/04/01 |       |       | 2       |         |        | 2      | Record demos                                                       |
+| 2024/04/05 |       |       |         | 3       |        |        | D6 Deployment Diagram + Sequence Diagrams                          |
