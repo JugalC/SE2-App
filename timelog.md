@@ -80,3 +80,4 @@
 | 2024/04/01 |       |       | 5       |         |        |        | Fix various bugs                                                   |
 | 2024/04/01 |       |       | 2       |         |        | 2      | Record demos                                                       |
 | 2024/04/05 |       |       |         | 3       |        |        | D6 Deployment Diagram + Sequence Diagrams                          |
+| 2024/04/07 |       |       |         | 3       |        |        | D7 Harms Mitigated + Explain Profile/Settings                      |
